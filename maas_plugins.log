@@ -1,0 +1,1376 @@
+2016-02-14 23:23:30,138 ERROR: The plugin /Users/egle/src/rpc/copystack/neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 459, in print_output
+    yield
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 65, in <module>
+    main(args)
+NameError: name 'args' is not defined
+2016-02-16 14:50:11,480 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 461, in print_output
+    yield
+  File "neutron_common.py", line 81, in <module>
+    main(args)
+  File "neutron_common.py", line 68, in main
+    get_neutron_security_group_list(args)
+  File "neutron_common.py", line 61, in get_neutron_security_group_list
+    groups = neutron.security_groups.list()
+AttributeError: 'Client' object has no attribute 'security_groups'
+2016-02-16 14:50:13,742 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 461, in print_output
+    yield
+  File "neutron_common.py", line 81, in <module>
+    main(args)
+  File "neutron_common.py", line 68, in main
+    get_neutron_security_group_list(args)
+  File "neutron_common.py", line 61, in get_neutron_security_group_list
+    groups = neutron.security_groups.list()
+AttributeError: 'Client' object has no attribute 'security_groups'
+2016-02-16 14:52:11,667 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 461, in print_output
+    yield
+  File "neutron_common.py", line 81, in <module>
+    main(args)
+  File "neutron_common.py", line 68, in main
+    get_neutron_security_group_list(args)
+  File "neutron_common.py", line 61, in get_neutron_security_group_list
+    groups = neutron.securitygroup.list()
+AttributeError: 'Client' object has no attribute 'securitygroup'
+2016-02-16 16:27:21,608 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 478, in print_output
+    yield
+  File "neutron_common.py", line 96, in <module>
+    main(args)
+  File "neutron_common.py", line 83, in main
+    network_create_net(args)
+  File "neutron_common.py", line 77, in network_create_net
+    network_create_net.create_network(body=body_sample)
+AttributeError: 'function' object has no attribute 'create_network'
+2016-02-16 16:27:50,623 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 478, in print_output
+    yield
+  File "neutron_common.py", line 96, in <module>
+    main(args)
+  File "neutron_common.py", line 83, in main
+    network_create_net(args)
+  File "neutron_common.py", line 77, in network_create_net
+    neutron.create_network(body=body_sample)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for operation: network_type value 'flat' not supported.
+2016-02-16 16:29:11,341 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 478, in print_output
+    yield
+  File "neutron_common.py", line 96, in <module>
+    main(args)
+  File "neutron_common.py", line 83, in main
+    network_create_net(args)
+  File "neutron_common.py", line 77, in network_create_net
+    neutron.create_network(body=body_sample)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for operation: provider:physical_network specified for gre network.
+2016-02-17 22:12:23,375 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 478, in print_output
+    yield
+  File "keystone_common.py", line 92, in <module>
+    main()
+  File "keystone_common.py", line 86, in main
+    compare_tenants()
+TypeError: compare_tenants() takes exactly 1 argument (0 given)
+2016-02-17 22:14:01,230 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 478, in print_output
+    yield
+  File "keystone_common.py", line 90, in <module>
+    main()
+  File "keystone_common.py", line 86, in main
+    compare_tenants()
+  File "keystone_common.py", line 78, in compare_tenants
+    from_tenants = get_from_tenant_list()
+  File "keystone_common.py", line 64, in get_from_tenant_list
+    keystone = get_keystone('from')
+  File "keystone_common.py", line 50, in get_keystone
+    IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=args.ip)
+NameError: global name 'args' is not defined
+2016-02-17 22:18:59,940 ERROR: The plugin /Users/egle/src/rpc/copystack/nova_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 478, in print_output
+    yield
+  File "/Users/egle/src/rpc/copystack/nova_common.py", line 58, in <module>
+    main(args)
+  File "/Users/egle/src/rpc/copystack/nova_common.py", line 43, in main
+    check(args)
+  File "/Users/egle/src/rpc/copystack/nova_common.py", line 23, in check
+    auth_ref = get_auth_ref()
+TypeError: get_auth_ref() takes exactly 1 argument (0 given)
+2016-02-17 23:27:58,462 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 479, in print_output
+    yield
+  File "keystone_common.py", line 96, in <module>
+    main()
+  File "keystone_common.py", line 92, in main
+    compare_tenants()
+  File "keystone_common.py", line 84, in compare_tenants
+    from_tenants = get_from_tenant_list()
+  File "keystone_common.py", line 70, in get_from_tenant_list
+    keystone = get_keystone('from')
+  File "keystone_common.py", line 56, in get_keystone
+    IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(IDENTITY_IP)
+KeyError: 'ip'
+2016-02-17 23:28:02,893 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 479, in print_output
+    yield
+  File "keystone_common.py", line 96, in <module>
+    main()
+  File "keystone_common.py", line 92, in main
+    compare_tenants()
+  File "keystone_common.py", line 84, in compare_tenants
+    from_tenants = get_from_tenant_list()
+  File "keystone_common.py", line 70, in get_from_tenant_list
+    keystone = get_keystone('from')
+  File "keystone_common.py", line 56, in get_keystone
+    IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(IDENTITY_IP)
+KeyError: 'ip'
+2016-02-17 23:28:05,598 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 479, in print_output
+    yield
+  File "keystone_common.py", line 96, in <module>
+    main()
+  File "keystone_common.py", line 92, in main
+    compare_tenants()
+  File "keystone_common.py", line 84, in compare_tenants
+    from_tenants = get_from_tenant_list()
+  File "keystone_common.py", line 70, in get_from_tenant_list
+    keystone = get_keystone('from')
+  File "keystone_common.py", line 56, in get_keystone
+    IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(IDENTITY_IP)
+KeyError: 'ip'
+2016-02-18 00:02:53,674 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 479, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 92, in main
+    get_from_tenant_list()
+  File "keystone_common.py", line 69, in get_from_tenant_list
+    keystone = get_keystone('from')
+  File "keystone_common.py", line 65, in get_keystone
+    return keystone
+UnboundLocalError: local variable 'keystone' referenced before assignment
+2016-02-19 14:50:24,004 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 91, in main
+    compare_tenants()
+  File "keystone_common.py", line 84, in compare_tenants
+    to_tenants = get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 14:50:38,366 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 91, in main
+    compare_tenants()
+  File "keystone_common.py", line 84, in compare_tenants
+    to_tenants = get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 14:54:33,614 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 91, in main
+    compare_tenants()
+  File "keystone_common.py", line 84, in compare_tenants
+    to_tenants = get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 14:54:59,605 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 91, in main
+    compare_tenants()
+  File "keystone_common.py", line 84, in compare_tenants
+    to_tenants = get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 15:01:38,386 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 91, in main
+    compare_tenants()
+  File "keystone_common.py", line 84, in compare_tenants
+    to_tenants = get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 15:16:59,299 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 93, in main
+    get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 15:42:21,944 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 93, in main
+    get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 15:42:56,819 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 92, in main
+    get_from_tenant_list()
+  File "keystone_common.py", line 70, in get_from_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 15:51:05,586 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 97, in <module>
+    main()
+  File "keystone_common.py", line 93, in main
+    get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 15:57:47,270 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 98, in <module>
+    main()
+  File "keystone_common.py", line 93, in main
+    get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-19 16:12:53,800 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 98, in <module>
+    main()
+  File "keystone_common.py", line 93, in main
+    get_to_tenant_list()
+  File "keystone_common.py", line 77, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-21 19:43:20,038 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 103, in <module>
+    main()
+  File "keystone_common.py", line 96, in main
+    compare_tenants()
+  File "keystone_common.py", line 88, in compare_tenants
+    if tenant.name in to_tenant:
+TypeError: argument of type 'Tenant' is not iterable
+2016-02-21 20:05:19,557 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 107, in <module>
+    main()
+  File "keystone_common.py", line 100, in main
+    compare_tenants()
+  File "keystone_common.py", line 92, in compare_tenants
+    if from_tenants.name in to_tenants:
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:05:30,025 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 107, in <module>
+    main()
+  File "keystone_common.py", line 100, in main
+    compare_tenants()
+  File "keystone_common.py", line 92, in compare_tenants
+    if from_tenants.name in to_tenants.name:
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:13:07,994 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 109, in <module>
+    main()
+  File "keystone_common.py", line 102, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    my_list = filter(lambda x: from_tenants.name == name, to_tenants)
+  File "keystone_common.py", line 86, in <lambda>
+    my_list = filter(lambda x: from_tenants.name == name, to_tenants)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:13:13,629 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 109, in <module>
+    main()
+  File "keystone_common.py", line 102, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    my_list = filter(lambda x: from_tenants.name == name, to_tenants)
+  File "keystone_common.py", line 86, in <lambda>
+    my_list = filter(lambda x: from_tenants.name == name, to_tenants)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:13:49,022 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 109, in <module>
+    main()
+  File "keystone_common.py", line 102, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    my_list = filter(lambda x: from_tenants.name == name, to_tenants.name)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:18:24,853 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 108, in <module>
+    main()
+  File "keystone_common.py", line 101, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    from_names = map(lambda names: from_tenants.name)
+TypeError: map() requires at least two args
+2016-02-21 20:19:13,724 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 108, in <module>
+    main()
+  File "keystone_common.py", line 101, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    from_names = map(lambda names: from_tenants.key, from_tenants.name)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:19:16,045 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 108, in <module>
+    main()
+  File "keystone_common.py", line 101, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    from_names = map(lambda names: from_tenants.key, from_tenants.name)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:20:00,337 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 108, in <module>
+    main()
+  File "keystone_common.py", line 101, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    from_names = map(lambda names: from_tenants.each.name)
+TypeError: map() requires at least two args
+2016-02-21 20:20:15,326 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 108, in <module>
+    main()
+  File "keystone_common.py", line 101, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    from_names = map(lambda names: from_tenants.key, from_tenants.each.name)
+AttributeError: 'list' object has no attribute 'each'
+2016-02-21 20:20:32,165 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 108, in <module>
+    main()
+  File "keystone_common.py", line 101, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    from_names = map(lambda names: from_tenants.key, from_tenants.name)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:21:18,531 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 108, in <module>
+    main()
+  File "keystone_common.py", line 101, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    from_names = map(lambda names: from_tenants.name, from_tenants)
+  File "keystone_common.py", line 86, in <lambda>
+    from_names = map(lambda names: from_tenants.name, from_tenants)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:21:20,749 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 108, in <module>
+    main()
+  File "keystone_common.py", line 101, in main
+    compare_tenants()
+  File "keystone_common.py", line 86, in compare_tenants
+    from_names = map(lambda names: from_tenants.name, from_tenants)
+  File "keystone_common.py", line 86, in <lambda>
+    from_names = map(lambda names: from_tenants.name, from_tenants)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:24:08,465 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 111, in <module>
+    main()
+  File "keystone_common.py", line 104, in main
+    compare_tenants()
+  File "keystone_common.py", line 88, in compare_tenants
+    to_names = filter(lambda to_tenants: to_tenants.name, from_names)
+  File "keystone_common.py", line 88, in <lambda>
+    to_names = filter(lambda to_tenants: to_tenants.name, from_names)
+AttributeError: 'unicode' object has no attribute 'name'
+2016-02-21 20:27:37,233 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 111, in <module>
+    main()
+  File "keystone_common.py", line 104, in main
+    compare_tenants()
+  File "keystone_common.py", line 88, in compare_tenants
+    to_names = filter(lambda to_tenants: to_tenants.name, to_names)
+UnboundLocalError: local variable 'to_names' referenced before assignment
+2016-02-21 20:27:46,075 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 111, in <module>
+    main()
+  File "keystone_common.py", line 104, in main
+    compare_tenants()
+  File "keystone_common.py", line 88, in compare_tenants
+    to_names = map(lambda to_tenants: to_tenants.name, to_names)
+UnboundLocalError: local variable 'to_names' referenced before assignment
+2016-02-21 20:28:44,439 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 114, in <module>
+    main()
+  File "keystone_common.py", line 107, in main
+    compare_tenants()
+  File "keystone_common.py", line 90, in compare_tenants
+    diff_names = from_names - to_names
+TypeError: unsupported operand type(s) for -: 'list' and 'list'
+2016-02-21 20:29:13,469 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 113, in <module>
+    main()
+  File "keystone_common.py", line 106, in main
+    compare_tenants()
+  File "keystone_common.py", line 88, in compare_tenants
+    to_names = filter(lambda to_tenants: to_tenants.name, from_names)
+  File "keystone_common.py", line 88, in <lambda>
+    to_names = filter(lambda to_tenants: to_tenants.name, from_names)
+AttributeError: 'unicode' object has no attribute 'name'
+2016-02-21 20:39:10,663 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 118, in <module>
+    main()
+  File "keystone_common.py", line 111, in main
+    compare_tenants()
+  File "keystone_common.py", line 95, in compare_tenants
+    foo = from_names - to_names
+TypeError: unsupported operand type(s) for -: 'list' and 'list'
+2016-02-21 20:42:57,708 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 110, in <module>
+    main()
+  File "keystone_common.py", line 103, in main
+    compare_tenants()
+  File "keystone_common.py", line 95, in compare_tenants
+    for n in from_tenants.name:
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:50:26,712 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 109, in <module>
+    main()
+  File "keystone_common.py", line 102, in main
+    compare_tenants()
+  File "keystone_common.py", line 94, in compare_tenants
+    from_tenant = filter(n, from_tenants.name)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 20:51:53,141 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 109, in <module>
+    main()
+  File "keystone_common.py", line 102, in main
+    compare_tenants()
+  File "keystone_common.py", line 94, in compare_tenants
+    from_tenant = filter(lambda from_tenants: from_tenants.name, n)
+  File "keystone_common.py", line 94, in <lambda>
+    from_tenant = filter(lambda from_tenants: from_tenants.name, n)
+AttributeError: 'unicode' object has no attribute 'name'
+2016-02-21 21:00:34,371 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 112, in <module>
+    main()
+  File "keystone_common.py", line 105, in main
+    compare_tenants()
+  File "keystone_common.py", line 91, in compare_tenants
+    unmatched_item = set(from_tenants.names) ^ set(to_tenants.names)
+AttributeError: 'list' object has no attribute 'names'
+2016-02-21 21:00:45,470 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 112, in <module>
+    main()
+  File "keystone_common.py", line 105, in main
+    compare_tenants()
+  File "keystone_common.py", line 91, in compare_tenants
+    unmatched_item = set(from_tenants.name) ^ set(to_tenants.name)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 21:22:19,014 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 112, in <module>
+    main()
+  File "keystone_common.py", line 105, in main
+    compare_tenants()
+  File "keystone_common.py", line 83, in compare_tenants
+    from_tenants = get_from_tenant_list()
+  File "keystone_common.py", line 70, in get_from_tenant_list
+    tenants = keystone.projects.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/keystoneclient/httpclient.py", line 898, in __getattr__
+    raise AttributeError(_("Unknown Attribute: %s") % name)
+AttributeError: Unknown Attribute: projects
+2016-02-21 21:32:51,122 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 115, in <module>
+    main()
+  File "keystone_common.py", line 108, in main
+    compare_tenants()
+  File "keystone_common.py", line 98, in compare_tenants
+    new_tenant = create_tenant('to', from_tenant)
+  File "keystone_common.py", line 103, in create_tenant
+    new_tenant = keystone.tenants.create(tenant_name=tenant.name, description=tenant.description, enabled=tenant.enabled)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 21:34:18,131 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 115, in <module>
+    main()
+  File "keystone_common.py", line 108, in main
+    compare_tenants()
+  File "keystone_common.py", line 98, in compare_tenants
+    new_tenant = create_tenant('to', from_tenant)
+  File "keystone_common.py", line 103, in create_tenant
+    new_tenant = keystone.tenants.create(tenant_name=tenant.name, description=tenant.description, enabled=tenant.enabled)
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 21:35:28,261 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 115, in <module>
+    main()
+  File "keystone_common.py", line 108, in main
+    compare_tenants()
+  File "keystone_common.py", line 98, in compare_tenants
+    new_tenant = create_tenant('to', from_tenant.tenant)
+AttributeError: 'list' object has no attribute 'tenant'
+2016-02-21 21:41:59,962 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 95, in <module>
+    main(args)
+  File "neutron_common.py", line 80, in main
+    get_network_list(args)
+  File "neutron_common.py", line 55, in get_network_list
+    networks = neutron.list_networks()
+AttributeError: 'NoneType' object has no attribute 'list_networks'
+2016-02-21 21:42:29,528 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 95, in <module>
+    main(args)
+  File "neutron_common.py", line 80, in main
+    get_network_list(args)
+  File "neutron_common.py", line 55, in get_network_list
+    networks = neutron.list_networks()
+AttributeError: 'NoneType' object has no attribute 'list_networks'
+2016-02-21 21:43:18,401 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 95, in <module>
+    main(args)
+  File "neutron_common.py", line 80, in main
+    get_network_list(args)
+  File "neutron_common.py", line 55, in get_network_list
+    networks = neutron.list_networks()
+AttributeError: 'NoneType' object has no attribute 'list_networks'
+2016-02-21 21:44:59,851 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 94, in <module>
+    main(args)
+  File "neutron_common.py", line 79, in main
+    get_network_list(args)
+  File "neutron_common.py", line 54, in get_network_list
+    networks = neutron.list_networks()
+AttributeError: 'NoneType' object has no attribute 'list_networks'
+2016-02-21 21:50:42,586 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 94, in <module>
+    main(args)
+  File "neutron_common.py", line 79, in main
+    get_network_list(args)
+  File "neutron_common.py", line 54, in get_network_list
+    networks = neutron.list_networks()
+AttributeError: 'NoneType' object has no attribute 'list_networks'
+2016-02-21 21:51:30,075 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 94, in <module>
+    main(args)
+  File "neutron_common.py", line 79, in main
+    get_network_list(args)
+  File "neutron_common.py", line 54, in get_network_list
+    networks = neutron.list_networks()
+AttributeError: 'NoneType' object has no attribute 'list_networks'
+2016-02-21 21:54:47,743 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 94, in <module>
+    main(args)
+  File "neutron_common.py", line 79, in main
+    get_network_list(args)
+  File "neutron_common.py", line 54, in get_network_list
+    networks = neutron.list_networks()
+AttributeError: 'NoneType' object has no attribute 'list_networks'
+2016-02-21 22:06:37,154 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 99, in <module>
+    main(args)
+  File "neutron_common.py", line 84, in main
+    get_network_list('to')
+  File "neutron_common.py", line 58, in get_network_list
+    neutron = get_neutron(destination)
+  File "neutron_common.py", line 47, in get_neutron
+    NETWORK_ENDPOINT = 'http://{IDENTITY_IP}:9696'.format(hostname=args.hostname)
+KeyError: 'IDENTITY_IP'
+2016-02-21 22:06:48,540 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 91, in <module>
+    main(args)
+NameError: name 'args' is not defined
+2016-02-21 22:06:53,189 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 91, in <module>
+    main()
+TypeError: main() takes exactly 1 argument (0 given)
+2016-02-21 22:07:04,612 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 91, in <module>
+    main()
+  File "neutron_common.py", line 84, in main
+    get_network_list('to')
+  File "neutron_common.py", line 58, in get_network_list
+    neutron = get_neutron(destination)
+  File "neutron_common.py", line 47, in get_neutron
+    NETWORK_ENDPOINT = 'http://{IDENTITY_IP}:9696'.format(hostname=args.hostname)
+NameError: global name 'args' is not defined
+2016-02-21 22:08:32,091 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 72, in <module>
+    main()
+  File "neutron_common.py", line 65, in main
+    get_network_list('to')
+  File "neutron_common.py", line 39, in get_network_list
+    neutron = get_neutron(destination)
+  File "neutron_common.py", line 28, in get_neutron
+    NETWORK_ENDPOINT = 'http://{IDENTITY_IP}:9696'.format(ip=IDENTITY_IP)
+KeyError: 'IDENTITY_IP'
+2016-02-21 22:08:35,558 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 72, in <module>
+    main()
+  File "neutron_common.py", line 65, in main
+    get_network_list('to')
+  File "neutron_common.py", line 39, in get_network_list
+    neutron = get_neutron(destination)
+  File "neutron_common.py", line 28, in get_neutron
+    NETWORK_ENDPOINT = 'http://{IDENTITY_IP}:9696'.format(ip=IDENTITY_IP)
+KeyError: 'IDENTITY_IP'
+2016-02-21 22:27:14,205 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 69, in compare_and_create_networks
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+  File "neutron_common.py", line 69, in <lambda>
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+AttributeError: 'str' object has no attribute 'name'
+2016-02-21 22:29:13,012 ERROR: The plugin /Users/egle/src/rpc/copystack/neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 88, in <module>
+    main()
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 69, in compare_and_create_networks
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 69, in <lambda>
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+AttributeError: 'str' object has no attribute 'name'
+2016-02-21 22:30:33,408 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 67, in compare_and_create_networks
+    from_networks = get_network_list('from').networks()
+AttributeError: 'dict' object has no attribute 'networks'
+2016-02-21 22:31:23,369 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 67, in compare_and_create_networks
+    from_networks = get_network_list('from')[0]
+KeyError: 0
+2016-02-21 22:32:19,716 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 67, in compare_and_create_networks
+    from_networks = get_network_list('from')
+  File "neutron_common.py", line 42, in get_network_list
+    return networks[0]
+KeyError: 0
+2016-02-21 22:33:15,658 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 67, in compare_and_create_networks
+    from_networks = get_network_list('from')
+  File "neutron_common.py", line 42, in get_network_list
+    return networks[networks]
+TypeError: unhashable type: 'dict'
+2016-02-21 22:34:19,334 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 69, in compare_and_create_networks
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+  File "neutron_common.py", line 69, in <lambda>
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+AttributeError: 'dict' object has no attribute 'name'
+2016-02-21 22:36:11,834 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 69, in compare_and_create_networks
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+  File "neutron_common.py", line 69, in <lambda>
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+AttributeError: 'dict' object has no attribute 'name'
+2016-02-21 22:37:20,205 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 69, in compare_and_create_networks
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+  File "neutron_common.py", line 69, in <lambda>
+    from_names = map(lambda from_networks: from_networks.name, from_networks)
+AttributeError: 'dict' object has no attribute 'name'
+2016-02-21 22:43:42,911 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 75, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 56, in network_create_net
+    new_network = {'network': {'name': network.name,
+AttributeError: 'dict' object has no attribute 'name'
+2016-02-21 22:46:09,462 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 75, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 56, in network_create_net
+    new_network = {'network': {'name': network.name,
+AttributeError: 'dict' object has no attribute 'name'
+2016-02-21 22:46:18,905 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 88, in <module>
+    main()
+  File "neutron_common.py", line 83, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 75, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 56, in network_create_net
+    new_network = {'network': {'name': network.name,
+AttributeError: 'dict' object has no attribute 'name'
+2016-02-21 22:47:59,253 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 89, in <module>
+    main()
+  File "neutron_common.py", line 84, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 76, in compare_and_create_networks
+    print "New network created: " + new_network
+TypeError: cannot concatenate 'str' and 'dict' objects
+2016-02-21 23:08:33,908 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 133, in <module>
+    main()
+  File "keystone_common.py", line 126, in main
+    get_from_to_name_tenant_ids()
+  File "keystone_common.py", line 99, in get_from_to_name_tenant_ids
+    tenant = {'from_id': from_tenant.id, 'to_id': to_tenant.id, 'name': from_tenant.name}
+AttributeError: 'list' object has no attribute 'id'
+2016-02-21 23:12:38,890 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 133, in <module>
+    main()
+  File "keystone_common.py", line 126, in main
+    get_from_to_name_tenant_ids()
+  File "keystone_common.py", line 99, in get_from_to_name_tenant_ids
+    tenant = {'from_id': from_tenant.id, 'to_id': to_tenant.id, 'name': from_tenant.name}
+AttributeError: 'list' object has no attribute 'id'
+2016-02-21 23:32:44,153 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 146, in <module>
+    main()
+  File "keystone_common.py", line 139, in main
+    find_oposite_tenant_id('73575ab33caf47d2965b407831c12ddc')
+  File "keystone_common.py", line 115, in find_oposite_tenant_id
+    return {'from_id': tenant_id, 'name': to_tenant.name, 'to_id': to_tenant.id}
+AttributeError: 'list' object has no attribute 'name'
+2016-02-21 23:38:24,789 ERROR: The plugin keystone_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "keystone_common.py", line 147, in <module>
+    main()
+  File "keystone_common.py", line 140, in main
+    print find_oposite_tenant_id('3870d4a7096f444aa63a91e54bef5f88')
+  File "keystone_common.py", line 112, in find_oposite_tenant_id
+    return {'from_id': from_tenant[0].id, 'name': from_tenant[0].name, 'to_id': to_tenant.id}
+AttributeError: 'list' object has no attribute 'id'
+2016-02-22 00:01:25,668 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 99, in <module>
+    main()
+  File "neutron_common.py", line 94, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 84, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 70, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Attribute 'status' not allowed in POST
+2016-02-22 00:01:53,596 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 99, in <module>
+    main()
+  File "neutron_common.py", line 94, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 84, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 70, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Attribute 'status' not allowed in POST
+2016-02-22 00:02:33,640 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 99, in <module>
+    main()
+  File "neutron_common.py", line 94, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 84, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 70, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:04:57,938 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 104, in <module>
+    main()
+  File "neutron_common.py", line 99, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 89, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 75, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:05:09,401 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 104, in <module>
+    main()
+  File "neutron_common.py", line 99, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 89, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 75, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:09:53,078 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 105, in <module>
+    main()
+  File "neutron_common.py", line 100, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 90, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 74, in network_create_net
+    new_network['network']['provider:physical_network': physical]
+TypeError: unhashable type
+2016-02-22 00:10:00,400 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 102, in <module>
+    main()
+  File "neutron_common.py", line 97, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 87, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 73, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+Conflict: Unable to create the network. The tunnel ID 2 is in use.
+2016-02-22 00:10:54,582 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 105, in <module>
+    main()
+  File "neutron_common.py", line 100, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 90, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 74, in network_create_net
+    new_network['network']['provider:physical_network': physical]
+TypeError: unhashable type
+2016-02-22 00:13:13,368 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 105, in <module>
+    main()
+  File "neutron_common.py", line 100, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 90, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 76, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:13:30,749 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 105, in <module>
+    main()
+  File "neutron_common.py", line 100, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 90, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 76, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:13:57,879 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 105, in <module>
+    main()
+  File "neutron_common.py", line 100, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 90, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 76, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:14:51,035 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 106, in <module>
+    main()
+  File "neutron_common.py", line 101, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 91, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 77, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:15:22,843 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 105, in <module>
+    main()
+  File "neutron_common.py", line 100, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 90, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 76, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:15:43,395 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 107, in <module>
+    main()
+  File "neutron_common.py", line 102, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 92, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 78, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:15:55,402 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 107, in <module>
+    main()
+  File "neutron_common.py", line 102, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 92, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 78, in network_create_net
+    new_net = neutron.create_network(body=new_network)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 552, in create_network
+    return self.post(self.networks_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for provider:physical_network. Reason: 'None' is not a valid string.
+2016-02-22 00:21:41,523 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 104, in <module>
+    main()
+  File "neutron_common.py", line 99, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 89, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 59, in network_create_net
+    tenant_info = find_opposite_tenant_id(network['tenant_id'])
+NameError: global name 'find_opposite_tenant_id' is not defined
