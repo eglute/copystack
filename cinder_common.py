@@ -35,7 +35,7 @@ def get_cinder(destination):
     IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=IDENTITY_IP)
 
     auth_ref = get_auth_ref(destination)
-    keystone = get_keystone_client(destination, auth_ref, endpoint=IDENTITY_ENDPOINT,)
+    keystone = get_keystone_client(destination, auth_ref, endpoint=IDENTITY_ENDPOINT)
     auth_token = keystone.auth_token
     VOLUME_ENDPOINT = ('http://{ip}:8776/v1/{tenant}'.format
                        (ip=IDENTITY_IP, tenant=keystone.tenant_id))
