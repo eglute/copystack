@@ -1374,3 +1374,202 @@ Traceback (most recent call last):
   File "neutron_common.py", line 59, in network_create_net
     tenant_info = find_opposite_tenant_id(network['tenant_id'])
 NameError: global name 'find_opposite_tenant_id' is not defined
+2016-02-22 14:33:11,654 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 134, in <module>
+    main()
+  File "neutron_common.py", line 127, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 99, in compare_and_create_networks
+    create_subnet(from_network[0]['network_id'], new_network[0]['network_id'], new_network[0]['tenant_id'])
+KeyError: 'network_id'
+2016-02-22 21:15:36,496 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 135, in <module>
+    main()
+  File "neutron_common.py", line 128, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 96, in compare_and_create_networks
+    new_network = network_create_net('to', from_network[0])
+  File "neutron_common.py", line 66, in network_create_net
+    tenant_info = keystone_common.find_opposite_tenant_id(network['tenant_id'])
+  File "/Users/egle/src/rpc/copystack/keystone_common.py", line 110, in find_opposite_tenant_id
+    to_tenants = get_to_tenant_list()
+  File "/Users/egle/src/rpc/copystack/keystone_common.py", line 86, in get_to_tenant_list
+    tenants = keystone.tenants.list()
+AttributeError: 'NoneType' object has no attribute 'tenants'
+2016-02-22 21:16:35,931 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 135, in <module>
+    main()
+  File "neutron_common.py", line 128, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 99, in compare_and_create_networks
+    create_subnet(from_network[0]['network_id'], new_network[0]['network_id'], new_network[0]['tenant_id'])
+KeyError: 'network_id'
+2016-02-22 21:17:49,168 ERROR: The plugin /Users/egle/src/rpc/copystack/neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 135, in <module>
+    main()
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 128, in main
+    compare_and_create_networks()
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 99, in compare_and_create_networks
+    create_subnet(from_network[0]['network_id'], new_network[0]['network_id'], new_network[0]['tenant_id'])
+KeyError: 'network_id'
+2016-02-22 21:18:32,256 ERROR: The plugin /Users/egle/src/rpc/copystack/neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 135, in <module>
+    main()
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 128, in main
+    compare_and_create_networks()
+  File "/Users/egle/src/rpc/copystack/neutron_common.py", line 99, in compare_and_create_networks
+    create_subnet(from_network[0]['network_id'], new_network[0]['network_id'], new_network[0]['tenant_id'])
+KeyError: 'network_id'
+2016-02-22 21:19:28,725 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 135, in <module>
+    main()
+  File "neutron_common.py", line 128, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 99, in compare_and_create_networks
+    create_subnet(from_network[0]['network_id'], new_network['network_id'], new_network[0]['tenant_id'])
+KeyError: 'network_id'
+2016-02-22 21:21:03,302 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 135, in <module>
+    main()
+  File "neutron_common.py", line 128, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 99, in compare_and_create_networks
+    create_subnet(from_network[0]['id'], new_network['id'], new_network[0]['id'])
+KeyError: 'id'
+2016-02-22 21:23:50,231 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 135, in <module>
+    main()
+  File "neutron_common.py", line 128, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 99, in compare_and_create_networks
+    create_subnet(from_network[0]['id'], new_network['id'], new_network['tenant_id'])
+KeyError: 'id'
+2016-02-22 21:26:07,036 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 137, in <module>
+    main()
+  File "neutron_common.py", line 130, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 100, in compare_and_create_networks
+    print new_network['id']
+KeyError: 'id'
+2016-02-22 21:26:43,371 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 137, in <module>
+    main()
+  File "neutron_common.py", line 130, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 100, in compare_and_create_networks
+    print new_network.id
+AttributeError: 'dict' object has no attribute 'id'
+2016-02-22 21:29:47,340 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 137, in <module>
+    main()
+  File "neutron_common.py", line 130, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 101, in compare_and_create_networks
+    create_subnet(from_network[0]['id'], new_network['network']['id'], new_network['network']['tenant_id'])
+  File "neutron_common.py", line 116, in create_subnet
+    'gateway_ip': from_subnet['gateway']}]}
+KeyError: 'gateway'
+2016-02-22 21:30:54,081 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 137, in <module>
+    main()
+  File "neutron_common.py", line 130, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 101, in compare_and_create_networks
+    create_subnet(from_network[0]['id'], new_network['network']['id'], new_network['network']['tenant_id'])
+  File "neutron_common.py", line 118, in create_subnet
+    subnet = neutron.create_subnet(body=to_subnet)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 578, in create_subnet
+    return self.post(self.subnets_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+BadRequest: Invalid input for operation: Gateway is not valid on subnet.
+2016-02-22 21:35:48,386 ERROR: The plugin neutron_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "neutron_common.py", line 137, in <module>
+    main()
+  File "neutron_common.py", line 130, in main
+    compare_and_create_networks()
+  File "neutron_common.py", line 101, in compare_and_create_networks
+    create_subnet(from_network[0]['id'], new_network['network']['id'], new_network['network']['tenant_id'])
+  File "neutron_common.py", line 118, in create_subnet
+    subnet = neutron.create_subnet(body=to_subnet)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 100, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 578, in create_subnet
+    return self.post(self.subnets_path, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 271, in post
+    headers=headers, params=params)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 206, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 182, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 69, in exception_handler_v20
+    status_code=status_code)
+Conflict: Gateway ip 11.11.11.1 conflicts with allocation pool 11.11.11.1-11.11.11.254
+2016-02-24 00:32:14,877 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 46, in <module>
+    main()
+  File "cinder_common.py", line 42, in main
+    check()
+NameError: global name 'check' is not defined
+2016-02-24 00:38:38,997 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 86, in <module>
+    main()
+  File "cinder_common.py", line 82, in main
+    get_cinder('to')
+  File "cinder_common.py", line 36, in get_cinder
+    auth_ref = get_auth_ref()
+TypeError: get_auth_ref() takes exactly 1 argument (0 given)

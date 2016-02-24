@@ -43,6 +43,13 @@ def get_network_list(destination):
     return networks
 
 
+def get_subnets(destination, network_id):
+    neutron = get_neutron(destination)
+    subnets = neutron.list_subnets(network_id=network_id)['subnets']
+    if len(subnets) > 0:
+        return subnets
+    return None
+
 # neutron security-group-list
 def get_neutron_security_group_list(destination):
     neutron = get_neutron(destination)
@@ -89,6 +96,28 @@ def compare_and_create_networks():
             new_network = network_create_net('to', from_network[0])
             print "New network created: "
             print new_network
+            create_subnets(from_network[0]['id'], new_network['network']['id'], new_network['network']['tenant_id'])
+
+
+def create_subnets(from_network_id, to_network_id, to_tenant_id):
+    from_subnets = get_subnets('from', from_network_id)
+    if from_subnets is not None:
+        neutron = get_neutron('to')
+        for from_subnet in from_subnets:
+            to_subnet = {'subnets': [{'cidr': from_subnet['cidr'],
+                                       'name': from_subnet['name'],
+                                        'enable_dhcp': from_subnet['enable_dhcp'],
+                                        'tenant_id': to_tenant_id,
+                                       # 'allocation_pools': from_subnet['allocation_pools'], #todo: check test this, should work
+                                        'host_routes': from_subnet['host_routes'],
+                                       'ip_version': from_subnet['ip_version'],
+                                       'network_id': to_network_id,
+                                       'dns_nameservers': from_subnet['dns_nameservers']}]}
+                                       #'gateway_ip': from_subnet['gateway_ip']}]} #todo: test this with valid values, should work.
+
+            subnet = neutron.create_subnet(body=to_subnet)
+            print 'created subnet: '
+            print subnet
 
 
 def main():
@@ -97,6 +126,8 @@ def main():
     # get_neutron_security_group_list(args)
     # network_create_net(args)
     compare_and_create_networks()
+
+    #print get_subnet('from', '8cb27f87-406f-4fcd-99c1-98da2238fd90')
 
 if __name__ == "__main__":
     with print_output():

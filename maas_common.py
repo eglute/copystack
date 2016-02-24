@@ -216,7 +216,7 @@ else:
                                                     auth_ref['serviceCatalog'],
                                                     'adminURL')
 
-        print endpoint
+        #print endpoint
         keystone = k_client.Client(auth_ref=auth_ref, endpoint=endpoint)
 
         try:
