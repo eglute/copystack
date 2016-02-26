@@ -107,8 +107,8 @@ def create_security_rules(destination, from_group, to_group):
         print cidras
 
         rule = nova.security_group_rules.create(to_group.id, ip_protocol = rule['ip_protocol'],
-                                                from_port = rule['from_port'], to_port=rule['to_port'], cidr=cidras,
-                                                 group_id = to_group.id)
+                                                from_port = rule['from_port'], to_port=rule['to_port'], cidr=cidras)#,
+                                                # group_id = to_group.id)
         print rule
 
 

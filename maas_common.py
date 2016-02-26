@@ -97,6 +97,7 @@ else:
             # We don't want to be pulling massive lists of images every time we
             # run
             image = glance.images.list(limit=1)
+
             # Exceptions are only thrown when we iterate over image
             [i.id for i in image]
         except g_exc.HTTPUnauthorized:
