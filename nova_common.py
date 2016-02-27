@@ -90,7 +90,7 @@ def create_security_group(destination, sec_group):
     print sec.rules
     return sec
 
-
+#todo: fix this
 def create_security_rules(destination, from_group, to_group):
     nova = get_nova(destination)
 
@@ -112,11 +112,86 @@ def create_security_rules(destination, from_group, to_group):
         print rule
 
 
+def get_vm_list(destination):
+    nova = get_nova(destination)
+    servers = nova.servers.list()
+    for s in servers:
+        print s
+    return servers
+
+
+# Will return flavors only for user logged in, even if running as admin.
+def get_flavor_list(destination):
+    nova = get_nova(destination)
+    flavors = nova.flavors.list(detailed=True)
+    print flavors
+    return flavors
+
+
+def compare_and_create_flavors():
+    from_flavors = get_flavor_list('from')
+    to_flavors = get_flavor_list('to')
+    from_names = map(lambda from_flavors: from_flavors.name, from_flavors)
+    to_names = map(lambda to_flavors: to_flavors.name, to_flavors)
+    for name in from_names:
+        if name not in to_names:
+            from_flavor = filter(lambda from_flavors: from_flavors.name == name, from_flavors)
+            print from_flavor
+            new_flavor = create_flavor('to', from_flavor[0])
+            new_flavor.set_keys(from_flavor[0].get_keys())
+            print "New flavor created: "
+            print new_flavor
+
+
+def create_flavor(destination, flavor):
+    nova = get_nova(destination)
+    new_flavor = nova.flavors.create(name=flavor.name,
+                                     ram=flavor.ram,
+                                     vcpus=flavor.vcpus,
+                                     disk=flavor.disk,
+                                     flavorid=flavor.id,
+                                     ephemeral=flavor.ephemeral,
+                                     swap=flavor.swap,
+                                     rxtx_factor=flavor.rxtx_factor,
+                                     is_public=flavor.is_public)
+    return new_flavor
+
+
+def get_quotas(destination, tenant):
+    nova = get_nova(destination)
+    quotas = nova.quotas.defaults(tenant)
+    #print quotas
+    return quotas
+
+
+def compare_and_update_quotas():
+    from_tenants = keystone_common.get_from_tenant_list()
+    for from_tenant in from_tenants:
+        from_quotas = get_quotas('from', from_tenant)
+        to_tenant = keystone_common.find_opposite_tenant_id(from_tenant.id)
+        to_quotas = get_quotas('to', to_tenant)
+       # print to_quotas
+        update_quotas(from_tenant, from_quotas, to_tenant, to_quotas)
+
+
+def update_quotas(from_tenant, from_quotas, to_tenant, to_quotas):
+    if from_quotas.instances != to_quotas.instances:
+        print from_quotas.instances
+        to_quotas.manager.update(to_tenant, instances=from_quotas.instances)
+        #print to_quotas
+    return
+
 
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
-    compare_and_create_security_groups()
+    #compare_and_create_security_groups()
+    #get_vm_list('from')
+    #get_flavor_list('to')
+    compare_and_create_flavors()
+    #get_quotas('from')
+    #compare_and_update_quotas()
+
 
 if __name__ == "__main__":
         main()

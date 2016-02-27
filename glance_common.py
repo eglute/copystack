@@ -19,8 +19,8 @@ import collections
 import sys
 import os
 import six.moves.urllib.parse as urlparse
-
 from ipaddr import IPv4Address
+import keystone_common
 from maas_common import (status_ok, status_err, get_keystone_client, get_glance_client, get_auth_ref, print_output)
 from requests import Session
 from requests import exceptions as exc
@@ -132,6 +132,7 @@ def image_create(destination, image, url):
     glance = get_glance(destination)
     props = image.properties
 
+    tenant = keystone_common.find_opposite_tenant_id(image.owner)
     #insert original image id into the properties:
     props.update({'original_image_id': image.id})
     with open(url, 'r') as fimage:
@@ -139,7 +140,7 @@ def image_create(destination, image, url):
                                    name=image.name,
                                    container_format=image.container_format,
                                    disk_format=image.disk_format,
-                                   #owner=image.owner, #todo: fix owner here?
+                                   owner=tenant,
                                    size=image.size,
                                    min_ram=image.min_ram,
                                    min_disk=image.min_disk,
