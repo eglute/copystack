@@ -47,6 +47,7 @@ def get_nova(destination):
     auth_ref = get_auth_ref(destination)
     auth_token = auth_ref['token']['id']
     tenant_id = auth_ref['token']['tenant']['id']
+
     COMPUTE_ENDPOINT = 'http://{ip}:8774/v2/{tenant_id}' \
                     .format(ip=IDENTITY_IP, tenant_id=tenant_id)
 
@@ -120,10 +121,14 @@ def get_vm_list(destination):
     return servers
 
 
-# Will return flavors only for user logged in, even if running as admin.
+# nova flavor-list --all for checking all flavors for admin, private and public
 def get_flavor_list(destination):
     nova = get_nova(destination)
-    flavors = nova.flavors.list(detailed=True)
+
+    # There is no api flag for "--all", so need to make separate calls...
+    flavors_public = nova.flavors.list(detailed=True, is_public=False)
+    flavors_private = nova.flavors.list(detailed=True, is_public=True)
+    flavors = flavors_private + flavors_public
     print flavors
     return flavors
 
@@ -167,17 +172,29 @@ def get_quotas(destination, tenant):
 def compare_and_update_quotas():
     from_tenants = keystone_common.get_from_tenant_list()
     for from_tenant in from_tenants:
-        from_quotas = get_quotas('from', from_tenant)
+        print "from tenant id "
+        print from_tenant.id
+        from_quotas = get_quotas('from', from_tenant.id)
         to_tenant = keystone_common.find_opposite_tenant_id(from_tenant.id)
-        to_quotas = get_quotas('to', to_tenant)
+        print "to tenant_id"
+        print to_tenant['to_id']
+        to_quotas = get_quotas('to', to_tenant['to_id'])
        # print to_quotas
         update_quotas(from_tenant, from_quotas, to_tenant, to_quotas)
 
 
+#there seems to be at least one bug related to quotas.
+#i think this was fixed in for some things, but not for update through API: https://review.openstack.org/#/c/144866/
 def update_quotas(from_tenant, from_quotas, to_tenant, to_quotas):
+    print from_quotas
+    print to_quotas
+
     if from_quotas.instances != to_quotas.instances:
         print from_quotas.instances
-        to_quotas.manager.update(to_tenant, instances=from_quotas.instances)
+        to_quotas.update(tenant_id=to_tenant['to_id'], instances=from_quotas.instances)
+
+
+
         #print to_quotas
     return
 
@@ -187,10 +204,11 @@ def main():
     #create_security_group('to', 'foo')
     #compare_and_create_security_groups()
     #get_vm_list('from')
-    #get_flavor_list('to')
-    compare_and_create_flavors()
+    #get_flavor_list('from')
+    #compare_and_create_flavors()
     #get_quotas('from')
-    #compare_and_update_quotas()
+    compare_and_update_quotas()
+
 
 
 if __name__ == "__main__":
