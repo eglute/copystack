@@ -37,11 +37,11 @@ try:
     from cinderclient import exceptions as c_exc
 
 except ImportError:
-    def get_cinder_client(destination, *args, **kwargs):
+    def get_cinder_client(destination, identity_ip, *args, **kwargs):
         status_err('Cannot import cinderclient')
 else:
 
-    def get_cinder_client(destination, previous_tries=0):
+    def get_cinder_client(destination, identity_ip, previous_tries=0):
         if previous_tries > 3:
             return None
         # right now, cinderclient does not accept a previously derived token
@@ -50,12 +50,21 @@ else:
         # NOTE: (mancdaz) update when https://review.openstack.org/#/c/74602/
         # lands
 
+        # this seems way more complicated than it should be.
         auth_details = get_auth_details(destination)
-        cinder = c_client('2',
-                          auth_details['OS_USERNAME'],
-                          auth_details['OS_PASSWORD'],
-                          auth_details['OS_TENANT_NAME'],
-                          auth_details['OS_AUTH_URL'])
+        IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=identity_ip)
+
+        auth_ref = get_auth_ref(destination)
+        keystone = get_keystone_client(destination, auth_ref, endpoint=IDENTITY_ENDPOINT)
+        auth_token = keystone.auth_token
+        VOLUME_ENDPOINT = ('http://{ip}:8776/v1/{tenant}'.format
+                       (ip=identity_ip, tenant=keystone.project_id))
+
+        cinder = c_client('1', auth_details['OS_USERNAME'], auth_token,
+                                 project_id=auth_details['OS_TENANT_NAME'],
+                                 auth_url=IDENTITY_ENDPOINT)
+        cinder.client.auth_token = auth_token
+        cinder.client.management_url = VOLUME_ENDPOINT
 
         try:
             # Do something just to ensure we actually have auth'd ok
@@ -63,7 +72,7 @@ else:
             # Exceptions are only thrown when we iterate over volumes
             [i.id for i in volumes]
         except (c_exc.Unauthorized, c_exc.AuthorizationFailure) as e:
-            cinder = get_cinder_client(destination, previous_tries + 1)
+            cinder = get_cinder_client(destination, identity_ip, previous_tries + 1)
         except Exception as e:
             status_err(str(e))
 

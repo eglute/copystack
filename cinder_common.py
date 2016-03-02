@@ -18,6 +18,8 @@ import argparse
 import keystone_common
 import requests
 import collections
+from cinderclient import client as cinderclient
+
 
 from requests import exceptions as exc
 
@@ -25,7 +27,7 @@ from maas_common import (get_keystone_client, get_auth_ref, get_cinder_client, s
                          metric_bool, print_output)
 
 
-def get_cinder(destination):
+def get_cinder1(destination):
         #TODO: fix this part...
     if destination == 'to':
         IDENTITY_IP = '172.16.56.129'
@@ -72,15 +74,60 @@ def get_cinder(destination):
         snap_status_count = collections.Counter(snap_statuses)
         total_snaps = len(snap.json()['snapshots'])
 
-    status_ok()
-    metric_bool('cinder_api_local_status', is_up)
     # only want to send other metrics if api is up
     if is_up:
         print "yay"
 
 
+#working version.... yippy. need to move it out to the other class
+def get_cinder_old(destination):
+
+    #TODO: fix this part...
+    if destination == 'to':
+        IDENTITY_IP = '172.16.56.129'
+    else:
+        IDENTITY_IP = '172.16.56.128'
+    IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=IDENTITY_IP)
+
+    auth_ref = get_auth_ref(destination)
+    keystone = get_keystone_client(destination, auth_ref, endpoint=IDENTITY_ENDPOINT)
+    auth_token = keystone.auth_token
+    VOLUME_ENDPOINT = ('http://{ip}:8776/v1/{tenant}'.format
+                       (ip=IDENTITY_IP, tenant=keystone.tenant_id))
+
+
+    user = 'myadmin'
+    pr_id = 'MyProject'
+    client = cinderclient.Client('1', user, auth_token,
+                                 project_id=pr_id,
+                                 auth_url=IDENTITY_ENDPOINT)
+    client.client.auth_token = auth_token
+    client.client.management_url = VOLUME_ENDPOINT
+
+    l = client.volumes.list()
+    print l
+    return client
+
+
+def get_cinder(destination):
+        #TODO: fix this part...
+    if destination == 'to':
+        IDENTITY_IP = '172.16.56.129'
+    else:
+        IDENTITY_IP = '172.16.56.128'
+
+    try:
+        cinder = get_cinder_client(destination, identity_ip=IDENTITY_IP)
+        l = cinder.volumes.list()
+        print l
+    except Exception as e:
+        status_err(str(e))
+    return cinder
+
+
 def main():
     get_cinder('from')
+    get_cinder('to')
 if __name__ == "__main__":
     with print_output():
 

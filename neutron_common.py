@@ -43,6 +43,12 @@ def get_network_list(destination):
     return networks
 
 
+def get_network_by_name(destination, name):
+    networks = get_network_list(destination)
+    from_network = filter(lambda networks: networks['name'] == name, networks)
+    return from_network[0]
+
+
 def get_subnets(destination, network_id):
     neutron = get_neutron(destination)
     subnets = neutron.list_subnets(network_id=network_id)['subnets']

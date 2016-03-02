@@ -16,6 +16,8 @@
 
 import argparse
 import keystone_common
+import glance_common
+import neutron_common
 from maas_common import (get_auth_ref, get_nova_client, status_err, status_ok,
                          metric_bool, print_output)
 
@@ -115,10 +117,66 @@ def create_security_rules(destination, from_group, to_group):
 
 def get_vm_list(destination):
     nova = get_nova(destination)
+    #network = neutron_common.get_network_by_name('to', 'foobar1')
+    #print network[0]
     servers = nova.servers.list()
     for s in servers:
-        print s
+        server = nova.servers.get(s.id)
+        #print server
+        #print s
+        #print s.networks
+        #print s.addresses
+        #for key in s.addresses:
+        #   print key
     return servers
+
+
+def compare_and_create_vms():
+    from_vms = get_vm_list('from')
+    to_vms = get_vm_list('to')
+    from_names = map(lambda from_vms: from_vms.name, from_vms)
+    to_names = map(lambda to_vms: to_vms.name, to_vms)
+    for name in from_names:
+        if name not in to_names:
+            from_vm_list = filter(lambda from_vms: from_vms.name == name, from_vms)
+            for from_vm in from_vm_list:
+                #print from_vm
+                create_vm(from_vm)
+            #new_flavor = create_flavor('to', from_flavor[0])
+            #new_flavor.set_keys(from_flavor[0].get_keys())
+            #print "New flavor created: "
+            #print new_flavor
+
+
+def create_vm(from_vm):
+    nova = get_nova('to')
+
+    flavor = get_flavor_by_id('to', from_vm.flavor['id'])
+    #print flavor
+    image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
+    networks = from_vm.networks
+
+    nics = []
+    for network, ips in networks.iteritems():
+        net = neutron_common.get_network_by_name('to', network)
+        #print ip[0]
+        for ip in ips:
+            nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+            nics.append(nic)
+
+    #print image
+    print nics
+    #nics = [{'net-id': network['id'], 'v4-fixed-ip': '11.11.11.8'}]
+    server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
+                                 meta=from_vm.metadata)
+    print server
+    return server
+
+
+def get_flavor_by_id(destination, flavor_id):
+    nova = get_nova(destination)
+    fl = nova.flavors.get(flavor=flavor_id)
+    return fl
 
 
 # nova flavor-list --all for checking all flavors for admin, private and public
@@ -203,13 +261,13 @@ def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
     #compare_and_create_security_groups()
-    #get_vm_list('from')
+    get_vm_list('from')
     #get_flavor_list('from')
     #compare_and_create_flavors()
     #get_quotas('from')
-    compare_and_update_quotas()
-
-
+    #compare_and_update_quotas()
+    #create_vm()
+    #compare_and_create_vms()
 
 if __name__ == "__main__":
         main()

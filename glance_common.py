@@ -96,14 +96,14 @@ def get_images(destination):
 
 
 # Find image id by pre-migration image id
-def get_image_id_by_original_id(destination, original_id):
+def get_image_by_original_id(destination, original_id):
     images = get_images(destination)
     for img in images:
         if img.properties:
             if 'original_image_id' in img.properties:
                 original_image_id = img.properties['original_image_id']
                 if original_image_id == original_id:
-                    return img.id
+                    return img
     return None
 
 
@@ -180,8 +180,8 @@ def main():
     #image_create()
     #image_download()
     #create_images("./downloads/")
-    get_image_id_by_original_id('to', '64737c30-b1fe-4a93-a14d-259395f61364')
-
+    #get_image_id_by_original_id('to', '64737c30-b1fe-4a93-a14d-259395f61364')
+    print "foo"
 
 if __name__ == "__main__":
         main()
