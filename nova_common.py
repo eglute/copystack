@@ -155,13 +155,15 @@ def compare_and_create_vms():
             from_vm_list = filter(lambda from_vms: from_vms.name == name, from_vms)
             for from_vm in from_vm_list:
                 #print from_vm
+
                 create_vm(from_vm)
             #new_flavor = create_flavor('to', from_flavor[0])
             #new_flavor.set_keys(from_flavor[0].get_keys())
             #print "New flavor created: "
             #print new_flavor
 
-
+# todo: add try catch for when multiple security groups are present.
+# client lets add groups by name only...
 def create_vm(from_vm):
     nova = get_nova('to')
 
@@ -176,8 +178,15 @@ def create_vm(from_vm):
         for ip in ips:
             nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
             nics.append(nic)
+
+    groups = from_vm.security_groups
+    #out of luck for duplicate group names...
+    group_names_map = map(lambda groups: groups['name'], groups)
+    group_names = set(group_names_map)
+    print group_names
+
     server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-                                 meta=from_vm.metadata)
+                                 meta=from_vm.metadata, security_groups=group_names)
     print server
     return server
 
@@ -328,8 +337,8 @@ def main():
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
-    #compare_and_create_vms()
-    compare_and_report_quotas()
+    compare_and_create_vms()
+    #compare_and_report_quotas()
 
 if __name__ == "__main__":
         main()
