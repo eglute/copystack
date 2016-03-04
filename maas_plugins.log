@@ -1573,3 +1573,947 @@ Traceback (most recent call last):
   File "cinder_common.py", line 36, in get_cinder
     auth_ref = get_auth_ref()
 TypeError: get_auth_ref() takes exactly 1 argument (0 given)
+2016-02-28 17:35:13,754 WARNING: Your request was processed by a Nova API which does not support microversions (X-OpenStack-Nova-API-Version header is missing from response). Warning: Response may be incorrect.
+2016-02-28 17:35:13,791 WARNING: Your request was processed by a Nova API which does not support microversions (X-OpenStack-Nova-API-Version header is missing from response). Warning: Response may be incorrect.
+2016-03-01 23:16:52,960 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 115, in <module>
+    main()
+  File "cinder_common.py", line 111, in main
+    get_cinder('from')
+TypeError: get_cinder() takes no arguments (1 given)
+2016-03-01 23:17:03,112 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 115, in <module>
+    main()
+  File "cinder_common.py", line 111, in main
+    get_cinder()
+  File "cinder_common.py", line 105, in get_cinder
+    nt = client.Client('myadmin', 'mypassword', 'MyProject', 'http://172.16.56.128:5000/v2.0/', service_type="volume")
+NameError: global name 'client' is not defined
+2016-03-01 23:17:05,849 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 115, in <module>
+    main()
+  File "cinder_common.py", line 111, in main
+    get_cinder()
+  File "cinder_common.py", line 105, in get_cinder
+    nt = client.Client('myadmin', 'mypassword', 'MyProject', 'http://172.16.56.128:5000/v2.0/', service_type="volume")
+NameError: global name 'client' is not defined
+2016-03-01 23:17:44,250 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 116, in <module>
+    main()
+  File "cinder_common.py", line 112, in main
+    get_cinder()
+  File "cinder_common.py", line 106, in get_cinder
+    nt = cinderclient.Client('myadmin', 'mypassword', 'MyProject', 'http://172.16.56.128:5000/v2.0/', service_type="volume")
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 574, in Client
+    client_class = get_client_class(version)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 568, in get_client_class
+    raise exceptions.UnsupportedVersion(msg)
+UnsupportedVersion: Invalid client version 'myadmin'. must be one of: 1, 2
+2016-03-01 23:28:41,278 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 117, in <module>
+    main()
+  File "cinder_common.py", line 113, in main
+    get_cinder()
+  File "cinder_common.py", line 108, in get_cinder
+    l = nt.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 294, in list
+    return self._list(url, resource_type, limit=limit)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 78, in _list
+    data = body[response_key]
+KeyError: 'volumes'
+2016-03-01 23:32:33,301 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 117, in <module>
+    main()
+  File "cinder_common.py", line 113, in main
+    get_cinder()
+  File "cinder_common.py", line 108, in get_cinder
+    l = nt.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 294, in list
+    return self._list(url, resource_type, limit=limit)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 73, in _list
+    resp, body = self.api.client.get(url)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 312, in get
+    return self._cs_request(url, 'GET', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 269, in _cs_request
+    self.authenticate()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 422, in authenticate
+    auth_url = self._v2_auth(auth_url)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 492, in _v2_auth
+    self._authenticate(url, body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 505, in _authenticate
+    return self._extract_service_catalog(url, resp, body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 358, in _extract_service_catalog
+    service_name=self.service_name)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/keystoneclient/utils.py", line 337, in inner
+    return func(*args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/keystoneclient/service_catalog.py", line 295, in url_for
+    raise exceptions.EndpointNotFound(msg)
+EndpointNotFound: publicURL endpoint for volumev2 service not found
+2016-03-01 23:32:48,202 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 117, in <module>
+    main()
+  File "cinder_common.py", line 113, in main
+    get_cinder()
+  File "cinder_common.py", line 108, in get_cinder
+    l = nt.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v1/volumes.py", line 229, in list
+    "volumes")
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 78, in _list
+    data = body[response_key]
+KeyError: 'volumes'
+2016-03-01 23:33:02,841 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 117, in <module>
+    main()
+  File "cinder_common.py", line 113, in main
+    get_cinder()
+  File "cinder_common.py", line 108, in get_cinder
+    l = nt.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 294, in list
+    return self._list(url, resource_type, limit=limit)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 78, in _list
+    data = body[response_key]
+KeyError: 'volumes'
+2016-03-01 23:33:26,955 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 118, in <module>
+    main()
+  File "cinder_common.py", line 114, in main
+    get_cinder()
+  File "cinder_common.py", line 109, in get_cinder
+    l = nt.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 294, in list
+    return self._list(url, resource_type, limit=limit)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 78, in _list
+    data = body[response_key]
+KeyError: 'volumes'
+2016-03-01 23:48:07,202 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 122, in <module>
+    main()
+  File "cinder_common.py", line 118, in main
+    get_cinder()
+  File "cinder_common.py", line 111, in get_cinder
+    bypass_url='http://172.16.56.128:8776')
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 575, in Client
+    return client_class(*args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/client.py", line 115, in __init__
+    **kwargs)
+TypeError: _construct_http_client() got multiple values for keyword argument 'password'
+2016-03-01 23:48:59,822 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 122, in <module>
+    main()
+  File "cinder_common.py", line 118, in main
+    get_cinder()
+  File "cinder_common.py", line 111, in get_cinder
+    bypass_url='http://172.16.56.128:8776')
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 575, in Client
+    return client_class(*args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/client.py", line 115, in __init__
+    **kwargs)
+TypeError: _construct_http_client() got multiple values for keyword argument 'password'
+2016-03-01 23:49:17,031 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 122, in <module>
+    main()
+  File "cinder_common.py", line 118, in main
+    get_cinder()
+  File "cinder_common.py", line 113, in get_cinder
+    l = nt.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 294, in list
+    return self._list(url, resource_type, limit=limit)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 73, in _list
+    resp, body = self.api.client.get(url)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 312, in get
+    return self._cs_request(url, 'GET', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 269, in _cs_request
+    self.authenticate()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 422, in authenticate
+    auth_url = self._v2_auth(auth_url)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 492, in _v2_auth
+    self._authenticate(url, body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 503, in _authenticate
+    allow_redirects=True)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+BadRequest: object of type 'NoneType' has no len() (HTTP 400)
+2016-03-01 23:52:46,918 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 122, in <module>
+    main()
+  File "cinder_common.py", line 118, in main
+    get_cinder()
+  File "cinder_common.py", line 111, in get_cinder
+    bypass_url='http://172.16.56.128:8776')
+TypeError: Client() takes at least 1 argument (0 given)
+2016-03-01 23:53:03,586 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 122, in <module>
+    main()
+  File "cinder_common.py", line 118, in main
+    get_cinder()
+  File "cinder_common.py", line 111, in get_cinder
+    bypass_url='http://172.16.56.128:8776')
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 575, in Client
+    return client_class(*args, **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/client.py", line 115, in __init__
+    **kwargs)
+TypeError: _construct_http_client() got multiple values for keyword argument 'password'
+2016-03-01 23:54:11,884 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 118, in <module>
+    main()
+  File "cinder_common.py", line 114, in main
+    get_cinder()
+  File "cinder_common.py", line 109, in get_cinder
+    l = nt.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 294, in list
+    return self._list(url, resource_type, limit=limit)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 73, in _list
+    resp, body = self.api.client.get(url)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 312, in get
+    return self._cs_request(url, 'GET', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+NotFound: Not Found (HTTP 404)
+2016-03-01 23:56:01,268 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 119, in <module>
+    main()
+  File "cinder_common.py", line 115, in main
+    get_cinder()
+  File "cinder_common.py", line 110, in get_cinder
+    l = nt.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 294, in list
+    return self._list(url, resource_type, limit=limit)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 73, in _list
+    resp, body = self.api.client.get(url)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 312, in get
+    return self._cs_request(url, 'GET', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 269, in _cs_request
+    self.authenticate()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 422, in authenticate
+    auth_url = self._v2_auth(auth_url)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 492, in _v2_auth
+    self._authenticate(url, body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 503, in _authenticate
+    allow_redirects=True)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+Unauthorized: The request you have made requires authentication. (HTTP 401)
+2016-03-01 23:56:10,535 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 119, in <module>
+    main()
+  File "cinder_common.py", line 115, in main
+    get_cinder()
+  File "cinder_common.py", line 110, in get_cinder
+    l = nt.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 294, in list
+    return self._list(url, resource_type, limit=limit)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 73, in _list
+    resp, body = self.api.client.get(url)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 312, in get
+    return self._cs_request(url, 'GET', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 269, in _cs_request
+    self.authenticate()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 422, in authenticate
+    auth_url = self._v2_auth(auth_url)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 492, in _v2_auth
+    self._authenticate(url, body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 503, in _authenticate
+    allow_redirects=True)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+Unauthorized: The request you have made requires authentication. (HTTP 401)
+2016-03-01 23:57:47,739 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 123, in <module>
+    main()
+  File "cinder_common.py", line 119, in main
+    get_cinder()
+  File "cinder_common.py", line 111, in get_cinder
+    client.client.auth_token = context.auth_token
+NameError: global name 'context' is not defined
+2016-03-01 23:57:56,917 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 123, in <module>
+    main()
+  File "cinder_common.py", line 119, in main
+    get_cinder()
+  File "cinder_common.py", line 111, in get_cinder
+    client.client.auth_token = auth_token
+NameError: global name 'auth_token' is not defined
+2016-03-01 23:58:06,790 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 123, in <module>
+    main()
+  File "cinder_common.py", line 119, in main
+    get_cinder()
+  File "cinder_common.py", line 114, in get_cinder
+    l = client.volumes.list()
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 294, in list
+    return self._list(url, resource_type, limit=limit)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 78, in _list
+    data = body[response_key]
+KeyError: 'volumes'
+2016-03-02 00:05:17,815 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 147, in <module>
+    main()
+  File "cinder_common.py", line 143, in main
+    get_cinder('from')
+  File "cinder_common.py", line 135, in get_cinder
+    client = CinderClient.Client(user, auth_token,
+NameError: global name 'CinderClient' is not defined
+2016-03-02 00:05:49,109 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 481, in print_output
+    yield
+  File "cinder_common.py", line 147, in <module>
+    main()
+  File "cinder_common.py", line 143, in main
+    get_cinder('from')
+  File "cinder_common.py", line 137, in get_cinder
+    auth_url=IDENTITY_ENDPOINT)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 574, in Client
+    client_class = get_client_class(version)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 568, in get_client_class
+    raise exceptions.UnsupportedVersion(msg)
+UnsupportedVersion: Invalid client version 'myadmin'. must be one of: 1, 2
+2016-03-02 13:47:05,174 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 155, in <module>
+    main()
+  File "cinder_common.py", line 150, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 136, in compare_and_create_volumes
+    from_names = map(lambda from_volumes: from_volumes['name'], from_volumes)
+  File "cinder_common.py", line 136, in <lambda>
+    from_names = map(lambda from_volumes: from_volumes['name'], from_volumes)
+TypeError: 'Volume' object has no attribute '__getitem__'
+2016-03-02 13:48:09,533 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 155, in <module>
+    main()
+  File "cinder_common.py", line 150, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 136, in compare_and_create_volumes
+    from_names = map(lambda from_volumes: from_volumes.name, from_volumes)
+  File "cinder_common.py", line 136, in <lambda>
+    from_names = map(lambda from_volumes: from_volumes.name, from_volumes)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: name
+2016-03-02 14:04:51,395 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 170, in <module>
+    main()
+  File "cinder_common.py", line 165, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 148, in create_volume
+    tenant = keystone_common.find_opposite_tenant_id(volume.project_id)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: project_id
+2016-03-02 14:19:14,011 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 171, in <module>
+    main()
+  File "cinder_common.py", line 166, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 148, in create_volume
+    from_tenant = volume.get(id).__dict__['os-vol-tenant-attr:tenant_id']
+TypeError: get() takes exactly 1 argument (2 given)
+2016-03-02 14:22:35,521 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 171, in <module>
+    main()
+  File "cinder_common.py", line 166, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 154, in create_volume
+    imageRef=volume.imageRef,
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: imageRef
+2016-03-02 14:22:54,244 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 172, in <module>
+    main()
+  File "cinder_common.py", line 167, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 155, in create_volume
+    imageRef=volume.imageRef,
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: imageRef
+2016-03-02 14:39:48,510 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 172, in <module>
+    main()
+  File "cinder_common.py", line 167, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 157, in create_volume
+    source_replica=volume.source_replica,
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: source_replica
+2016-03-02 14:41:58,995 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 172, in <module>
+    main()
+  File "cinder_common.py", line 167, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 158, in create_volume
+    scheduler_hints=volume.scheduler_hints,
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: scheduler_hints
+2016-03-02 14:44:41,679 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 172, in <module>
+    main()
+  File "cinder_common.py", line 167, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 159, in create_volume
+    multiattach=volume.multiattach
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: multiattach
+2016-03-02 15:10:55,736 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 174, in <module>
+    main()
+  File "cinder_common.py", line 169, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 163, in create_volume
+    myvol.manage(bootable=volume.bootable)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 461, in __getattr__
+    return self.__getattr__(k)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: manage
+2016-03-02 15:26:12,741 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 174, in <module>
+    main()
+  File "cinder_common.py", line 169, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 163, in create_volume
+    myvol.manage(bootable=volume.bootable)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 461, in __getattr__
+    return self.__getattr__(k)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: manage
+2016-03-02 15:44:33,616 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 174, in <module>
+    main()
+  File "cinder_common.py", line 169, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 163, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+AttributeError: 'VolumeManager' object has no attribute 'set_image_metadata'
+2016-03-02 15:46:17,855 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 175, in <module>
+    main()
+  File "cinder_common.py", line 170, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 164, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+AttributeError: 'VolumeManager' object has no attribute 'set_image_metadata'
+2016-03-02 15:49:50,267 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 175, in <module>
+    main()
+  File "cinder_common.py", line 170, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 156, in create_volume
+    source_volid=volume.source_volid
+TypeError: create() got an unexpected keyword argument 'display_name'
+2016-03-02 15:56:28,913 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 175, in <module>
+    main()
+  File "cinder_common.py", line 170, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 136, in compare_and_create_volumes
+    from_names = map(lambda from_volumes: from_volumes.name, from_volumes)
+  File "cinder_common.py", line 136, in <lambda>
+    from_names = map(lambda from_volumes: from_volumes.name, from_volumes)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: name
+2016-03-02 15:58:03,468 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 175, in <module>
+    main()
+  File "cinder_common.py", line 170, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 156, in create_volume
+    source_volid=volume.source_volid
+TypeError: create() got an unexpected keyword argument 'display_description'
+2016-03-02 15:58:38,280 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 175, in <module>
+    main()
+  File "cinder_common.py", line 170, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 164, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 428, in set_image_metadata
+    {'metadata': metadata})
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 321, in _action
+    return self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+BadRequest: There is no such action: os-set_image_metadata (HTTP 400) (Request-ID: req-160532db-415e-483c-8ca6-f152f0078367)
+2016-03-02 21:03:11,220 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 184, in <module>
+    main()
+  File "cinder_common.py", line 179, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 153, in create_volume
+    consistencygroup_id=volume.consistencygroup_id,
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: consistencygroup_id
+2016-03-02 21:03:36,750 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 184, in <module>
+    main()
+  File "cinder_common.py", line 179, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 161, in create_volume
+    attach_status=volume.attach_status,
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: attach_status
+2016-03-02 21:03:49,264 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 184, in <module>
+    main()
+  File "cinder_common.py", line 179, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 165, in create_volume
+    source_replica=volume.source_replica)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: source_replica
+2016-03-02 21:04:06,514 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 184, in <module>
+    main()
+  File "cinder_common.py", line 179, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 164, in create_volume
+    source_volid=volume.source_volid)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 263, in create
+    return self._create('/volumes', body, 'volume')
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 299, in _create
+    resp, body = self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+NotFound: Volume type not found. (HTTP 404) (Request-ID: req-49c47d96-9226-4eaa-9d9b-47ad1fa6968c)
+2016-03-02 21:07:16,942 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 187, in <module>
+    main()
+  File "cinder_common.py", line 182, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 158, in create_volume
+    volume_type=vol_type,
+UnboundLocalError: local variable 'vol_type' referenced before assignment
+2016-03-02 21:07:54,292 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 189, in <module>
+    main()
+  File "cinder_common.py", line 184, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 168, in create_volume
+    source_volid=volume.source_volid)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 263, in create
+    return self._create('/volumes', body, 'volume')
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 299, in _create
+    resp, body = self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+NotFound: Volume type not found. (HTTP 404) (Request-ID: req-d429840a-4bdc-4e69-a52b-55e8735bacfd)
+2016-03-02 21:09:02,395 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 189, in <module>
+    main()
+  File "cinder_common.py", line 184, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 178, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 428, in set_image_metadata
+    {'metadata': metadata})
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 321, in _action
+    return self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+BadRequest: There is no such action: os-set_image_metadata (HTTP 400) (Request-ID: req-28d4957d-29e5-4e23-82f5-b1e95f94a8ab)
+2016-03-02 21:18:56,788 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 189, in <module>
+    main()
+  File "cinder_common.py", line 184, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 159, in create_volume
+    source_volid=olume.source_volid,
+NameError: global name 'olume' is not defined
+2016-03-02 21:19:10,174 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 189, in <module>
+    main()
+  File "cinder_common.py", line 184, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 170, in create_volume
+    multiattach=False)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 263, in create
+    return self._create('/volumes', body, 'volume')
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/base.py", line 299, in _create
+    resp, body = self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+NotFound: Volume type not found. (HTTP 404) (Request-ID: req-e3588b1d-fc8f-4510-ac79-d2a677d33d02)
+2016-03-02 21:19:25,149 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 189, in <module>
+    main()
+  File "cinder_common.py", line 184, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 178, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 428, in set_image_metadata
+    {'metadata': metadata})
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 321, in _action
+    return self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+BadRequest: There is no such action: os-set_image_metadata (HTTP 400) (Request-ID: req-b3365bd6-1ff8-4352-a278-803c27ec959c)
+2016-03-02 21:21:18,664 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 189, in <module>
+    main()
+  File "cinder_common.py", line 184, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 178, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 428, in set_image_metadata
+    {'metadata': metadata})
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 321, in _action
+    return self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+BadRequest: There is no such action: os-set_image_metadata (HTTP 400) (Request-ID: req-b3e02ff6-e9b6-4779-9db1-16ad88b1eb0e)
+2016-03-02 21:25:56,514 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 189, in <module>
+    main()
+  File "cinder_common.py", line 184, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 178, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 428, in set_image_metadata
+    {'metadata': metadata})
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 321, in _action
+    return self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+BadRequest: There is no such action: os-set_image_metadata (HTTP 400) (Request-ID: req-8571f8ad-2dc1-48a2-ad45-191daa53acd4)
+2016-03-02 21:26:44,632 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 189, in <module>
+    main()
+  File "cinder_common.py", line 184, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 170, in create_volume
+    multiattach=False)
+TypeError: create() got an unexpected keyword argument 'display_name'
+2016-03-02 21:35:33,044 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 192, in <module>
+    main()
+  File "cinder_common.py", line 187, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 181, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 428, in set_image_metadata
+    {'metadata': metadata})
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 321, in _action
+    return self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+BadRequest: There is no such action: os-set_image_metadata (HTTP 400) (Request-ID: req-ca6afcf8-8ba5-48b8-a321-06974364bf12)
+2016-03-02 21:41:32,132 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 192, in <module>
+    main()
+  File "cinder_common.py", line 187, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 179, in create_volume
+    if volume.volume_image_metadata:
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/openstack/common/apiclient/base.py", line 463, in __getattr__
+    raise AttributeError(k)
+AttributeError: volume_image_metadata
+2016-03-02 21:42:35,243 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 192, in <module>
+    main()
+  File "cinder_common.py", line 187, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 140, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 181, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 428, in set_image_metadata
+    {'metadata': metadata})
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 321, in _action
+    return self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+BadRequest: There is no such action: os-set_image_metadata (HTTP 400) (Request-ID: req-50e0f066-11dd-4672-ad74-39d4a858c36e)
+2016-03-02 22:42:00,284 ERROR: The plugin cinder_common.py has failed with an unhandled exception
+Traceback (most recent call last):
+  File "/Users/egle/src/rpc/copystack/maas_common.py", line 490, in print_output
+    yield
+  File "cinder_common.py", line 193, in <module>
+    main()
+  File "cinder_common.py", line 188, in main
+    compare_and_create_volumes()
+  File "cinder_common.py", line 139, in compare_and_create_volumes
+    create_volume('to', volume)
+  File "cinder_common.py", line 179, in create_volume
+    cinder.volumes.set_image_metadata(myvol, volume.volume_image_metadata)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 428, in set_image_metadata
+    {'metadata': metadata})
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/v2/volumes.py", line 321, in _action
+    return self.api.client.post(url, body=body)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 315, in post
+    return self._cs_request(url, 'POST', **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 275, in _cs_request
+    **kwargs)
+  File "/Users/egle/src/rpc/copystack/copystack_venv/lib/python2.7/site-packages/cinderclient/client.py", line 258, in request
+    raise exceptions.from_response(resp, body)
+BadRequest: There is no such action: set_image_metadata (HTTP 400) (Request-ID: req-77ec21cf-d54c-4dec-9323-dde9f955d3a2)

@@ -8,6 +8,7 @@ import neutron_common
 import nova_common
 import glance_common
 import maas_common
+import cinder_common
 
 
 def main(opts, args):
@@ -51,6 +52,12 @@ def main(opts, args):
             print "Please provide image directory, for example, ./downloads/"
     if opts.flavors:
         nova_common.compare_and_create_flavors()
+    if opts.volumes:
+        cinder_common.compare_and_create_volumes()
+    if opts.nova:
+        nova_common.compare_and_create_vms()
+    if opts.quota:
+        nova_common.compare_and_report_quotas()
 
 if __name__ == "__main__":
         parser = optparse.OptionParser()
@@ -58,7 +65,8 @@ if __name__ == "__main__":
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
         parser.add_option("-c", "--copynets", action="store_true", dest='copynets',
                           help='Copy networks and subnets from->to')
-        parser.add_option("-s", "--copysec", action="store_true", dest='copysec', help='Copy security groups from -> to')
+        parser.add_option("-s", "--copysec", action="store_true", dest='copysec',
+                          help='Copy security groups from -> to')
         parser.add_option("-d", "--download", action="store_true", dest='download',
                           help='Download all images to a specified path, for example, ./downloads/')
         parser.add_option("-u", "--upload", action="store_true", dest='upload',
@@ -66,5 +74,10 @@ if __name__ == "__main__":
                                'where images from "-d" where stored. '
                                'Will not check for duplicate image names, since duplicate names are allowed.')
         parser.add_option("-f", "--flavors", action='store_true', dest='flavors', help='Copy flavors from -> to')
+        parser.add_option("-v", "--volumes", action='store_true', dest='volumes', help='Recreate volumes from -> to')
+        parser.add_option("-n", "--nova", action='store_true', dest='nova', help='Recreate VMs from -> to')
+        parser.add_option("-q", "--quota", action='store_true', dest='quota',
+                          help='Differences in individual quotas for each tenant')
+
         (opts, args) = parser.parse_args()
         main(opts, args)

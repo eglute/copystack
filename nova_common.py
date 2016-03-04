@@ -76,43 +76,57 @@ def compare_and_create_security_groups():
     to_groups = get_security_groups('to')
     #print from_groups
     #print to_groups
-    
+
+    new_groups = []
     from_names = map(lambda from_groups: from_groups.name, from_groups)
     to_names = map(lambda to_groups: to_groups.name, to_groups)
     for name in from_names:
         if name not in to_names:
             from_group = filter(lambda from_groups: from_groups.name == name, from_groups)
-            create_security_group('to', from_group[0])
+            to_group = create_security_group('to', from_group[0])
+            group_pair = {'old': from_group[0], 'new': to_group}
+            new_groups.append(group_pair)
+    for new_group in new_groups:
+        create_security_rules('to', new_group['old'], new_group['new'], new_groups)
 
-def create_security_group(destination, sec_group):
-    print sec_group.rules
+
+def create_security_group(destination, from_group):
+    #print from_group.rules
     nova = get_nova(destination)
-    sec = nova.security_groups.create(name=sec_group.name, description=sec_group.description)
-    print sec
-    create_security_rules(destination, sec_group, sec)
-    print sec.rules
-    return sec
+    to_group = nova.security_groups.create(name=from_group.name, description=from_group.description)
+    #print to_group
+    #need to create rules after all the groups are created since rules can use groups.
+    #create_security_rules(destination, from_group, to_group)
+    #print to_group.rules
+    return to_group
+
 
 #todo: fix this
-def create_security_rules(destination, from_group, to_group):
+def create_security_rules(destination, from_group, to_group, new_groups):
     nova = get_nova(destination)
 
-    for rule in from_group.rules:
+    if from_group.rules:
+        for rule in from_group.rules:
+            if 'ip_range' in rule:
+                if 'cidr' in rule['ip_range']:
+                    cidras = rule['ip_range']['cidr']
+                    rule = nova.security_group_rules.create(to_group.id, ip_protocol = rule['ip_protocol'],
+                                                    from_port = rule['from_port'], to_port=rule['to_port'], cidr=cidras)#,
+                                                    # group_id = to_group.id)
+                else:
+                    group_id = find_new_group_id_by_group_name(new_groups, rule['group']['name'])
+                    rule = nova.security_group_rules.create(to_group.id, ip_protocol=rule['ip_protocol'],
+                                                            from_port=rule['from_port'], to_port=rule['to_port'],
+                                                            group_id=group_id)
+                    print rule
 
-        cidras = None
 
-        if 'ip_range' in rule:
-            if 'cidr' in rule['ip_range']:
-                cidras = rule['ip_range']['cidr']
-        else:
-            cidras = "None"
-        print "cidras"
-        print cidras
-
-        rule = nova.security_group_rules.create(to_group.id, ip_protocol = rule['ip_protocol'],
-                                                from_port = rule['from_port'], to_port=rule['to_port'], cidr=cidras)#,
-                                                # group_id = to_group.id)
-        print rule
+# Rules that include other groups do not have group id, only name. So, we must find
+# group id based on its name. This will not work if there are duplicate group names...
+def find_new_group_id_by_group_name(group_pairs, name):
+    for pair in group_pairs:
+        if pair['old'].name == name:
+            return pair['new'].id
 
 
 def get_vm_list(destination):
@@ -152,7 +166,6 @@ def create_vm(from_vm):
     nova = get_nova('to')
 
     flavor = get_flavor_by_id('to', from_vm.flavor['id'])
-    #print flavor
     image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
     networks = from_vm.networks
 
@@ -163,10 +176,6 @@ def create_vm(from_vm):
         for ip in ips:
             nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
             nics.append(nic)
-
-    #print image
-    print nics
-    #nics = [{'net-id': network['id'], 'v4-fixed-ip': '11.11.11.8'}]
     server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
                                  meta=from_vm.metadata)
     print server
@@ -227,6 +236,61 @@ def get_quotas(destination, tenant):
     return quotas
 
 
+def compare_and_report_quotas():
+    from_tenants = keystone_common.get_from_tenant_list()
+    print "Differences in individual quotas for each tenant:"
+    for from_tenant in from_tenants:
+
+        from_quotas = get_quotas('from', from_tenant.id)
+        to_tenant = keystone_common.find_opposite_tenant_id(from_tenant.id)
+        to_quotas = get_quotas('to', to_tenant['to_id'])
+        print "\nFrom tenant id:", from_tenant.id, "To tenant id:", to_tenant['to_id']
+        compare_quotas(from_quotas, to_quotas)
+
+
+def compare_quotas(from_quotas, to_quotas):
+
+    if from_quotas.instances != to_quotas.instances:
+        print "From instance quota: ", from_quotas.instances
+        print "To instance quota: ", to_quotas.instances
+    if from_quotas.cores != to_quotas.cores:
+        print "From cores quota: ", from_quotas.cores
+        print "To cores quota: ", to_quotas.cores
+    if from_quotas.ram != to_quotas.ram:
+        print "From ram quota: ", from_quotas.ram
+        print "To ram quota: ", to_quotas.ram
+    if from_quotas.floating_ips != to_quotas.floating_ips:
+        print "From floating_ips quota: ", from_quotas.floating_ips
+        print "To floating_ips quota: ", to_quotas.floating_ips
+    if from_quotas.fixed_ips != to_quotas.fixed_ips:
+        print "From fixed_ips quota: ", from_quotas.fixed_ips
+        print "To fixed_ips quota: ", to_quotas.fixed_ips
+    if from_quotas.metadata_items != to_quotas.metadata_items:
+        print "From metadata_items quota: ", from_quotas.metadata_items
+        print "To metadata_items quota: ", to_quotas.metadata_items
+    if from_quotas.injected_files != to_quotas.injected_files:
+        print "From injected_files quota: ", from_quotas.injected_files
+        print "To injected_files quota: ", to_quotas.injected_files
+    if from_quotas.injected_file_content_bytes != to_quotas.injected_file_content_bytes:
+        print "From injected_file_content_bytes quota: ", from_quotas.injected_file_content_bytes
+        print "To injected_file_content_bytes quota: ", to_quotas.injected_file_content_bytes
+    if from_quotas.injected_file_path_bytes != to_quotas.injected_file_path_bytes:
+        print "From injected_file_path_bytes quota: ", from_quotas.injected_file_path_bytes
+        print "To injected_file_path_bytes quota: ", to_quotas.injected_file_path_bytes
+    if from_quotas.key_pairs != to_quotas.key_pairs:
+        print "From key_pairs quota: ", from_quotas.key_pairs
+        print "To key_pairs quota: ", to_quotas.key_pairs
+    if from_quotas.security_groups != to_quotas.security_groups:
+        print "From security_groups quota: ", from_quotas.security_groups
+        print "To security_groups quota: ", to_quotas.security_groups
+    if from_quotas.security_group_rules != to_quotas.security_group_rules:
+        print "From security_group_rules quota: ", from_quotas.security_group_rules
+        print "To security_group_rules quota: ", to_quotas.security_group_rules
+
+    return
+
+
+# this does not work, see comment bellow.
 def compare_and_update_quotas():
     from_tenants = keystone_common.get_from_tenant_list()
     for from_tenant in from_tenants:
@@ -250,9 +314,6 @@ def update_quotas(from_tenant, from_quotas, to_tenant, to_quotas):
     if from_quotas.instances != to_quotas.instances:
         print from_quotas.instances
         to_quotas.update(tenant_id=to_tenant['to_id'], instances=from_quotas.instances)
-
-
-
         #print to_quotas
     return
 
@@ -261,13 +322,14 @@ def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
     #compare_and_create_security_groups()
-    get_vm_list('from')
+    #get_vm_list('from')
     #get_flavor_list('from')
     #compare_and_create_flavors()
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
     #compare_and_create_vms()
+    compare_and_report_quotas()
 
 if __name__ == "__main__":
         main()
