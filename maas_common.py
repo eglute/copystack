@@ -26,10 +26,18 @@ import traceback
 
 
 
-OPENRC_FROM = '/Users/egle/src/rpc/copystack/havana_auth'
+#OPENRC_FROM = '/Users/egle/src/rpc/copystack/havana_auth'
+OPENRC_FROM = '/Users/egle/src/rpc/copystack/kilo_devstack_auth'
+
 TOKEN_FILE_FROM = '/Users/egle/src/rpc/copystack/.auth_ref_from.json'
-OPENRC_TO = '/Users/egle/src/rpc/copystack/kilo_auth'
+
+#OPENRC_TO = '/Users/egle/src/rpc/copystack/kilo_auth'
+OPENRC_TO = '/Users/egle/src/rpc/copystack/kilo_devstack_auth'
 TOKEN_FILE_TO = '/Users/egle/src/rpc/copystack/.auth_ref_to.json'
+#DESTINATION_TO_IP = '172.16.56.129'
+DESTINATION_TO_IP = '166.78.250.56'
+
+DESTINATION_FROM_IP = '172.16.56.128'
 
 
 try:

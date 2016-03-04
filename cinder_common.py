@@ -23,15 +23,15 @@ import collections
 from requests import exceptions as exc
 
 from maas_common import (get_keystone_client, get_auth_ref, get_cinder_client, status_err, status_ok,
-                         metric_bool, print_output)
+                         metric_bool, print_output, DESTINATION_FROM_IP, DESTINATION_TO_IP)
 
 
 def get_cinder1(destination):
         #TODO: fix this part...
     if destination == 'to':
-        IDENTITY_IP = '172.16.56.129'
+        IDENTITY_IP = DESTINATION_TO_IP
     else:
-        IDENTITY_IP = '172.16.56.128'
+        IDENTITY_IP = DESTINATION_FROM_IP
     #CINDER_ENDPOINT = 'http://{ip}:8776'.format(ip=IDENTITY_IP)
     IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=IDENTITY_IP)
 
@@ -111,9 +111,9 @@ def get_cinder_old(destination):
 def get_cinder(destination):
         #TODO: fix this part...
     if destination == 'to':
-        IDENTITY_IP = '172.16.56.129'
+        IDENTITY_IP = DESTINATION_TO_IP
     else:
-        IDENTITY_IP = '172.16.56.128'
+        IDENTITY_IP = DESTINATION_FROM_IP
 
     try:
         cinder = get_cinder_client(destination, identity_ip=IDENTITY_IP)

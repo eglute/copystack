@@ -21,7 +21,8 @@ import os
 import six.moves.urllib.parse as urlparse
 from ipaddr import IPv4Address
 import keystone_common
-from maas_common import (status_ok, status_err, get_keystone_client, get_glance_client, get_auth_ref, print_output)
+from maas_common import (status_ok, status_err, get_keystone_client, get_glance_client, get_auth_ref, print_output,
+                         DESTINATION_TO_IP, DESTINATION_FROM_IP)
 from requests import Session
 from requests import exceptions as exc
 
@@ -34,9 +35,9 @@ def check(destination, auth_ref):
     # new token if previous one is bad.
          #TODO: fix this part...
     if destination == 'to':
-        IDENTITY_IP = '172.16.56.129'
+        IDENTITY_IP = DESTINATION_TO_IP
     else:
-        IDENTITY_IP = '172.16.56.128'
+        IDENTITY_IP = DESTINATION_FROM_IP
     IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=IDENTITY_IP)
 
     keystone = get_keystone_client(destination, auth_ref, endpoint=IDENTITY_ENDPOINT)

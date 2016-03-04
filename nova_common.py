@@ -19,7 +19,7 @@ import keystone_common
 import glance_common
 import neutron_common
 from maas_common import (get_auth_ref, get_nova_client, status_err, status_ok,
-                         metric_bool, print_output)
+                         DESTINATION_TO_IP, DESTINATION_FROM_IP)
 
 
 def check(args):
@@ -43,9 +43,9 @@ def check(args):
 def get_nova(destination):
         #TODO: fix this part...
     if destination == 'to':
-        IDENTITY_IP = '172.16.56.129'
+        IDENTITY_IP = DESTINATION_TO_IP
     else:
-        IDENTITY_IP = '172.16.56.128'
+        IDENTITY_IP = DESTINATION_FROM_IP
     auth_ref = get_auth_ref(destination)
     auth_token = auth_ref['token']['id']
     tenant_id = auth_ref['token']['tenant']['id']

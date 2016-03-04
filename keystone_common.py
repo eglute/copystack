@@ -17,8 +17,8 @@
 import argparse
 from time import time
 from ipaddr import IPv4Address
-from maas_common import (get_keystone_client, status_err, status_ok, metric,
-                         metric_bool, print_output)
+from maas_common import (get_keystone_client, status_err,
+                         metric_bool, print_output, DESTINATION_FROM_IP, DESTINATION_TO_IP)
 from keystoneclient.openstack.common.apiclient import exceptions as exc
 
 
@@ -58,9 +58,9 @@ def get_keystone(destination):
 
     #TODO: fix this part...
     if destination == 'to':
-        IDENTITY_IP = '172.16.56.129'
+        IDENTITY_IP = DESTINATION_TO_IP
     else:
-        IDENTITY_IP = '172.16.56.128'
+        IDENTITY_IP = DESTINATION_FROM_IP
 
     IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=IDENTITY_IP)
 
