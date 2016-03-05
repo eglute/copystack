@@ -18,49 +18,36 @@ import argparse
 import keystone_common
 import glance_common
 import neutron_common
+from auth_stack import AuthStack
+
 from maas_common import (get_auth_ref, get_nova_client, status_err, status_ok,
                          DESTINATION_TO_IP, DESTINATION_FROM_IP)
 
 
-def check(args):
-    auth_ref = get_auth_ref()
-    auth_token = auth_ref['token']['id']
-    tenant_id = auth_ref['token']['tenant']['id']
-
-    COMPUTE_ENDPOINT = 'http://{hostname}:8774/v2/{tenant_id}' \
-                       .format(hostname=args.hostname, tenant_id=tenant_id)
-    try:
-        nova = get_nova_client(auth_token=auth_token,
-                               bypass_url=COMPUTE_ENDPOINT)
-        groups = nova.security_groups.list()
-
-        print groups
-    # not gathering api status metric here so catch any exception
-    except Exception as e:
-        status_err(str(e))
-
-
 def get_nova(destination):
-        #TODO: fix this part...
-    if destination == 'to':
-        IDENTITY_IP = DESTINATION_TO_IP
-    else:
-        IDENTITY_IP = DESTINATION_FROM_IP
-    auth_ref = get_auth_ref(destination)
-    auth_token = auth_ref['token']['id']
-    tenant_id = auth_ref['token']['tenant']['id']
-
-    COMPUTE_ENDPOINT = 'http://{ip}:8774/v2/{tenant_id}' \
-                    .format(ip=IDENTITY_IP, tenant_id=tenant_id)
-
-    try:
-       nova = get_nova_client(destination, auth_token=auth_token,bypass_url=COMPUTE_ENDPOINT)
-
-    except Exception as e:
-        #status_err(str(e))
-        print "boo exception"
-        print e
-    return nova
+    #     #TODO: fix this part...
+    # if destination == 'to':
+    #     IDENTITY_IP = DESTINATION_TO_IP
+    # else:
+    #     IDENTITY_IP = DESTINATION_FROM_IP
+    # auth_ref = get_auth_ref(destination)
+    # auth_token = auth_ref['token']['id']
+    # tenant_id = auth_ref['token']['tenant']['id']
+    #
+    # COMPUTE_ENDPOINT = 'http://{ip}:8774/v2/{tenant_id}' \
+    #                 .format(ip=IDENTITY_IP, tenant_id=tenant_id)
+    #
+    # try:
+    #    nova = get_nova_client(destination, auth_token=auth_token,bypass_url=COMPUTE_ENDPOINT)
+    #
+    # except Exception as e:
+    #     #status_err(str(e))
+    #     print "boo exception"
+    #     print e
+    # return nova
+    auth = AuthStack()
+    client = auth.get_nova_client(destination)
+    return client
 
 
 def get_security_groups(destination):
@@ -136,12 +123,12 @@ def get_vm_list(destination):
     servers = nova.servers.list()
     for s in servers:
         server = nova.servers.get(s.id)
-        #print server
+        print server
         #print s
         #print s.networks
         #print s.addresses
         #for key in s.addresses:
-        #   print key
+        #print key
     return servers
 
 
@@ -331,13 +318,13 @@ def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
     #compare_and_create_security_groups()
-    #get_vm_list('from')
+    get_vm_list('from')
     #get_flavor_list('from')
     #compare_and_create_flavors()
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
-    compare_and_create_vms()
+    #compare_and_create_vms()
     #compare_and_report_quotas()
 
 if __name__ == "__main__":

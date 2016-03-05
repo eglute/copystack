@@ -16,30 +16,36 @@
 
 import argparse
 import keystone_common
+from auth_stack import AuthStack
+
 from maas_common import (get_neutron_client, status_err, status_ok,
                          metric_bool, print_output, DESTINATION_TO_IP, DESTINATION_FROM_IP)
 
 
 def get_neutron(destination):
-        #TODO: fix this part...
-    if destination == 'to':
-        IDENTITY_IP = DESTINATION_TO_IP
-    else:
-        IDENTITY_IP = DESTINATION_FROM_IP
-    NETWORK_ENDPOINT = 'http://{ip}:9696'.format(ip=IDENTITY_IP)
+    #     #TODO: fix this part...
+    # if destination == 'to':
+    #     IDENTITY_IP = DESTINATION_TO_IP
+    # else:
+    #     IDENTITY_IP = DESTINATION_FROM_IP
+    # NETWORK_ENDPOINT = 'http://{ip}:9696'.format(ip=IDENTITY_IP)
+    #
+    # try:
+    #     neutron = get_neutron_client(destination, endpoint_url=NETWORK_ENDPOINT)
+    #
+    # except Exception as e:
+    #     status_err(str(e))
+    # return neutron
 
-    try:
-        neutron = get_neutron_client(destination, endpoint_url=NETWORK_ENDPOINT)
-
-    except Exception as e:
-        status_err(str(e))
-    return neutron
+    auth = AuthStack()
+    client = auth.get_neutron_client(destination)
+    return client
 
 
 def get_network_list(destination):
     neutron = get_neutron(destination)
     networks = neutron.list_networks()['networks']
-    #print networks
+    print networks
     return networks
 
 
@@ -128,10 +134,10 @@ def create_subnets(from_network_id, to_network_id, to_tenant_id):
 
 def main():
     # check(args)
-    #get_network_list('from')
+    get_network_list('to')
     # get_neutron_security_group_list(args)
     # network_create_net(args)
-    compare_and_create_networks()
+    # compare_and_create_networks()
 
     #print get_subnet('from', '8cb27f87-406f-4fcd-99c1-98da2238fd90')
 
