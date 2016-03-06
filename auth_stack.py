@@ -19,8 +19,8 @@ from novaclient.client import exceptions as nova_exc
 from glanceclient import exc as g_exc
 from keystoneclient.openstack.common.apiclient import exceptions as k_exc
 
-OPENRC_FROM = '/Users/egle/src/rpc/copystack/from_auth'
-OPENRC_TO = '/Users/egle/src/rpc/copystack/to_auth'
+OPENRC_FROM = './from_auth'
+OPENRC_TO = './to_auth'
 
 class AuthStack(object):
 
