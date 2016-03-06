@@ -31,7 +31,7 @@ def get_neutron(destination):
 def get_network_list(destination):
     neutron = get_neutron(destination)
     networks = neutron.list_networks()['networks']
-    print networks
+    #print networks
     return networks
 
 
@@ -128,6 +128,4 @@ def main():
     #print get_subnet('from', '8cb27f87-406f-4fcd-99c1-98da2238fd90')
 
 if __name__ == "__main__":
-    with print_output():
-
         main()

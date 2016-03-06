@@ -7,11 +7,14 @@ import keystone_common
 import neutron_common
 import nova_common
 import glance_common
-import maas_common
 import cinder_common
+from auth_stack import AuthStack
 
 
 def main(opts, args):
+    auth = AuthStack()
+    print "From:", auth.from_auth_ip
+    print "To:", auth.to_auth_ip
     if opts.report:
         from_tenants = keystone_common.get_from_tenant_list()
         print "=============== From Tenants: ======================"
@@ -58,11 +61,18 @@ def main(opts, args):
         nova_common.compare_and_create_vms()
     if opts.quota:
         nova_common.compare_and_report_quotas()
+    if opts.tenants:
+        print keystone_common.get_from_tenant_names()
+        print keystone_common.get_to_tenant_names()
 
 if __name__ == "__main__":
+
         parser = optparse.OptionParser()
         #parser = argparse.ArgumentParser(description='Check Options')
-        parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
+        parser.add_option("-t", "--tenants", action='store_true', dest='tenants',
+                          help='Print to and from tenants. Tenant names must match before running the rest of copystack')
+        parser.add_option("-q", "--quota", action='store_true', dest='quota',
+                          help='Differences in individual quotas for each tenant')
         parser.add_option("-c", "--copynets", action="store_true", dest='copynets',
                           help='Copy networks and subnets from->to')
         parser.add_option("-s", "--copysec", action="store_true", dest='copysec',
@@ -76,8 +86,7 @@ if __name__ == "__main__":
         parser.add_option("-f", "--flavors", action='store_true', dest='flavors', help='Copy flavors from -> to')
         parser.add_option("-v", "--volumes", action='store_true', dest='volumes', help='Recreate volumes from -> to')
         parser.add_option("-n", "--nova", action='store_true', dest='nova', help='Recreate VMs from -> to')
-        parser.add_option("-q", "--quota", action='store_true', dest='quota',
-                          help='Differences in individual quotas for each tenant')
+        parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
 
         (opts, args) = parser.parse_args()
         main(opts, args)

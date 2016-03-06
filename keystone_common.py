@@ -39,6 +39,20 @@ def get_from_tenant_list():
     return tenants
 
 
+def get_from_tenant_names():
+    tenants = get_from_tenant_list()
+    names = map(lambda tenants: tenants.name, tenants)
+    names = sorted(names)
+    return names
+
+
+def get_to_tenant_names():
+    tenants = get_to_tenant_list()
+    names = map(lambda tenants: tenants.name, tenants)
+    names = sorted(names)
+    return names
+
+
 def get_to_tenant_list():
     keystone = get_keystone('to')
     tenants = keystone.tenants.list()
@@ -106,9 +120,9 @@ def main():
     # print get_from_tenant_list()
     #get_to_tenant_list()
     #get_keystone('to')
-    get_from_tenant_list()
-    get_to_tenant_list()
+    #get_from_tenant_list()
+    #get_to_tenant_list()
+    get_from_tenant_names()
 
 if __name__ == "__main__":
-    with print_output():
         main()

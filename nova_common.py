@@ -147,12 +147,18 @@ def create_vm(from_vm):
     #out of luck for duplicate group names...
     group_names_map = map(lambda groups: groups['name'], groups)
     group_names = set(group_names_map)
-    print group_names
+    # print group_names
+    #os-extended-volumes:volumes_attached
 
-    server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-                                 meta=from_vm.metadata, security_groups=group_names)
-    print server
-    return server
+    # todo: attach volumes list. this is a list of volume IDs, so will need to find volume by original id
+    volumes = from_vm.__dict__['os-extended-volumes:volumes_attached']
+
+    print volumes
+    # server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
+    #                              meta=from_vm.metadata, security_groups=group_names)
+    # nova.volumes.create_server_volume(server.)
+    # print server
+    # return server
 
 
 def get_flavor_by_id(destination, flavor_id):
@@ -295,13 +301,13 @@ def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
     #compare_and_create_security_groups()
-    get_vm_list('from')
+    #get_vm_list('from')
     #get_flavor_list('from')
     #compare_and_create_flavors()
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
-    #compare_and_create_vms()
+    compare_and_create_vms()
     #compare_and_report_quotas()
 
 if __name__ == "__main__":
