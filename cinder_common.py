@@ -14,31 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import keystone_common
-import requests
-import collections
+import nova_common
 from auth_stack import AuthStack
 
 
-from requests import exceptions as exc
-
-from maas_common import (get_keystone_client, get_auth_ref, get_cinder_client, status_err, status_ok,
-                         metric_bool, print_output, DESTINATION_FROM_IP, DESTINATION_TO_IP)
-
-
 def get_cinder(destination):
-    #     #TODO: fix this part...
-    # if destination == 'to':
-    #     IDENTITY_IP = DESTINATION_TO_IP
-    # else:
-    #     IDENTITY_IP = DESTINATION_FROM_IP
-    #
-    # try:
-    #     cinder = get_cinder_client(destination, identity_ip=IDENTITY_IP)
-    # except Exception as e:
-    #     status_err(str(e))
-    # return cinder
+
     auth = AuthStack()
     client = auth.get_cinder_client(destination)
     return client
@@ -70,23 +52,6 @@ def create_volume(destination, volume):
     from_tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
     tenant = keystone_common.find_opposite_tenant_id(from_tenant)
 
-    # myvol = cinder.volumes.create(size=volume.size,
-    #                               consistencygroup_id=None,
-    #                               snapshot_id=volume.snapshot_id,
-    #                               source_volid=volume.source_volid,
-    #                               name=volume.display_name,
-    #                               description=volume.display_description,
-    #                               volume_type=volume.volume_type,
-    #                               user_id=None,
-    #                               project_id=tenant,
-    #                               availability_zone=volume.availability_zone,
-    #                               metadata=volume.metadata,
-    #                               imageRef=None,
-    #                               scheduler_hints=None,
-    #                               source_replica=None,
-    #                               multiattach=False)
-
-
     if volume.volume_type == 'None':
         myvol = cinder.volumes.create(size=volume.size,
                                       snapshot_id=volume.snapshot_id,
@@ -114,15 +79,30 @@ def create_volume(destination, volume):
                                       source_volid=volume.source_volid
                                       )
     print "Volume", myvol.display_name, "created"
+    if volume.attachments:
+        for att in volume.attachments:
+            print att
+            print att['server_id']
+            device = att['device']
+            print device
+
+            vm = nova_common.get_vm_by_original_id('to', att['server_id'])
+            if vm:
+                #myvol.attach(vm.id, device)
+                # Followed this advice: http://www.florentflament.com/blog/openstack-volume-in-use-although-vm-doesnt-exist.html
+                nova = nova_common.get_nova(destination)
+                nova.volumes.create_server_volume(vm.id, myvol.id, device)
+                print "Volume", myvol.display_name, "attached to VM", vm.name
+            else:
+                print "Original Volume", volume.display_name, "was attached to a VM with ID", att['server_id'], \
+                    "but this VM was not found in the current VM list"
     return myvol
 
 def main():
-    get_volume_list('from')
-    get_volume_list('to')
+    #get_volume_list('from')
+    #get_volume_list('to')
     #create_volume('from')
-    #compare_and_create_volumes()
+    compare_and_create_volumes()
 
 if __name__ == "__main__":
-    with print_output():
-
         main()

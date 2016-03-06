@@ -148,17 +148,12 @@ def create_vm(from_vm):
     group_names_map = map(lambda groups: groups['name'], groups)
     group_names = set(group_names_map)
     # print group_names
-    #os-extended-volumes:volumes_attached
-
-    # todo: attach volumes list. this is a list of volume IDs, so will need to find volume by original id
-    volumes = from_vm.__dict__['os-extended-volumes:volumes_attached']
-
-    print volumes
-    # server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-    #                              meta=from_vm.metadata, security_groups=group_names)
-    # nova.volumes.create_server_volume(server.)
-    # print server
-    # return server
+    metadata = from_vm.metadata
+    metadata.update({'original_vm_id':from_vm.id})
+    server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
+                                 meta=metadata, security_groups=group_names)
+    print "Created VM:", server.name
+    return server
 
 
 def get_flavor_by_id(destination, flavor_id):
@@ -295,6 +290,18 @@ def update_quotas(from_tenant, from_quotas, to_tenant, to_quotas):
         to_quotas.update(tenant_id=to_tenant['to_id'], instances=from_quotas.instances)
         #print to_quotas
     return
+
+
+# Find VM by pre-migration VM id
+def get_vm_by_original_id(destination, original_id):
+    vms = get_vm_list(destination)
+    for vm in vms:
+        if vm.metadata:
+            if 'original_vm_id' in vm.metadata:
+                original_vm_id = vm.metadata['original_vm_id']
+                if original_vm_id == original_id:
+                    return vm
+    return None
 
 
 def main():

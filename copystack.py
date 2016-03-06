@@ -68,7 +68,6 @@ def main(opts, args):
 if __name__ == "__main__":
 
         parser = optparse.OptionParser()
-        #parser = argparse.ArgumentParser(description='Check Options')
         parser.add_option("-t", "--tenants", action='store_true', dest='tenants',
                           help='Print to and from tenants. Tenant names must match before running the rest of copystack')
         parser.add_option("-q", "--quota", action='store_true', dest='quota',
@@ -84,8 +83,8 @@ if __name__ == "__main__":
                                'where images from "-d" where stored. '
                                'Will not check for duplicate image names, since duplicate names are allowed.')
         parser.add_option("-f", "--flavors", action='store_true', dest='flavors', help='Copy flavors from -> to')
-        parser.add_option("-v", "--volumes", action='store_true', dest='volumes', help='Recreate volumes from -> to')
         parser.add_option("-n", "--nova", action='store_true', dest='nova', help='Recreate VMs from -> to')
+        parser.add_option("-v", "--volumes", action='store_true', dest='volumes', help='Recreate volumes from -> to')
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
 
         (opts, args) = parser.parse_args()
