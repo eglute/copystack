@@ -19,16 +19,8 @@ from novaclient.client import exceptions as nova_exc
 from glanceclient import exc as g_exc
 from keystoneclient.openstack.common.apiclient import exceptions as k_exc
 
-
-
-OPENRC_FROM = '/Users/egle/src/rpc/copystack/havana_auth'
-#OPENRC_FROM = '/Users/egle/src/rpc/copystack/kilo_devstack_auth'
-
-TOKEN_FILE_FROM = '/Users/egle/src/rpc/copystack/.auth_ref_from.json'
-
-#OPENRC_TO = '/Users/egle/src/rpc/copystack/kilo_auth'
-OPENRC_TO = '/Users/egle/src/rpc/copystack/kilo_devstack_auth'
-TOKEN_FILE_TO = '/Users/egle/src/rpc/copystack/.auth_ref_to.json'
+OPENRC_FROM = '/Users/egle/src/rpc/copystack/from_auth'
+OPENRC_TO = '/Users/egle/src/rpc/copystack/to_auth'
 
 class AuthStack(object):
 

@@ -3,3 +3,4 @@ export OS_PASSWORD=mypassword
 export OS_TENANT_NAME=MyProject
 export OS_AUTH_URL=http://172.16.56.129:5000/v2.0/
 export OS_REGION_NAME=RegionOne
+export OS_AUTH_IP=172.16.56.129
