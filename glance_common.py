@@ -14,80 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
-import collections
-import sys
 import os
-import six.moves.urllib.parse as urlparse
-from ipaddr import IPv4Address
 import keystone_common
-from maas_common import (status_ok, status_err, get_keystone_client, get_glance_client, get_auth_ref, print_output,
-                         DESTINATION_TO_IP, DESTINATION_FROM_IP)
-from requests import Session
-from requests import exceptions as exc
-
-
-IMAGE_STATUSES = ['active', 'queued', 'killed']
-
-
-def check(destination, auth_ref):
-    # We call get_keystone_client here as there is some logic within to get a
-    # new token if previous one is bad.
-         #TODO: fix this part...
-    if destination == 'to':
-        IDENTITY_IP = DESTINATION_TO_IP
-    else:
-        IDENTITY_IP = DESTINATION_FROM_IP
-    IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=IDENTITY_IP)
-
-    keystone = get_keystone_client(destination, auth_ref, endpoint=IDENTITY_ENDPOINT)
-    auth_token = keystone.auth_token
-    api_endpoint = 'http://{ip}:9292/v1'.format(ip=IDENTITY_IP)
-
-    s = Session()
-
-    s.headers.update(
-        {'Content-type': 'application/json',
-         'x-auth-token': auth_token})
-
-    try:
-        # Hit something that isn't querying the glance-registry, since we
-        # query glance-registry in separate checks
-        r = s.get('%s/' % api_endpoint, verify=False,
-                  timeout=10)
-        milliseconds = r.elapsed.total_seconds() * 1000
-        is_up = r.ok
-    except (exc.ConnectionError, exc.HTTPError, exc.Timeout):
-        is_up = False
-    except Exception as e:
-        status_err(str(e))
-    else:
-        # gather some metrics to report
-        try:
-            r = s.get('%s/images/detail' % api_endpoint, verify=False,
-                      timeout=10)
-        except Exception as e:
-            status_err(str(e))
-        else:
-            image_statuses = [i['status'] for i in r.json()['images']]
-            print image_statuses
+from auth_stack import AuthStack
 
 
 def get_glance(destination):
-   #TODO: fix this part...
-    if destination == 'to':
-        IDENTITY_IP = '172.16.56.129'
-    else:
-        IDENTITY_IP = '172.16.56.128'
-    NETWORK_ENDPOINT = 'http://{ip}:9292'.format(ip=IDENTITY_IP)
-
-    try:
-        glance = get_glance_client(destination, endpoint=NETWORK_ENDPOINT)
-        return glance
-    except Exception as e:
-        print "ugh"
-        print e.details
-    return 'meh'
+    auth = AuthStack()
+    client = auth.get_glance_client(destination)
+    return client
 
 
 def get_images(destination):
@@ -182,6 +117,9 @@ def main():
     #image_download()
     #create_images("./downloads/")
     #get_image_id_by_original_id('to', '64737c30-b1fe-4a93-a14d-259395f61364')
+    print get_images('from')
+    print get_images('to')
+
     print "foo"
 
 if __name__ == "__main__":

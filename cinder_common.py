@@ -18,6 +18,7 @@ import argparse
 import keystone_common
 import requests
 import collections
+from auth_stack import AuthStack
 
 
 from requests import exceptions as exc
@@ -26,106 +27,28 @@ from maas_common import (get_keystone_client, get_auth_ref, get_cinder_client, s
                          metric_bool, print_output, DESTINATION_FROM_IP, DESTINATION_TO_IP)
 
 
-def get_cinder1(destination):
-        #TODO: fix this part...
-    if destination == 'to':
-        IDENTITY_IP = DESTINATION_TO_IP
-    else:
-        IDENTITY_IP = DESTINATION_FROM_IP
-    #CINDER_ENDPOINT = 'http://{ip}:8776'.format(ip=IDENTITY_IP)
-    IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=IDENTITY_IP)
-
-    auth_ref = get_auth_ref(destination)
-    keystone = get_keystone_client(destination, auth_ref, endpoint=IDENTITY_ENDPOINT)
-    auth_token = keystone.auth_token
-    VOLUME_ENDPOINT = ('http://{ip}:8776/v1/{tenant}'.format
-                       (ip=IDENTITY_IP, tenant=keystone.tenant_id))
-
-    s = requests.Session()
-
-    s.headers.update(
-        {'Content-type': 'application/json',
-         'x-auth-token': auth_token})
-
-    try:
-        vol = s.get('%s/volumes/detail' % VOLUME_ENDPOINT,
-                    verify=False,
-                    timeout=10)
-        milliseconds = vol.elapsed.total_seconds() * 1000
-        snap = s.get('%s/snapshots/detail' % VOLUME_ENDPOINT,
-                     verify=False,
-                     timeout=10)
-        is_up = vol.ok and snap.ok
-
-    except (exc.ConnectionError,
-            exc.HTTPError,
-            exc.Timeout) as e:
-        is_up = False
-    except Exception as e:
-           status_err(str(e))
-    else:
-        # gather some metrics
-        vol_statuses = [v['status'] for v in vol.json()['volumes']]
-        vol_status_count = collections.Counter(vol_statuses)
-        total_vols = len(vol.json()['volumes'])
-
-        snap_statuses = [v['status'] for v in snap.json()['snapshots']]
-        snap_status_count = collections.Counter(snap_statuses)
-        total_snaps = len(snap.json()['snapshots'])
-
-    # only want to send other metrics if api is up
-    if is_up:
-        print "yay"
-
-
-#working version.... yippy. need to move it out to the other class
-def get_cinder_old(destination):
-
-    #TODO: fix this part...
-    if destination == 'to':
-        IDENTITY_IP = '172.16.56.129'
-    else:
-        IDENTITY_IP = '172.16.56.128'
-    IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=IDENTITY_IP)
-
-    auth_ref = get_auth_ref(destination)
-    keystone = get_keystone_client(destination, auth_ref, endpoint=IDENTITY_ENDPOINT)
-    auth_token = keystone.auth_token
-    VOLUME_ENDPOINT = ('http://{ip}:8776/v1/{tenant}'.format
-                       (ip=IDENTITY_IP, tenant=keystone.tenant_id))
-
-
-    user = 'myadmin'
-    pr_id = 'MyProject'
-    client = cinderclient.Client('1', user, auth_token,
-                                 project_id=pr_id,
-                                 auth_url=IDENTITY_ENDPOINT)
-    client.client.auth_token = auth_token
-    client.client.management_url = VOLUME_ENDPOINT
-
-    l = client.volumes.list()
-    print l
+def get_cinder(destination):
+    #     #TODO: fix this part...
+    # if destination == 'to':
+    #     IDENTITY_IP = DESTINATION_TO_IP
+    # else:
+    #     IDENTITY_IP = DESTINATION_FROM_IP
+    #
+    # try:
+    #     cinder = get_cinder_client(destination, identity_ip=IDENTITY_IP)
+    # except Exception as e:
+    #     status_err(str(e))
+    # return cinder
+    auth = AuthStack()
+    client = auth.get_cinder_client(destination)
     return client
 
-
-def get_cinder(destination):
-        #TODO: fix this part...
-    if destination == 'to':
-        IDENTITY_IP = DESTINATION_TO_IP
-    else:
-        IDENTITY_IP = DESTINATION_FROM_IP
-
-    try:
-        cinder = get_cinder_client(destination, identity_ip=IDENTITY_IP)
-    except Exception as e:
-        status_err(str(e))
-    return cinder
 
 
 def get_volume_list(destination):
     cinder = get_cinder(destination)
     volumes = cinder.volumes.list()
-    #print volumes
+    print volumes
     return volumes
 
 
@@ -194,10 +117,10 @@ def create_volume(destination, volume):
     return myvol
 
 def main():
-    #get_volume_list('from')
-    #get_volume_list('to')
+    get_volume_list('from')
+    get_volume_list('to')
     #create_volume('from')
-    compare_and_create_volumes()
+    #compare_and_create_volumes()
 
 if __name__ == "__main__":
     with print_output():

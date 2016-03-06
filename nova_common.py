@@ -20,31 +20,9 @@ import glance_common
 import neutron_common
 from auth_stack import AuthStack
 
-from maas_common import (get_auth_ref, get_nova_client, status_err, status_ok,
-                         DESTINATION_TO_IP, DESTINATION_FROM_IP)
 
 
 def get_nova(destination):
-    #     #TODO: fix this part...
-    # if destination == 'to':
-    #     IDENTITY_IP = DESTINATION_TO_IP
-    # else:
-    #     IDENTITY_IP = DESTINATION_FROM_IP
-    # auth_ref = get_auth_ref(destination)
-    # auth_token = auth_ref['token']['id']
-    # tenant_id = auth_ref['token']['tenant']['id']
-    #
-    # COMPUTE_ENDPOINT = 'http://{ip}:8774/v2/{tenant_id}' \
-    #                 .format(ip=IDENTITY_IP, tenant_id=tenant_id)
-    #
-    # try:
-    #    nova = get_nova_client(destination, auth_token=auth_token,bypass_url=COMPUTE_ENDPOINT)
-    #
-    # except Exception as e:
-    #     #status_err(str(e))
-    #     print "boo exception"
-    #     print e
-    # return nova
     auth = AuthStack()
     client = auth.get_nova_client(destination)
     return client

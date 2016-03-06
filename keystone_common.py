@@ -14,15 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 from auth_stack import AuthStack
-from time import time
-from ipaddr import IPv4Address
-from maas_common import (get_keystone_client, status_err,
-                         metric_bool, print_output, DESTINATION_FROM_IP, DESTINATION_TO_IP)
-from keystoneclient.openstack.common.apiclient import exceptions as exc
-
-
 
 # Useful CLI commands:
 # view tenant details:
@@ -35,23 +27,6 @@ from keystoneclient.openstack.common.apiclient import exceptions as exc
 
 def get_keystone(destination):
 
-    # #TODO: fix this part...
-    # if destination == 'to':
-    #     IDENTITY_IP = DESTINATION_TO_IP
-    # else:
-    #     IDENTITY_IP = DESTINATION_FROM_IP
-    #
-    # IDENTITY_ENDPOINT = 'http://{ip}:35357/v2.0'.format(ip=IDENTITY_IP)
-    # print IDENTITY_ENDPOINT
-    # try:
-    #     keystone = get_keystone_client(destination, endpoint=IDENTITY_ENDPOINT)
-    # except (exc.HttpServerError, exc.ClientException):
-    #     is_up = False
-    #     print "Failed to connect to", IDENTITY_ENDPOINT
-    # # Any other exception presumably isn't an API error
-    # except Exception as e:
-    #     status_err(str(e))
-    # return keystone
     auth = AuthStack()
     client = auth.get_keystone_client(destination)
     return client
