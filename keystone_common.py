@@ -35,14 +35,14 @@ def get_keystone(destination):
 def get_from_tenant_list():
     keystone = get_keystone('from')
     tenants = keystone.tenants.list()
-    print tenants
+    #print tenants
     return tenants
 
 
 def get_to_tenant_list():
     keystone = get_keystone('to')
     tenants = keystone.tenants.list()
-    print tenants
+    #print tenants
     return tenants
 
 

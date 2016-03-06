@@ -21,7 +21,6 @@ import neutron_common
 from auth_stack import AuthStack
 
 
-
 def get_nova(destination):
     auth = AuthStack()
     client = auth.get_nova_client(destination)
@@ -101,7 +100,7 @@ def get_vm_list(destination):
     servers = nova.servers.list()
     for s in servers:
         server = nova.servers.get(s.id)
-        print server
+        #print server
         #print s
         #print s.networks
         #print s.addresses
