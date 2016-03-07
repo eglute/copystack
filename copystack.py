@@ -64,12 +64,24 @@ def main(opts, args):
     if opts.tenants:
         print keystone_common.get_from_tenant_names()
         print keystone_common.get_to_tenant_names()
+    if opts.createtenants:
+        keystone_common.compare_and_create_tenants()
+    if opts.publickeys:
+        nova_common.compare_and_create_keypairs()
+    if opts.users:
+        keystone_common.compare_and_create_users()
 
 if __name__ == "__main__":
 
         parser = optparse.OptionParser()
         parser.add_option("-t", "--tenants", action='store_true', dest='tenants',
                           help='Print to and from tenants. Tenant names must match before running the rest of copystack')
+        parser.add_option("-x", "--createtenants", action='store_true', dest='createtenants',
+                          help='Create tenants from->to. Tenant names must match before running the rest of copystack')
+        parser.add_option("-u", "--users", action='store_true', dest='users',
+                          help='Create users from->to. Users created without passwords')
+        parser.add_option("-p", "--publickeys", action='store_true', dest='publickeys',
+                          help='Copy public keys from -> to')
         parser.add_option("-q", "--quota", action='store_true', dest='quota',
                           help='Differences in individual quotas for each tenant')
         parser.add_option("-c", "--copynets", action="store_true", dest='copynets',
@@ -78,12 +90,14 @@ if __name__ == "__main__":
                           help='Copy security groups from -> to')
         parser.add_option("-d", "--download", action="store_true", dest='download',
                           help='Download all images to a specified path, for example, ./downloads/')
-        parser.add_option("-u", "--upload", action="store_true", dest='upload',
+        parser.add_option("-l", "--upload", action="store_true", dest='upload',
                           help='Recreate all images in a new environment. Provide a path, for example, ./downloads/ '
                                'where images from "-d" where stored. '
                                'Will not check for duplicate image names, since duplicate names are allowed.')
         parser.add_option("-f", "--flavors", action='store_true', dest='flavors', help='Copy flavors from -> to')
-        parser.add_option("-n", "--nova", action='store_true', dest='nova', help='Recreate VMs from -> to')
+        parser.add_option("-n", "--nova", action='store_true', dest='nova',
+                          help='Recreate VMs from -> to. '
+                               'No user data is set on creation, will create as logged in user.')
         parser.add_option("-v", "--volumes", action='store_true', dest='volumes', help='Recreate volumes from -> to')
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
 

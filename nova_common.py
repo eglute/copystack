@@ -151,7 +151,7 @@ def create_vm(from_vm):
     metadata = from_vm.metadata
     metadata.update({'original_vm_id':from_vm.id})
     server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-                                 meta=metadata, security_groups=group_names)
+                                 meta=metadata, security_groups=group_names, key_name=from_vm.key_name)
     print "Created VM:", server.name
     return server
 
@@ -304,6 +304,35 @@ def get_vm_by_original_id(destination, original_id):
     return None
 
 
+def get_keypairs(destination):
+    nova = get_nova(destination)
+    keys = nova.keypairs.list()
+    print keys
+    return keys
+
+
+def compare_and_create_keypairs():
+    from_keys = get_keypairs('from')
+    to_keys = get_keypairs('to')
+    from_names = map(lambda from_keys: from_keys.name, from_keys)
+    to_names = map(lambda to_keys: to_keys.name, to_keys)
+    for name in from_names:
+        if name not in to_names:
+            from_key = filter(lambda from_keys: from_keys.name == name, from_keys)
+            #print from_key
+            new_key = copy_public_key('to', from_key[0])
+            # new_flavor.set_keys(from_flavor[0].get_keys())
+            # print "New flavor created: "
+            # print new_flavor
+
+
+# cannot assign user since this novaclient doesn't support microversions. Microversions supported since Liberty.
+def copy_public_key(destination, key):
+    nova = get_nova(destination)
+    new_key = nova.keypairs.create(key.name, public_key=key.public_key)
+    print "Public key", new_key.name, "created."
+    return new_key
+
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
@@ -314,8 +343,10 @@ def main():
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
-    compare_and_create_vms()
+    #compare_and_create_vms()
     #compare_and_report_quotas()
+    #get_keypairs('from')
+    compare_and_create_keypairs()
 
 if __name__ == "__main__":
         main()

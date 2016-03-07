@@ -109,9 +109,72 @@ def compare_and_create_tenants():
 
 
 def create_tenant(destination, tenant):
-    keystone = get_keystone('to')
+    keystone = get_keystone(destination)
     new_tenant = keystone.tenants.create(tenant_name=tenant.name, description=tenant.description, enabled=tenant.enabled)
+    print "Created tenant", new_tenant.name
     return new_tenant
+
+
+def get_users(destination):
+    keystone = get_keystone(destination)
+    users = keystone.users.list()
+    print users
+    return users
+
+
+def compare_and_create_users():
+    from_users = get_users('from')
+    to_users = get_users('to')
+
+    from_names = map(lambda from_users: from_users.name, from_users)
+    to_names = map(lambda to_users: to_users.name, to_users)
+
+    for name in from_names:
+        if name not in to_names:
+            from_user = filter(lambda from_users: from_users.name == name, from_users)
+            new_user = create_user('to', from_user[0])
+
+
+def create_user(destination, user):
+    keystone = get_keystone(destination)
+    new_user = keystone.users.create(user.name, email=user.email, enabled=user.enabled)
+    print "Created new user:", new_user.name
+    return new_user
+
+
+# let's assume the users are as they should be or compare_and_create_users() was already called here.
+def get_from_to_name_user_ids():
+    from_users = get_users('from')
+    to_users = get_users('to')
+
+    users_ids = list()
+    for to_user in to_users:
+        from_user = filter(lambda from_tenants: from_tenants.name == to_user.name, from_users)
+        user = {'from_id': from_user[0].id, 'to_id': to_user.id, 'name': from_user[0].name}
+        users_ids.append(user)
+
+    return users_ids
+
+
+# finds opposite user ID based on matching user names.
+# returns the following format:
+# {'to_id': u'e99e58c687ec4a608f4323d22a29c08e', 'name': u'foobar1', 'from_id': u'eaeb181cbdaa429483960f3c7a5c95fe'}
+def find_opposite_user_id(user_id):
+    from_users = get_users('from')
+    to_users = get_users('to')
+
+    from_user = filter(lambda from_users: from_users.id == user_id, from_users)
+    if from_user:
+        to_user = filter(lambda to_users: to_users.name == from_user[0].name, to_users)
+        return {'from_id': from_user[0].id, 'name': from_user[0].name, 'to_id': to_user[0].id}
+
+    to_user = filter(lambda to_tenants: to_tenants.id == user_id, to_users)
+    if to_user:
+        from_user = filter(lambda from_users: from_users.name == to_user[0].name, from_users)
+        return {'from_id': from_user[0].id, 'name': to_user[0].name, 'to_id': to_user[0].id}
+
+    # if didn't find anything, return a lot of nones.
+    return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
 
 def main():
     #compare_and_create_tenants()
@@ -122,7 +185,11 @@ def main():
     #get_keystone('to')
     #get_from_tenant_list()
     #get_to_tenant_list()
-    get_from_tenant_names()
+    #get_from_tenant_names()
+    # get_users('from')
+    # get_users('to')
+    #compare_and_create_users()
+    print get_from_to_name_user_ids()
 
 if __name__ == "__main__":
         main()
