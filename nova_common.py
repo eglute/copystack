@@ -343,10 +343,10 @@ def main():
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
-    #compare_and_create_vms()
+    compare_and_create_vms()
     #compare_and_report_quotas()
     #get_keypairs('from')
-    compare_and_create_keypairs()
+    #compare_and_create_keypairs()
 
 if __name__ == "__main__":
         main()

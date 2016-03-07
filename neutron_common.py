@@ -99,12 +99,12 @@ def create_subnets(from_network_id, to_network_id, to_tenant_id):
                                        'name': from_subnet['name'],
                                         'enable_dhcp': from_subnet['enable_dhcp'],
                                         'tenant_id': to_tenant_id,
-                                       # 'allocation_pools': from_subnet['allocation_pools'], #todo: check test this, should work
+                                        'allocation_pools': from_subnet['allocation_pools'], #todo: check test this, should work
                                         'host_routes': from_subnet['host_routes'],
                                        'ip_version': from_subnet['ip_version'],
                                        'network_id': to_network_id,
-                                       'dns_nameservers': from_subnet['dns_nameservers']}]}
-                                       #'gateway_ip': from_subnet['gateway_ip']}]} #todo: test this with valid values, should work.
+                                       'dns_nameservers': from_subnet['dns_nameservers'], #}]}
+                                       'gateway_ip': from_subnet['gateway_ip']}]} #todo: test this with valid values, should work.
 
             subnet = neutron.create_subnet(body=to_subnet)
             print 'created subnet: '
