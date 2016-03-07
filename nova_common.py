@@ -191,13 +191,16 @@ def compare_and_create_flavors():
 
 def create_flavor(destination, flavor):
     nova = get_nova(destination)
+    swap = 0
+    if isinstance(flavor.swap, (int, long)):
+        swap = flavor.swap
     new_flavor = nova.flavors.create(name=flavor.name,
                                      ram=flavor.ram,
                                      vcpus=flavor.vcpus,
                                      disk=flavor.disk,
                                      flavorid=flavor.id,
                                      ephemeral=flavor.ephemeral,
-                                     swap=flavor.swap,
+                                     swap=swap,
                                      rxtx_factor=flavor.rxtx_factor,
                                      is_public=flavor.is_public)
     return new_flavor
@@ -339,11 +342,11 @@ def main():
     #compare_and_create_security_groups()
     #get_vm_list('from')
     #get_flavor_list('from')
-    #compare_and_create_flavors()
+    compare_and_create_flavors()
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
-    compare_and_create_vms()
+    #compare_and_create_vms()
     #compare_and_report_quotas()
     #get_keypairs('from')
     #compare_and_create_keypairs()
