@@ -14,12 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import keystone_common
 from auth_stack import AuthStack
-
-from maas_common import (get_neutron_client, status_err, status_ok,
-                         metric_bool, print_output, DESTINATION_TO_IP, DESTINATION_FROM_IP)
 
 
 def get_neutron(destination):
@@ -62,15 +58,12 @@ def network_create_net(destination, network):
 
     # need a "to" tenant id.
     tenant_info = keystone_common.find_opposite_tenant_id(network['tenant_id'])
-
-
     new_network = {'network': {'name': network['name'],
                             'tenant_id': tenant_info['to_id'],
                             'admin_state_up': network['admin_state_up'],
                             'provider:network_type': network['provider:network_type'],
                             #'provider:segmentation_id': network['provider:segmentation_id'], #todo: check on this
                             'router:external': network['router:external'],
-                            # 'status': network['status'], this one is not allowed for some reason
                             'shared': network['shared']}}
 
     physical = network['provider:physical_network']
@@ -120,10 +113,10 @@ def create_subnets(from_network_id, to_network_id, to_tenant_id):
 
 def main():
     # check(args)
-    get_network_list('from')
+    #get_network_list('from')
     # get_neutron_security_group_list(args)
     # network_create_net(args)
-    # compare_and_create_networks()
+    compare_and_create_networks()
 
     #print get_subnet('from', '8cb27f87-406f-4fcd-99c1-98da2238fd90')
 

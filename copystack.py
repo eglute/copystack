@@ -22,9 +22,6 @@ def main(opts, args):
         to_tenants = keystone_common.get_to_tenant_list()
         print "=============== To Tenants: ========================"
         print to_tenants
-        from_to_tenant = keystone_common.get_from_to_name_tenant_ids()
-        print "================ Tenant ID mappings: ==============="
-        print json.dumps(from_to_tenant, indent=4)
 
         from_networks = neutron_common.get_network_list('from')
         print "=============== From Networks: ======================"
