@@ -4,3 +4,6 @@
 .auth_ref_from.json
 .auth_ref_to.json
 /copystack_venv
+/downloads
+from_auth
+to_auth
