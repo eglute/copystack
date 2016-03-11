@@ -34,6 +34,11 @@ def main(opts, args):
         print from_sec
         print "===============To Security Groups: ========================"
         print nova_common.get_security_groups('to')
+
+        print "===============From VMs: ========================"
+        vms = nova_common.print_vm_list_ids('from')
+        print "===============To VMs: ========================"
+        vms = nova_common.print_vm_list_ids('to')
     if opts.copynets:
         neutron_common.compare_and_create_networks()
     if opts.copysec:
@@ -67,6 +72,12 @@ def main(opts, args):
         nova_common.compare_and_create_keypairs()
     if opts.users:
         keystone_common.compare_and_create_users()
+    if opts.shutdown:
+        if args:
+            print args[0]
+            nova_common.read_ids_from_file(id_file=args[0])
+        else:
+            print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
 
 if __name__ == "__main__":
 
@@ -97,6 +108,8 @@ if __name__ == "__main__":
                                'No user data is set on creation, will create as logged in user.')
         parser.add_option("-v", "--volumes", action='store_true', dest='volumes', help='Recreate volumes from -> to')
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
+        parser.add_option("-m", "--shutdown", action="store_true", dest='shutdown',
+                          help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
 
         (opts, args) = parser.parse_args()
         main(opts, args)

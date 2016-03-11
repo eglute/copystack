@@ -16,6 +16,7 @@
 
 import os
 import keystone_common
+import utils
 from auth_stack import AuthStack
 
 
@@ -30,6 +31,12 @@ def get_images(destination):
     images = glance.images.list()
     return images
 
+
+def get_image_by_name(destination, name):
+    images = get_images(destination)
+    for img in images:
+        if img.name == name:
+            return img
 
 # Find image id by pre-migration image id
 def get_image_by_original_id(destination, original_id):
@@ -64,6 +71,15 @@ def download_images(destination, path):
         print "Invalid directory provided"
 
 
+def download_images_by_vm_uuid(destination, path, uuid_file):
+    ids = utils.read_ids_from_file(uuid_file)
+    for uuid in ids:
+        image_name = "migration_vm_image_" + uuid
+        print "Downloading image name:", image_name
+        image = get_image_by_name(destination, image_name)
+        image_download(image.id, path, fname=image_name)
+
+
 def image_create(destination, image, url):
     glance = get_glance(destination)
     props = image.properties
@@ -88,11 +104,14 @@ def image_create(destination, image, url):
     fimage.closed
 
 
-def image_download(id, path):
+def image_download(id, path, fname='default'):
     glance = get_glance('from')
-    fname = path + id
+    if fname == 'default':
+        fname = path + id
+    else:
+        fname = path + fname
     data = glance.images.data(id)
-    print "Downloading " + fname
+    print "Downloading to" + fname
     save_image(data, fname)
 
 
@@ -109,6 +128,7 @@ def save_image(data, path):
         if path is not None:
             image.close()
 
+
 def main():
     #auth_ref = get_auth_ref('from')
     #check('from', auth_ref)
@@ -117,10 +137,8 @@ def main():
     #image_download()
     #create_images("./downloads/")
     #get_image_id_by_original_id('to', '64737c30-b1fe-4a93-a14d-259395f61364')
-    print get_images('from')
-    print get_images('to')
-
-    print "foo"
-
+    #print get_images('from')
+    #print get_images('to')
+    download_images_by_vm_uuid('from', './downloads/', 'id_file')
 if __name__ == "__main__":
         main()

@@ -18,7 +18,9 @@ import argparse
 import keystone_common
 import glance_common
 import neutron_common
+import utils
 from auth_stack import AuthStack
+from novaclient.client import exceptions as nova_exc
 
 
 def get_nova(destination):
@@ -109,6 +111,16 @@ def get_vm_list(destination):
     return servers
 
 
+def print_vm_list_ids(destination):
+    vms = get_vm_list(destination)
+    vms.sort(key=lambda x: x.status)
+    newlist = sorted(vms, key=lambda x: x.status)
+
+    print "VMs sorted by status (id status name):"
+    for vm in newlist:
+        print vm.id, " ",vm. status, " ", vm.name
+
+
 def compare_and_create_vms():
     from_vms = get_vm_list('from')
     to_vms = get_vm_list('to')
@@ -125,6 +137,7 @@ def compare_and_create_vms():
             #new_flavor.set_keys(from_flavor[0].get_keys())
             #print "New flavor created: "
             #print new_flavor
+
 
 # todo: add try catch for when multiple security groups are present.
 # client lets add groups by name only...
@@ -154,6 +167,29 @@ def create_vm(from_vm):
                                  meta=metadata, security_groups=group_names, key_name=from_vm.key_name)
     print "Created VM:", server.name
     return server
+
+
+def migrate_vms_from_image(id_file):
+    ids = utils.read_ids_from_file(id_file)
+    nova_from = get_nova("from")
+    nova_to = get_nova("to")
+    for uuid in ids:
+        try:
+            server = nova_from.servers.get(uuid)
+            if server.status == 'SHUTOFF':
+                print "Finding image for server with UUID:", uuid
+                new_name = "migration_vm_image_" + server.id
+                print new_name
+                image = glance_common.get_image_by_name("to", new_name)
+                if image:
+                    print "Found image with name: ", image.name
+                    #todo: create VM with given image
+                else:
+                    print "Did not find image in 'to' environment with name:", new_name
+            else:
+                print "Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+        except nova_exc.NotFound:
+            print "Server with UUID", uuid, "not found"
 
 
 def get_flavor_by_id(destination, flavor_id):
@@ -336,13 +372,49 @@ def copy_public_key(destination, key):
     print "Public key", new_key.name, "created."
     return new_key
 
+
+def power_off_vms(destination, id_file):
+    ids = utils.read_ids_from_file(id_file)
+    nova = get_nova(destination)
+    for uuid in ids:
+        try:
+            server = nova.servers.get(uuid)
+            if server.status == 'ACTIVE':
+                print "Shutting down server with UUID:", uuid
+                server.stop()
+            else:
+                print "Server with UUID:", uuid, "is not running. It must be in ACTIVE status for this action."
+        except nova_exc.NotFound:
+            print "Server with UUID", uuid, "not found"
+
+
+def create_image_from_vm(destination, id_file):
+    ids = utils.read_ids_from_file(id_file)
+    nova = get_nova(destination)
+    for uuid in ids:
+        try:
+            server = nova.servers.get(uuid)
+            if server.status == 'SHUTOFF':
+                print "Making image from server with UUID:", uuid
+                new_name = "migration_vm_image_" + server.id
+                metadata = {}
+                metadata.update({'original_vm_id':server.id})
+                metadata.update({'original_vm_name':server.name})
+                print new_name
+                server.create_image(new_name, metadata)
+            else:
+                print "Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+        except nova_exc.NotFound:
+            print "Server with UUID", uuid, "not found"
+
+
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
     #compare_and_create_security_groups()
     #get_vm_list('from')
     #get_flavor_list('from')
-    compare_and_create_flavors()
+    #compare_and_create_flavors()
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
@@ -350,6 +422,12 @@ def main():
     #compare_and_report_quotas()
     #get_keypairs('from')
     #compare_and_create_keypairs()
+    #print_vm_list_ids('from')
+    #read_ids_from_file("./id_file")
+    #power_off_vms('from', "./id_file")
+    #create_image_from_vm('from', "./id_file")
+    migrate_vms_from_image("./id_file")
+
 
 if __name__ == "__main__":
         main()

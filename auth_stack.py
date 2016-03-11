@@ -55,12 +55,14 @@ class AuthStack(object):
 
         auth_ref = self.get_from_auth_ref()
         keystone = client.Client(auth_ref=auth_ref, endpoint=self.from_auth_url)
+
         return keystone
 
     def get_to_keystone_client(self):
 
         auth_ref = self.get_to_auth_ref()
         keystone = client.Client(auth_ref=auth_ref, endpoint=self.to_auth_url)
+
         return keystone
 
     def get_keystone_client(self, destination):
