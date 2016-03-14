@@ -75,9 +75,46 @@ def main(opts, args):
     if opts.shutdown:
         if args:
             print args[0]
-            nova_common.read_ids_from_file(id_file=args[0])
+            nova_common.power_off_vms('from', id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+    if opts.createimages:
+        if args:
+            print args[0]
+            nova_common.create_image_from_vm('from', id_file=args[0])
+        else:
+            print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+    if opts.downloadbyid:
+        if len(args) == 2:
+            print args[0]
+            print args[1]
+            glance_common.download_images_by_vm_uuid('from', path=args[0], uuid_file=args[1])
+            volumes = nova_common.get_volume_id_list_for_vm_ids('from', id_file=args[1])
+            glance_common.download_images_by_volume_uuid('from', path=args[0], volumes=volumes)
+        else:
+            print "Please provide download directory and file with VM UUIDs to be downloaded, " \
+                  "for example, ./downloads/ ./id_file"
+    if opts.uploadbyid:
+        if len(args) == 2:
+            print args[0]
+            print args[1]
+            glance_common.upload_images_by_vm_uuid(path=args[0], uuid_file=args[1])
+        else:
+            print "Please provide download directory and file with VM UUIDs to be uploaded, " \
+                  "for example, ./downloads/ ./id_file"
+
+    if opts.migratevms:
+        if args:
+            print args[0]
+            nova_common.migrate_vms_from_image(id_file=args[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if opts.createvolumes:
+        if args:
+            print args[0]
+            cinder_common.create_volume_from_image_by_vm_ids(id_file=args[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
 
 if __name__ == "__main__":
 
@@ -110,6 +147,24 @@ if __name__ == "__main__":
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
         parser.add_option("-m", "--shutdown", action="store_true", dest='shutdown',
                           help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
+        parser.add_option("-i", "--createimages", action="store_true", dest='createimages',
+                          help='Create images from VMs for each UUID provided in a file, for example, ./id_file. '
+                               'Volumes attached to VMs will also be their images created.')
+        parser.add_option("-o", "--downloadbyid", action="store_true", dest='downloadbyid',
+                          help='First argument directory path, second path to a file. '
+                               'Download all images to a specified path, for example, ./downloads/ '
+                               'for each UUID provided in a file, for example, ./id_file. '
+                               'Volumes associated with the VMs will also be downloaded.')
+        parser.add_option("-k", "--uploadbyid", action="store_true", dest='uploadbyid',
+                          help='First argument directory path, second path to a file. '
+                               'Upload all images from a specified path, for example, ./downloads/ '
+                               'for each UUID provided in a file, for example, ./id_file. '
+                               'Volumes associated with the VMs will also be uploaded.')
+        parser.add_option("-g", "--migratevms", action="store_true", dest='migratevms',
+                          help='Create migrated VMs each UUID provided in a file, for example, ./id_file. ')
+        parser.add_option("-z", "--createvolumes", action="store_true", dest='createvolumes',
+                          help='Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
+                               ' for example, ./id_file. ')
 
         (opts, args) = parser.parse_args()
         main(opts, args)

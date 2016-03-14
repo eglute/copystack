@@ -16,6 +16,7 @@
 
 import os
 import keystone_common
+import nova_common
 import utils
 from auth_stack import AuthStack
 
@@ -80,23 +81,58 @@ def download_images_by_vm_uuid(destination, path, uuid_file):
         image_download(image.id, path, fname=image_name)
 
 
+def download_images_by_volume_uuid(destination, path, volumes):
+    for uuid in volumes:
+        image_name = "migration_volume_image_" + uuid
+        print "Downloading image name:", image_name
+        image = get_image_by_name(destination, image_name)
+        image_download(image.id, path, fname=image_name)
+
+
+def upload_images_by_vm_uuid(path, uuid_file):
+    ids = utils.read_ids_from_file(uuid_file)
+
+    for uuid in ids:
+        image_name = "migration_vm_image_" + uuid
+        filename = path + image_name
+        image = get_image_by_name('from', image_name)
+        print "Uploading image name:", image_name
+        image_create('to', image, filename)
+    volume_ids = nova_common.get_volume_id_list_for_vm_ids('from', './id_file')
+    for volume_id in volume_ids:
+        image_name = "migration_volume_image_" + volume_id
+        filename = path + image_name
+        image = get_image_by_name('from', image_name)
+        print "Uploading image name:", image_name
+        image_create('to', image, filename)
+
+
 def image_create(destination, image, url):
     glance = get_glance(destination)
-    props = image.properties
+    # props = image.properties
 
-    tenant = keystone_common.find_opposite_tenant_id(image.owner)
+    # tenant = keystone_common.find_opposite_tenant_id(image.owner)
     #insert original image id into the properties:
+    props = {}
     props.update({'original_image_id': image.id})
+    min_disk = 0
+    if image.min_disk is not None:
+        min_disk = image.min_disk
+    min_ram = 0
+    if image.min_ram is not None:
+        min_ram = image.min_ram
+
     with open(url, 'r') as fimage:
         img = glance.images.create(data=fimage,
                                    name=image.name,
                                    container_format=image.container_format,
                                    disk_format=image.disk_format,
-                                   owner=tenant,
+                                   # owner=tenant,
                                    size=image.size,
-                                   min_ram=image.min_ram,
-                                   min_disk=image.min_disk,
-                                   properties=image.properties,
+                                   min_ram=min_ram,
+                                   min_disk=min_disk,
+                                   #properties=image.properties, #dont want to copy all the properties, as they cause lots of unpleasant issues
+                                   properties=props,
                                    is_public=image.is_public,
                                    protected=image.protected
                                    )
@@ -136,9 +172,14 @@ def main():
     #image_create()
     #image_download()
     #create_images("./downloads/")
-    #get_image_id_by_original_id('to', '64737c30-b1fe-4a93-a14d-259395f61364')
+    #get_image_by_original_id('to', '64737c30-b1fe-4a93-a14d-259395f61364')
     #print get_images('from')
     #print get_images('to')
-    download_images_by_vm_uuid('from', './downloads/', 'id_file')
+    #download_images_by_vm_uuid('from', './downloads/', 'id_file')
+    #upload_images_by_vm_uuid('./downloads/', 'id_file')
+   # get_image_by_name('to', 'migration_vm_image_fbe348eb-ac32-46f3-b44d-c9477837266e')
+
+    volumes = nova_common.get_volume_id_list_for_vm_ids('from', './id_file')
+    download_images_by_volume_uuid('from','./downloads/', volumes=volumes)
 if __name__ == "__main__":
         main()

@@ -18,6 +18,7 @@ import argparse
 import keystone_common
 import glance_common
 import neutron_common
+import cinder_common
 import utils
 from auth_stack import AuthStack
 from novaclient.client import exceptions as nova_exc
@@ -141,11 +142,12 @@ def compare_and_create_vms():
 
 # todo: add try catch for when multiple security groups are present.
 # client lets add groups by name only...
-def create_vm(from_vm):
+def create_vm(from_vm, image='default'):
     nova = get_nova('to')
 
     flavor = get_flavor_by_id('to', from_vm.flavor['id'])
-    image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
+    if image == 'default':
+        image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
     networks = from_vm.networks
 
     nics = []
@@ -172,7 +174,7 @@ def create_vm(from_vm):
 def migrate_vms_from_image(id_file):
     ids = utils.read_ids_from_file(id_file)
     nova_from = get_nova("from")
-    nova_to = get_nova("to")
+    # nova_to = get_nova("to")
     for uuid in ids:
         try:
             server = nova_from.servers.get(uuid)
@@ -184,6 +186,7 @@ def migrate_vms_from_image(id_file):
                 if image:
                     print "Found image with name: ", image.name
                     #todo: create VM with given image
+                    create_vm(server, image=image)
                 else:
                     print "Did not find image in 'to' environment with name:", new_name
             else:
@@ -404,8 +407,31 @@ def create_image_from_vm(destination, id_file):
                 server.create_image(new_name, metadata)
             else:
                 print "Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+            if server.__dict__['os-extended-volumes:volumes_attached']:
+                print "Creating image from volume attached to the VM, volume id:"
+                volumes = server.__dict__['os-extended-volumes:volumes_attached']
+                for vol in volumes:
+                    print vol['id']
+                    cinder_common.upload_volume_to_image_by_volume_id(destination, vol['id'])
         except nova_exc.NotFound:
             print "Server with UUID", uuid, "not found"
+
+
+def get_volume_id_list_for_vm_ids(destination, id_file):
+    ids = utils.read_ids_from_file(id_file)
+    nova = get_nova(destination)
+    volume_ids = []
+    for uuid in ids:
+        try:
+            server = nova.servers.get(uuid)
+            if len(server.__dict__['os-extended-volumes:volumes_attached']) > 0:
+                volumes = server.__dict__['os-extended-volumes:volumes_attached']
+                for vol in volumes:
+                    print vol['id']
+                    volume_ids.append(vol['id'])
+        except nova_exc.NotFound:
+            print "Server with UUID", uuid, "not found"
+    return volume_ids
 
 
 def main():
@@ -425,8 +451,9 @@ def main():
     #print_vm_list_ids('from')
     #read_ids_from_file("./id_file")
     #power_off_vms('from', "./id_file")
-    #create_image_from_vm('from', "./id_file")
-    migrate_vms_from_image("./id_file")
+    create_image_from_vm('from', "./id_file")
+    #migrate_vms_from_image("./id_file")
+
 
 
 if __name__ == "__main__":
