@@ -21,13 +21,11 @@ from auth_stack import AuthStack
 import time
 
 
-
 def get_cinder(destination):
 
     auth = AuthStack()
     client = auth.get_cinder_client(destination)
     return client
-
 
 
 def get_volume_list(destination):
@@ -106,6 +104,7 @@ def create_volume_from_image(destination, volume):
     cinder = get_cinder(destination)
     from_tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
     tenant = keystone_common.find_opposite_tenant_id(from_tenant)
+    # user = keystone_common.find_opposite_user_id(volume.user_id)
     image_name = "migration_volume_image_" + volume.id
     image = glance_common.get_image_by_name('to', image_name)
     if volume.volume_type == 'None':
@@ -114,7 +113,7 @@ def create_volume_from_image(destination, volume):
                                       display_name=volume.display_name,
                                       display_description=volume.display_description,
                                       #volume_type=volume.volume_type,
-                                      #user_id=volume.user_id, todo:fixthis
+                                      # user_id=user, #todo:fixthis
                                       project_id=tenant,
                                       availability_zone=volume.availability_zone,
                                       metadata=volume.metadata,
@@ -127,7 +126,7 @@ def create_volume_from_image(destination, volume):
                                       display_name=volume.display_name,
                                       display_description=volume.display_description,
                                       volume_type=volume.volume_type,
-                                      #user_id=volume.user_id, todo:fixthis
+                                      # user_id=user, #todo:fixthis
                                       project_id=tenant,
                                       availability_zone=volume.availability_zone,
                                       metadata=volume.metadata,

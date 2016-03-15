@@ -182,7 +182,7 @@ if __name__ == "__main__":
         parser.add_option("-z", "--createvmvolumes", action="store_true", dest='createvolumes',
                           help='Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
                                ' for example, ./id_file. ')
-        parser.add_option("-v", "--singlevolumeimagecreate", action='store_true', dest='volumes',
+        parser.add_option("-v", "--singlevolumeimagecreate", action='store_true', dest='singlevolumeimagecreate',
                           help='Create images of unattached volumes')
 
 
