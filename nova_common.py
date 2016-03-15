@@ -122,6 +122,7 @@ def print_vm_list_ids(destination):
         print vm.id, " ",vm. status, " ", vm.name
 
 
+# todo: check that it is not used and remove
 def compare_and_create_vms():
     from_vms = get_vm_list('from')
     to_vms = get_vm_list('to')
@@ -174,7 +175,8 @@ def create_vm(from_vm, image='default'):
 def migrate_vms_from_image(id_file):
     ids = utils.read_ids_from_file(id_file)
     nova_from = get_nova("from")
-    # nova_to = get_nova("to")
+    to_vms = get_vm_list('to')
+
     for uuid in ids:
         try:
             server = nova_from.servers.get(uuid)
@@ -185,8 +187,15 @@ def migrate_vms_from_image(id_file):
                 image = glance_common.get_image_by_name("to", new_name)
                 if image:
                     print "Found image with name: ", image.name
-                    #todo: create VM with given image
-                    create_vm(server, image=image)
+                    # need to check for VMs that were already re-created on the TO side:
+                    dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
+                    duplicate = False
+                    for dup in dup_vms:
+                        if dup.metadata['original_vm_id'] == server.id:
+                            print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
+                            duplicate = True
+                    if duplicate is False:
+                        create_vm(server, image=image)
                 else:
                     print "Did not find image in 'to' environment with name:", new_name
             else:

@@ -71,8 +71,6 @@ def main(opts, args):
     #todo: fix this
     if opts.singlevolumeimagecreate:
         cinder_common.compare_and_create_volumes()
-    if opts.nova:
-        nova_common.compare_and_create_vms()
     if opts.quota:
         nova_common.compare_and_report_quotas()
     if opts.tenants:
@@ -158,9 +156,6 @@ if __name__ == "__main__":
                           ' Images with names that start with "migration_vm_image_" or "migration_volume_image_" '
                                'will not be moved. All others will be.')
         parser.add_option("-f", "--flavors", action='store_true', dest='flavors', help='Copy flavors from -> to')
-        parser.add_option("-n", "--nova", action='store_true', dest='nova',
-                          help='Recreate VMs from -> to. '
-                               'No user data is set on creation, will create as logged in user.')
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
         parser.add_option("-m", "--shutdown", action="store_true", dest='shutdown',
                           help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
