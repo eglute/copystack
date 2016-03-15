@@ -118,7 +118,7 @@ def create_tenant(destination, tenant):
 def get_users(destination):
     keystone = get_keystone(destination)
     users = keystone.users.list()
-    print users
+    #print users
     return users
 
 
@@ -135,9 +135,14 @@ def compare_and_create_users():
             new_user = create_user('to', from_user[0])
 
 
+# at this point don't have the tenant info for the user, so not attaching tenant info.
+# #todo: lookup tenant and add on creation
 def create_user(destination, user):
     keystone = get_keystone(destination)
-    new_user = keystone.users.create(user.name, email=user.email, enabled=user.enabled)
+    if hasattr(user, 'email'):
+        new_user = keystone.users.create(user.name, email=user.email, enabled=user.enabled)
+    else:
+        new_user = keystone.users.create(user.name, enabled=user.enabled)
     print "Created new user:", new_user.name
     return new_user
 
@@ -188,8 +193,8 @@ def main():
     #get_from_tenant_names()
     # get_users('from')
     # get_users('to')
-    #compare_and_create_users()
-    print get_from_to_name_user_ids()
+    compare_and_create_users()
+    # print get_from_to_name_user_ids()
 
 if __name__ == "__main__":
         main()

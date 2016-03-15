@@ -37,6 +37,24 @@ def get_network_by_name(destination, name):
     return from_network[0]
 
 
+def get_subnet_by_name(destination, network_id, name):
+    subnets = get_subnets(destination, network_id)
+    from_subnet = filter(lambda subnets: subnets['name'] == name, subnets)
+    return from_subnet[0]
+
+
+def get_network_by_id(destination, net_id):
+    networks = get_network_list(destination)
+    from_network = filter(lambda networks: networks['id'] == net_id, networks)
+    return from_network[0]
+
+
+def get_subnet_by_id(destination, net_id, subnet_id):
+    subnets = get_subnets(destination, net_id)
+    from_subnet = filter(lambda subnets: subnets['id'] == subnet_id, subnets)
+    return from_subnet[0]
+
+
 def get_subnets(destination, network_id):
     neutron = get_neutron(destination)
     subnets = neutron.list_subnets(network_id=network_id)['subnets']
@@ -72,7 +90,6 @@ def network_create_net(destination, network):
 
     new_net = neutron.create_network(body=new_network)
     return new_net
-
 
 
 def compare_and_create_networks():
@@ -111,13 +128,94 @@ def create_subnets(from_network_id, to_network_id, to_tenant_id):
             print subnet
 
 
+def get_routers(destination):
+    neutron = get_neutron(destination)
+    routers = neutron.list_routers()['routers']
+    # print routers
+    return routers
+
+
+def compare_and_create_routers():
+    from_routers = get_routers('from')
+    to_routers = get_routers('to')
+    from_names = map(lambda from_routers: from_routers['name'], from_routers)
+    to_names = map(lambda to_routers: to_routers['name'], to_routers)
+    for name in from_names:
+        if name not in to_names:
+            from_router = filter(lambda from_routers: from_routers['name'] == name, from_routers)
+            print from_router
+            create_router('to', from_router[0])
+            # new_network = network_create_net('to', from_router[0])
+            # print "New network created: "
+            # print new_network
+            # create_subnets(from_router[0]['id'], new_network['network']['id'], new_network['network']['tenant_id'])
+
+
+def create_router(destination, router):
+    neutron = get_neutron(destination)
+
+    # need a "to" tenant id.
+    tenant_info = keystone_common.find_opposite_tenant_id(router['tenant_id'])
+    # new_network = {'network': {'name': network['name'],
+    #                         'tenant_id': tenant_info['to_id'],
+    #                         'admin_state_up': network['admin_state_up'],
+    #                         'provider:network_type': network['provider:network_type'],
+    #                         #'provider:segmentation_id': network['provider:segmentation_id'], #todo: check on this
+    #                         'router:external': network['router:external'],
+    #                         'shared': network['shared']}}
+
+
+
+#todo: fix ['external_gateway_info']['external_fixed_ips'][0] to have multiples, rather than single
+    matching_network = find_corresponding_network_name_by_id(router['external_gateway_info']['network_id'])
+    matching_subnet = find_corresponding_subnet_name_by_id(router['external_gateway_info']['network_id'],
+                                                           matching_network['id'],
+                                                           router['external_gateway_info']['external_fixed_ips'][0]['subnet_id'])
+    body = {'router': {
+                    # 'status': router['status'],
+                    'external_gateway_info': {
+                        'network_id': matching_network['id'],
+                        'enable_snat': router['external_gateway_info']['enable_snat'],
+                        'external_fixed_ips': [{
+                            'subnet_id': matching_subnet['id'],
+                            'ip_address': router['external_gateway_info']['external_fixed_ips'][0]['ip_address']
+                        }]
+                    },
+                    'name': router['name'],
+                    'admin_state_up': router['admin_state_up'],
+                    'tenant_id': tenant_info['to_id'],
+                    'distributed': router['distributed'],
+                    # 'routes': router['routes'],
+                    'ha': router['ha'],
+                }}
+    new_router = neutron.create_router(body=body)
+    print "New Router created:", new_router
+    return new_router
+
+
+def find_corresponding_network_name_by_id(net_id):
+    from_network = get_network_by_id('from', net_id)
+    to_network = get_network_by_name('to', from_network['name'])
+    print to_network
+    return to_network
+
+
+def find_corresponding_subnet_name_by_id(from_net_id, to_net_id, subnet_id):
+    from_subnet = get_subnet_by_id('from', from_net_id, subnet_id)
+    to_subnet = get_subnet_by_name('to', to_net_id, from_subnet['name'])
+    print to_subnet
+    return to_subnet
+
+
 def main():
     # check(args)
     #get_network_list('from')
     # get_neutron_security_group_list(args)
     # network_create_net(args)
-    compare_and_create_networks()
-
+    # compare_and_create_networks()
+    # get_routers('from')
+    # get_routers('to')
+    compare_and_create_routers()
     #print get_subnet('from', '8cb27f87-406f-4fcd-99c1-98da2238fd90')
 
 if __name__ == "__main__":

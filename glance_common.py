@@ -39,6 +39,7 @@ def get_image_by_name(destination, name):
         if img.name == name:
             return img
 
+
 # Find image id by pre-migration image id
 def get_image_by_original_id(destination, original_id):
     images = get_images(destination)
@@ -55,19 +56,25 @@ def get_image_by_original_id(destination, original_id):
 def create_images(path):
     from_images = get_images('from')
     for i in from_images:
-        if (i.status == 'active') and (i.deleted == False):
-            filename = path + i.id
-            image_create('to', i, filename)
+        if i.name.startswith('migration_vm_image_') or i.name.startswith('migration_volume_image_'):
+                continue
+        else:
+            if (i.status == 'active') and (i.deleted == False):
+                filename = path + i.id
+                image_create('to', i, filename)
 
 
 def download_images(destination, path):
     if os.access(os.path.dirname(path), os.W_OK):
         images = get_images(destination)
         for i in images:
-            if (i.status == 'active') and (i.deleted == False):
-                image_download(i.id, path)
+            if i.name.startswith('migration_vm_image_') or i.name.startswith('migration_volume_image_'):
+                continue
             else:
-                print "Image with this id is not available for downloads: " + i.id
+                if (i.status == 'active') and (i.deleted == False):
+                    image_download(i.id, path)
+                else:
+                    print "Image with this id is not available for downloads: " + i.id
     else:
         print "Invalid directory provided"
 
@@ -168,7 +175,7 @@ def save_image(data, path):
 def main():
     #auth_ref = get_auth_ref('from')
     #check('from', auth_ref)
-    #download_images('from')
+    download_images('from', './downloads/')
     #image_create()
     #image_download()
     #create_images("./downloads/")
@@ -179,7 +186,7 @@ def main():
     #upload_images_by_vm_uuid('./downloads/', 'id_file')
    # get_image_by_name('to', 'migration_vm_image_fbe348eb-ac32-46f3-b44d-c9477837266e')
 
-    volumes = nova_common.get_volume_id_list_for_vm_ids('from', './id_file')
-    download_images_by_volume_uuid('from','./downloads/', volumes=volumes)
+    # volumes = nova_common.get_volume_id_list_for_vm_ids('from', './id_file')
+    # download_images_by_volume_uuid('from','./downloads/', volumes=volumes)
 if __name__ == "__main__":
         main()
