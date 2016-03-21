@@ -31,8 +31,18 @@ def get_cinder(destination):
 def get_volume_list(destination):
     cinder = get_cinder(destination)
     volumes = cinder.volumes.list()
-    print volumes
+    # print volumes
     return volumes
+
+
+# volumes that are not attached to any VMs
+def get_single_volumes(destination):
+    volumes = get_volume_list(destination)
+    singles = []
+    for vol in volumes:
+        if not vol.attachments:
+            singles.append(vol)
+    return singles
 
 
 def compare_and_create_volumes():
@@ -100,12 +110,15 @@ def create_volume(destination, volume):
     return myvol
 
 
-def create_volume_from_image(destination, volume):
+def create_volume_from_image(destination, volume, single=False):
     cinder = get_cinder(destination)
     from_tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
     tenant = keystone_common.find_opposite_tenant_id(from_tenant)
     # user = keystone_common.find_opposite_user_id(volume.user_id)
-    image_name = "migration_volume_image_" + volume.id
+    if single:
+        image_name = "single_migration_volume_image_" + volume.id
+    else:
+        image_name = "migration_volume_image_" + volume.id
     image = glance_common.get_image_by_name('to', image_name)
     if volume.volume_type == 'None':
         myvol = cinder.volumes.create(size=volume.size,
@@ -180,20 +193,51 @@ def create_volume_from_image_by_vm_ids(id_file):
     #print to_names
 
 
-def upload_volume_to_image_by_volume_id(destination, vol_id):
+def upload_volume_to_image_by_volume_id(destination, vol_id, single=False):
     cinder = get_cinder(destination)
     volume = cinder.volumes.get(vol_id)
-    image_name = "migration_volume_image_" + vol_id
+    if single:
+        image_name = "single_migration_volume_image_" + vol_id
+    else:
+        image_name = "migration_volume_image_" + vol_id
     cinder.volumes.upload_to_image(volume, force=True, image_name=image_name,
                                    container_format='bare', disk_format='raw')
 
 
+def upload_single_volumes_to_image(destination):
+    volumes = get_single_volumes(destination)
+    for vol in volumes:
+        print "Creating image from volume, volume id:", vol.id
+        upload_volume_to_image_by_volume_id(destination, vol.id, single=True)
+
+
+def download_single_volumes(destination, path):
+    vols = get_single_volumes(destination)
+    volumes = map(lambda vols: vols.id, vols)
+    glance_common.download_images_by_volume_uuid(destination, path, volumes, single=True)
+
+
+def upload_single_volume_images_to_clouds(path):
+    vols = get_single_volumes('from')
+    volumes = map(lambda vols: vols.id, vols)
+    glance_common.upload_volume_images(path, volumes)
+
+
+def create_single_volumes_from_images():
+    vols = get_single_volumes('from')
+    for volume in vols:
+        create_volume_from_image('to', volume, single=True)
+
+
 def main():
-    get_volume_list('from')
+    # get_volume_list('from')
     #get_volume_list('to')
     #create_volume('from')
     #compare_and_create_volumes()
     #upload_volume_to_image_by_volume_id('from', '5ce8ff78-87a7-465e-b455-8850adeb70fa')
+    # print get_single_volumes('from')
+    # upload_single_volumes_to_image('from')
+    download_single_volumes('from', './downloads/')
 
 if __name__ == "__main__":
         main()

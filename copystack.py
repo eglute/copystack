@@ -70,7 +70,7 @@ def main(opts, args):
         nova_common.compare_and_create_flavors()
     #todo: fix this
     if opts.singlevolumeimagecreate:
-        cinder_common.compare_and_create_volumes()
+        cinder_common.upload_single_volumes_to_image('from')
     if opts.quota:
         nova_common.compare_and_report_quotas()
     if opts.tenants:
@@ -125,6 +125,23 @@ def main(opts, args):
             cinder_common.create_volume_from_image_by_vm_ids(id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if opts.singlevolumeimagedownload:
+        if args:
+            print args[0]
+            cinder_common.download_single_volumes('from', path=args[0])
+        else:
+            print "Please provide image directory, for example, ./downloads/"
+    if opts.singlevolumeimageupload:
+        if args:
+            print args[0]
+            cinder_common.upload_single_volume_images_to_clouds(path=args[0])
+        else:
+            print "Please provide image directory, for example, ./downloads/"
+    if opts.singlevolumecreate:
+        cinder_common.create_single_volumes_from_images()
+    if opts.addmissingrouterinterfaces:
+        neutron_common.compare_and_create_ports()
+
 
 if __name__ == "__main__":
 
@@ -143,6 +160,8 @@ if __name__ == "__main__":
                           help='Copy networks and subnets from->to')
         parser.add_option("-w", "--routers", action="store_true", dest='routers',
                           help='Copy routers from->to')
+        parser.add_option("-W", "--addmissingrouterinterfaces", action="store_true", dest='addmissingrouterinterfaces',
+                          help='Add missing interfaces between routers and networks')
         parser.add_option("-s", "--copysec", action="store_true", dest='copysec',
                           help='Copy security groups from -> to')
         parser.add_option("-d", "--download", action="store_true", dest='download',
@@ -179,6 +198,12 @@ if __name__ == "__main__":
                                ' for example, ./id_file. ')
         parser.add_option("-v", "--singlevolumeimagecreate", action='store_true', dest='singlevolumeimagecreate',
                           help='Create images of unattached volumes')
+        parser.add_option("-V", "--singlevolumeimagedownload", action='store_true', dest='singlevolumeimagedownload',
+                          help='Download images of unattached volumes to a specified path, for example, ./downloads/ ')
+        parser.add_option("-y", "--singlevolumeimageupload", action='store_true', dest='singlevolumeimageupload',
+                          help='Upload images of unattached volumes from a specified path, for example, ./downloads/ ')
+        parser.add_option("-Y", "--singlevolumecreate", action='store_true', dest='singlevolumecreate',
+                          help='Create un-attached volumes form images')
 
 
         (opts, args) = parser.parse_args()

@@ -58,15 +58,31 @@ def get_subnet_by_id(destination, net_id, subnet_id):
 def get_subnets(destination, network_id):
     neutron = get_neutron(destination)
     subnets = neutron.list_subnets(network_id=network_id)['subnets']
+    # print subnets
     if len(subnets) > 0:
         return subnets
     return None
 
+
+def show_subnet(destination, subnet_id):
+    neutron = get_neutron(destination)
+    subnet = neutron.show_subnet(subnet_id)
+    # print subnet
+    return subnet
+
+
+def get_ports(destination):
+    neutron = get_neutron(destination)
+    ports = neutron.list_ports()['ports']
+    # print ports
+    return ports
+
+
 # neutron security-group-list
 def get_neutron_security_group_list(destination):
     neutron = get_neutron(destination)
-    groups = neutron.list_security_groups()
-    #print groups
+    groups = neutron.list_security_groups()['security_groups']
+    # print groups
     return groups
 
 
@@ -135,6 +151,13 @@ def get_routers(destination):
     return routers
 
 
+def get_router(destination, router):
+    neutron = get_neutron(destination)
+    router = neutron.show_router(router)['router']
+    # print router
+    return router
+
+
 def compare_and_create_routers():
     from_routers = get_routers('from')
     to_routers = get_routers('to')
@@ -154,49 +177,41 @@ def compare_and_create_routers():
 def create_router(destination, router):
     neutron = get_neutron(destination)
 
-    # need a "to" tenant id.
-    tenant_info = keystone_common.find_opposite_tenant_id(router['tenant_id'])
-    # new_network = {'network': {'name': network['name'],
-    #                         'tenant_id': tenant_info['to_id'],
-    #                         'admin_state_up': network['admin_state_up'],
-    #                         'provider:network_type': network['provider:network_type'],
-    #                         #'provider:segmentation_id': network['provider:segmentation_id'], #todo: check on this
-    #                         'router:external': network['router:external'],
-    #                         'shared': network['shared']}}
-
-
-
 #todo: fix ['external_gateway_info']['external_fixed_ips'][0] to have multiples, rather than single
+    #though i dont think routers can have two external gateway IPs...
     matching_network = find_corresponding_network_name_by_id(router['external_gateway_info']['network_id'])
     matching_subnet = find_corresponding_subnet_name_by_id(router['external_gateway_info']['network_id'],
                                                            matching_network['id'],
                                                            router['external_gateway_info']['external_fixed_ips'][0]['subnet_id'])
     body = {'router': {
-                    # 'status': router['status'],
-                    'external_gateway_info': {
-                        'network_id': matching_network['id'],
-                        'enable_snat': router['external_gateway_info']['enable_snat'],
-                        'external_fixed_ips': [{
-                            'subnet_id': matching_subnet['id'],
-                            'ip_address': router['external_gateway_info']['external_fixed_ips'][0]['ip_address']
-                        }]
-                    },
-                    'name': router['name'],
-                    'admin_state_up': router['admin_state_up'],
-                    'tenant_id': tenant_info['to_id'],
-                    'distributed': router['distributed'],
-                    # 'routes': router['routes'],
-                    'ha': router['ha'],
-                }}
+                'name': router['name'],
+            }}
     new_router = neutron.create_router(body=body)
     print "New Router created:", new_router
+
+    add_router_gateway(destination, new_router['router'], router, matching_network, matching_subnet)
     return new_router
+
+
+# the all in one command for creating router and setting this info was not working, was creating port that was down.
+# equivalent of 'neutron router-gateway-set egle-router public'
+def add_router_gateway(destination, router, old_router, matching_network, matching_subnet):
+    body = { 'network_id': matching_network['id'],
+             'enable_snat': old_router['external_gateway_info']['enable_snat'],
+                        'external_fixed_ips': [{
+                            'subnet_id': matching_subnet['id'],
+                            'ip_address': old_router['external_gateway_info']['external_fixed_ips'][0]['ip_address']
+                        }]}
+    neutron = get_neutron(destination)
+    updated_router = neutron.add_gateway_router(router['id'], body)
+    print updated_router
+    return updated_router
 
 
 def find_corresponding_network_name_by_id(net_id):
     from_network = get_network_by_id('from', net_id)
     to_network = get_network_by_name('to', from_network['name'])
-    print to_network
+    # print to_network
     return to_network
 
 
@@ -207,16 +222,110 @@ def find_corresponding_subnet_name_by_id(from_net_id, to_net_id, subnet_id):
     return to_subnet
 
 
+def find_corresponding_router_name_by_id(router_id):
+    from_router = get_router('from', router_id)
+    to_router = get_router_by_name('to', from_router['name'])
+    # print to_router
+    return to_router
+
+
+def get_router_by_name(destination, name):
+    routers = get_routers(destination)
+    from_routers = filter(lambda routers: routers['name'] == name, routers)
+    if from_routers:
+        return from_routers[0]
+    else:
+        return None
+
+
+def compare_and_create_ports():
+    from_ports = get_ports('from')
+    to_ports = get_ports('to')
+    #the magic of mixing ids and names. Ports that are newly created through copystack will have the old id as the name.
+    from_names = map(lambda from_ports: from_ports['id'], from_ports)
+    to_names = map(lambda to_ports: to_ports['name'], to_ports)
+    for name in from_names:
+        if name not in to_names:
+            from_port = filter(lambda from_ports: from_ports['id'] == name, from_ports)
+            # if (from_port[0]['device_owner'].startswith('network:router_gateway') or
+            if from_port[0]['device_owner'].startswith('network:router_interface'):
+            # cannot simply just add a new port for some reason, need to do this for ports to come up in active status
+                new_thing = add_interface_router('to', from_port[0])
+                print "Router updated with new interfaces:", new_thing
+            if (from_port[0]['device_owner'].startswith('compute:nova') or
+                from_port[0]['device_owner'].startswith('network:floatingip')):
+                    create_ip_ports('to', from_port[0])
+
+
+# attach internal network to a router, by creating new interface
+# equivalent of 'neutron router-interface-add'
+def add_interface_router(destination, port):
+    neutron = get_neutron(destination)
+    old_router = get_router('from', port['device_id'])
+    old_network = get_network_by_id('from', port['network_id'])
+    new_router = find_corresponding_router_name_by_id(old_router['id'])
+    new_network = find_corresponding_network_name_by_id(old_network['id'])
+    old_subnet_id = port['fixed_ips'][0]['subnet_id']
+    print old_subnet_id
+    new_subnet = find_corresponding_subnet_name_by_id(old_network['id'], new_network['id'], old_subnet_id) #todo: change to list of things
+    body = {'subnet_id': new_subnet['id'],
+            'fixed_ips': [{
+                'ip_address': port['fixed_ips'][0]['ip_address'] #todo: fix this
+            }]}
+    try:
+        updated_router = neutron.add_interface_router(new_router['id'], body)
+        return updated_router
+    except Exception, e:
+        print "Exception occured while adding interface to router", str(e)
+
+
+# create ports for floating ips as well as any other ports that get individual ips on subnets that are then attached to
+# vm instances. Equivalent of 'neutron port-create egle-net --fixed-ip ip_address=11.11.11.3'
+def create_ip_ports(destination, port):
+    neutron = get_neutron(destination)
+    corspd_network = find_corresponding_network_name_by_id(port['network_id'])
+
+    body = {'port': {
+                'network_id': corspd_network['id'],
+                'fixed_ips':[{
+                    'ip_address': port['fixed_ips'][0]['ip_address'] #todo: fix for a list of subnets
+                    }],
+                'device_owner': port['device_owner'],
+                }
+            }
+    try:
+        new_port = neutron.create_port(body=body)
+        print "Port created:", new_port
+        return new_port
+    except Exception, e:
+        print "Exception occured while creating port", str(e)
+
+
+def find_port_by_ip(destination, ip):
+    ports = get_ports(destination)
+    port_ip = filter(lambda ports: ports['fixed_ips'][0]['ip_address'] == ip, ports)
+    print port_ip
+    return port_ip[0]
+
+
 def main():
     # check(args)
-    #get_network_list('from')
-    # get_neutron_security_group_list(args)
+    # get_network_list('from')
+    # print get_neutron_security_group_list('from')
     # network_create_net(args)
     # compare_and_create_networks()
-    # get_routers('from')
-    # get_routers('to')
-    compare_and_create_routers()
+    # print get_routers('from')
+    # print get_routers('to')
+    # compare_and_create_routers()
     #print get_subnet('from', '8cb27f87-406f-4fcd-99c1-98da2238fd90')
+    # show_subnet('from', '5a4a876d-f22d-48c8-874a-a3385576b717')
+    # get_subnets('from', '0dfd0dee-7253-40c3-8157-45d9b2ffe07c')
+    # get_subnets('to', '5618c10d-f055-4244-b439-56df4e23334a')
+    # get_router('from', '8cd5e812-9300-4c41-b913-db8e221d883c')
+    # print get_ports('to')
+    # create_port()
+    # compare_and_create_ports()
+    find_port_by_ip('to', '11.11.11.3')
 
 if __name__ == "__main__":
         main()

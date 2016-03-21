@@ -88,9 +88,12 @@ def download_images_by_vm_uuid(destination, path, uuid_file):
         image_download(image.id, path, fname=image_name)
 
 
-def download_images_by_volume_uuid(destination, path, volumes):
+def download_images_by_volume_uuid(destination, path, volumes, single=False):
     for uuid in volumes:
-        image_name = "migration_volume_image_" + uuid
+        if single:
+            image_name = "single_migration_volume_image_" + uuid
+        else:
+            image_name = "migration_volume_image_" + uuid
         print "Downloading image name:", image_name
         image = get_image_by_name(destination, image_name)
         image_download(image.id, path, fname=image_name)
@@ -114,6 +117,15 @@ def upload_images_by_vm_uuid(path, uuid_file):
         image_create('to', image, filename)
 
 
+def upload_volume_images(path, volumes):
+    for vol in volumes:
+        image_name = "single_migration_volume_image_" + vol
+        filename = path + image_name
+        image = get_image_by_name('from', image_name)
+        print "Uploading image name:", image_name
+        image_create('to', image, filename)
+
+
 def image_create(destination, image, url):
     glance = get_glance(destination)
     # props = image.properties
@@ -128,7 +140,7 @@ def image_create(destination, image, url):
     min_ram = 0
     if image.min_ram is not None:
         min_ram = image.min_ram
-
+    print "this might take a while..."
     with open(url, 'r') as fimage:
         img = glance.images.create(data=fimage,
                                    name=image.name,
@@ -164,6 +176,7 @@ def save_image(data, path):
     :param path: path to save the image to
     """
     image = open(path, 'wb')
+    print "this might take a while..."
     try:
         for chunk in data:
             image.write(chunk)

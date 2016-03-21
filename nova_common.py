@@ -152,11 +152,14 @@ def create_vm(from_vm, image='default'):
     networks = from_vm.networks
 
     nics = []
-    for network, ips in networks.iteritems():
-        net = neutron_common.get_network_by_name('to', network)
+    for network, nets in networks.iteritems():
+        # net = neutron_common.get_network_by_name('to', network)
         #print ip[0]
-        for ip in ips:
-            nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+        for ip in nets:
+            print ip
+            port = neutron_common.find_port_by_ip('to', ip)
+            # nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+            nic = {'port-id': port['id']}
             nics.append(nic)
 
     groups = from_vm.security_groups
@@ -460,8 +463,8 @@ def main():
     #print_vm_list_ids('from')
     #read_ids_from_file("./id_file")
     #power_off_vms('from', "./id_file")
-    create_image_from_vm('from', "./id_file")
-    #migrate_vms_from_image("./id_file")
+    # create_image_from_vm('from', "./id_file")
+    migrate_vms_from_image("./id_file")
 
 
 
