@@ -245,7 +245,8 @@ def compare_and_create_ports():
                 new_thing = add_interface_router('to', from_port[0])
                 print "Router updated with new interfaces:", new_thing
             if (from_port[0]['device_owner'].startswith('compute:nova') or
-                from_port[0]['device_owner'].startswith('network:floatingip')):
+                from_port[0]['device_owner'].startswith('network:floatingip') or
+                from_port[0]['device_owner'].startswith('compute:None')):
                     create_ip_ports('to', from_port[0])
 
 
@@ -323,8 +324,8 @@ def main():
     # get_router('from', '8cd5e812-9300-4c41-b913-db8e221d883c')
     # print get_ports('to')
     # create_port()
-    # compare_and_create_ports()
-    # find_port_by_ip('to', '11.11.11.3')
+    compare_and_create_ports()
+    find_port_by_ip('to', '11.11.11.3')
     print get_neutron_security_group_list('from')
     print get_neutron_security_group_list('to')
 
