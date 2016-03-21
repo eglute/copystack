@@ -139,7 +139,7 @@ def main(opts, args):
             print "Please provide image directory, for example, ./downloads/"
     if opts.singlevolumecreate:
         cinder_common.create_single_volumes_from_images()
-    if opts.addmissingrouterinterfaces:
+    if opts.addmissinginterfaces:
         neutron_common.compare_and_create_ports()
 
 
@@ -160,8 +160,10 @@ if __name__ == "__main__":
                           help='Copy networks and subnets from->to')
         parser.add_option("-w", "--routers", action="store_true", dest='routers',
                           help='Copy routers from->to')
-        parser.add_option("-W", "--addmissingrouterinterfaces", action="store_true", dest='addmissingrouterinterfaces',
-                          help='Add missing interfaces between routers and networks')
+        parser.add_option("-W", "--addmissinginterfaces", action="store_true", dest='addmissinginterfaces',
+                          help='Add missing interfaces between routers and networks and additional ports. '
+                               'It will skip duplicates, but will print an exception that it did so. If ports created'
+                               'in error, delete them from OpenStack command line with "neutron port-delete" command.')
         parser.add_option("-s", "--copysec", action="store_true", dest='copysec',
                           help='Copy security groups from -> to')
         parser.add_option("-d", "--download", action="store_true", dest='download',

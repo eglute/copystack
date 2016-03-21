@@ -78,14 +78,6 @@ def get_ports(destination):
     return ports
 
 
-# neutron security-group-list
-def get_neutron_security_group_list(destination):
-    neutron = get_neutron(destination)
-    groups = neutron.list_security_groups()['security_groups']
-    # print groups
-    return groups
-
-
 # takes a network object which and replicated to the indicated destination
 def network_create_net(destination, network):
     neutron = get_neutron(destination)
@@ -308,10 +300,17 @@ def find_port_by_ip(destination, ip):
     return port_ip[0]
 
 
+# neutron security-group-list
+def get_neutron_security_group_list(destination):
+    neutron = get_neutron(destination)
+    groups = neutron.list_security_groups()['security_groups']
+    # print groups
+    return groups
+
+
 def main():
     # check(args)
     # get_network_list('from')
-    # print get_neutron_security_group_list('from')
     # network_create_net(args)
     # compare_and_create_networks()
     # print get_routers('from')
@@ -325,7 +324,9 @@ def main():
     # print get_ports('to')
     # create_port()
     # compare_and_create_ports()
-    find_port_by_ip('to', '11.11.11.3')
+    # find_port_by_ip('to', '11.11.11.3')
+    print get_neutron_security_group_list('from')
+    print get_neutron_security_group_list('to')
 
 if __name__ == "__main__":
         main()

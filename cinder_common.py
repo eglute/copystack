@@ -120,63 +120,66 @@ def create_volume_from_image(destination, volume, single=False):
     else:
         image_name = "migration_volume_image_" + volume.id
     image = glance_common.get_image_by_name('to', image_name)
-    if volume.volume_type == 'None':
-        myvol = cinder.volumes.create(size=volume.size,
-                                      snapshot_id=volume.snapshot_id,
-                                      display_name=volume.display_name,
-                                      display_description=volume.display_description,
-                                      #volume_type=volume.volume_type,
-                                      # user_id=user, #todo:fixthis
-                                      project_id=tenant,
-                                      availability_zone=volume.availability_zone,
-                                      metadata=volume.metadata,
-                                      imageRef=image.id,
-                                      source_volid=volume.source_volid
-                                      )
-    else:
-        myvol = cinder.volumes.create(size=volume.size,
-                                      snapshot_id=volume.snapshot_id,
-                                      display_name=volume.display_name,
-                                      display_description=volume.display_description,
-                                      volume_type=volume.volume_type,
-                                      # user_id=user, #todo:fixthis
-                                      project_id=tenant,
-                                      availability_zone=volume.availability_zone,
-                                      metadata=volume.metadata,
-                                      imageRef=image.id,
-                                      source_volid=volume.source_volid
-                                      )
-    print "Volume", myvol.display_name, "created"
-    #todo: wait for status to attach
-    status = myvol.status
-    while True:
-        vol = cinder.volumes.get(myvol.id)
-        status = vol.status
-        print "Volume current status:", status
-        if status != 'available':
-            print "sleeping... waiting for available status"
-            time.sleep(5)
+    if image:
+        if volume.volume_type == 'None':
+            myvol = cinder.volumes.create(size=volume.size,
+                                          snapshot_id=volume.snapshot_id,
+                                          display_name=volume.display_name,
+                                          display_description=volume.display_description,
+                                          #volume_type=volume.volume_type,
+                                          # user_id=user, #todo:fixthis
+                                          project_id=tenant,
+                                          availability_zone=volume.availability_zone,
+                                          metadata=volume.metadata,
+                                          imageRef=image.id,
+                                          source_volid=volume.source_volid
+                                          )
         else:
-            break
-
-    if volume.attachments:
-        for att in volume.attachments:
-            print att
-            print att['server_id']
-            device = att['device']
-            print device
-
-            vm = nova_common.get_vm_by_original_id('to', att['server_id'])
-            if vm:
-                #myvol.attach(vm.id, device)
-                # Followed this advice: http://www.florentflament.com/blog/openstack-volume-in-use-although-vm-doesnt-exist.html
-                nova = nova_common.get_nova(destination)
-                nova.volumes.create_server_volume(vm.id, myvol.id, device)
-                print "Volume", myvol.display_name, "attached to VM", vm.name
+            myvol = cinder.volumes.create(size=volume.size,
+                                          snapshot_id=volume.snapshot_id,
+                                          display_name=volume.display_name,
+                                          display_description=volume.display_description,
+                                          volume_type=volume.volume_type,
+                                          # user_id=user, #todo:fixthis
+                                          project_id=tenant,
+                                          availability_zone=volume.availability_zone,
+                                          metadata=volume.metadata,
+                                          imageRef=image.id,
+                                          source_volid=volume.source_volid
+                                          )
+        print "Volume", myvol.display_name, "created"
+        #todo: wait for status to attach
+        status = myvol.status
+        while True:
+            vol = cinder.volumes.get(myvol.id)
+            status = vol.status
+            print "Volume current status:", status
+            if status != 'available':
+                print "sleeping... waiting for available status"
+                time.sleep(5)
             else:
-                print "Original Volume", volume.display_name, "was attached to a VM with ID", att['server_id'], \
-                    "but this VM was not found in the current VM list"
-    return myvol
+                break
+
+        if volume.attachments:
+            for att in volume.attachments:
+                print att
+                print att['server_id']
+                device = att['device']
+                print device
+
+                vm = nova_common.get_vm_by_original_id('to', att['server_id'])
+                if vm:
+                    #myvol.attach(vm.id, device)
+                    # Followed this advice: http://www.florentflament.com/blog/openstack-volume-in-use-although-vm-doesnt-exist.html
+                    nova = nova_common.get_nova(destination)
+                    nova.volumes.create_server_volume(vm.id, myvol.id, device)
+                    print "Volume", myvol.display_name, "attached to VM", vm.name
+                else:
+                    print "Original Volume", volume.display_name, "was attached to a VM with ID", att['server_id'], \
+                        "but this VM was not found in the current VM list"
+        return myvol
+    else:
+        print "Image", image_name, "for volume migration not found. Did you skip a step?"
 
 
 def create_volume_from_image_by_vm_ids(id_file):
@@ -237,7 +240,7 @@ def main():
     #upload_volume_to_image_by_volume_id('from', '5ce8ff78-87a7-465e-b455-8850adeb70fa')
     # print get_single_volumes('from')
     # upload_single_volumes_to_image('from')
-    download_single_volumes('from', './downloads/')
-
+    # download_single_volumes('from', './downloads/')
+    create_volume_from_image_by_vm_ids('./id_file')
 if __name__ == "__main__":
         main()
