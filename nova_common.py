@@ -159,8 +159,9 @@ def create_vm(from_vm, image='default'):
             print ip
             port = neutron_common.find_port_by_ip('to', ip)
             # nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
-            nic = {'port-id': port['id']}
-            nics.append(nic)
+            if not port['device_owner'].startswith('network:floatingip'):
+                nic = {'port-id': port['id']}
+                nics.append(nic)
 
     groups = from_vm.security_groups
     #out of luck for duplicate group names...

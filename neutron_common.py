@@ -249,6 +249,8 @@ def compare_and_create_ports():
                 from_port[0]['device_owner'].startswith('compute:None')):
                     create_ip_ports('to', from_port[0])
 
+    associate_all_ips()
+
 
 # attach internal network to a router, by creating new interface
 # equivalent of 'neutron router-interface-add'
@@ -278,17 +280,27 @@ def create_ip_ports(destination, port):
     neutron = get_neutron(destination)
     corspd_network = find_corresponding_network_name_by_id(port['network_id'])
 
-    body = {'port': {
+    try:
+        if port['device_owner'].startswith('network:floatingip'):
+            body = {
+                    "floatingip": {
+                        "floating_network_id": corspd_network['id'],
+                        "floating_ip_address": port['fixed_ips'][0]['ip_address']
+                    }
+            }
+            new_port = neutron.create_floatingip(body=body)
+            print "Floating IP port created:", new_port
+        else:
+            body = {'port': {
                 'network_id': corspd_network['id'],
                 'fixed_ips':[{
-                    'ip_address': port['fixed_ips'][0]['ip_address'] #todo: fix for a list of subnets
+                    'ip_address': port['fixed_ips'][0]['ip_address']
                     }],
-                'device_owner': port['device_owner'],
+                "admin_state_up": 'true'
                 }
             }
-    try:
-        new_port = neutron.create_port(body=body)
-        print "Port created:", new_port
+            new_port = neutron.create_port(body=body)
+            print "Port created:", new_port
         return new_port
     except Exception, e:
         print "Exception occured while creating port", str(e)
@@ -301,6 +313,13 @@ def find_port_by_ip(destination, ip):
     return port_ip[0]
 
 
+def find_float_by_floatip(destination, ip):
+    ports = get_floatingip_list(destination)
+    port_ip = filter(lambda ports: ports['floating_ip_address'] == ip, ports)
+    # print port_ip
+    return port_ip[0]
+
+
 # neutron security-group-list
 def get_neutron_security_group_list(destination):
     neutron = get_neutron(destination)
@@ -308,6 +327,31 @@ def get_neutron_security_group_list(destination):
     # print groups
     return groups
 
+
+def get_floatingip_list(destination):
+    neutron = get_neutron(destination)
+    floats = neutron.list_floatingips()['floatingips']
+    return floats
+
+
+def associate_all_ips():
+    from_floats = get_floatingip_list('from')
+    to_floats = get_floatingip_list('to')
+    for from_float in from_floats:
+        if from_float['fixed_ip_address']:
+            to_fixed_port = find_port_by_ip('to', from_float['fixed_ip_address'])
+            to_float_port = find_float_by_floatip('to', from_float['floating_ip_address'])
+            associate_floating_ip_to_fixed_port('to', to_float_port['id'], to_fixed_port['id'])
+
+
+def associate_floating_ip_to_fixed_port(destination, to_float_port_id, to_fixed_port_id):
+    neutron = get_neutron(destination)
+    body = {"floatingip":
+                {"port_id": to_fixed_port_id} #fixed ip port ID.
+            }
+    #floating ip port, body
+    neutron.update_floatingip(to_float_port_id, body=body)
+    print "Updated floating to fixed IP association, port: ", to_float_port_id, " to ", to_fixed_port_id
 
 def main():
     # check(args)
@@ -322,12 +366,17 @@ def main():
     # get_subnets('from', '0dfd0dee-7253-40c3-8157-45d9b2ffe07c')
     # get_subnets('to', '5618c10d-f055-4244-b439-56df4e23334a')
     # get_router('from', '8cd5e812-9300-4c41-b913-db8e221d883c')
-    # print get_ports('to')
+    print get_ports('from')
     # create_port()
-    compare_and_create_ports()
-    find_port_by_ip('to', '11.11.11.3')
-    print get_neutron_security_group_list('from')
-    print get_neutron_security_group_list('to')
+    # compare_and_create_ports()
+    # find_port_by_ip('to', '11.11.11.3')
+    # print get_neutron_security_group_list('from')
+    # print get_neutron_security_group_list('to')
+    # print get_floatingip_list('from')
+    # associate_floating_ip_to_fixed_port('to')
+    # print find_float_by_floatip('from', '172.29.248.10')
+    # associate_all_ips()
+
 
 if __name__ == "__main__":
         main()
