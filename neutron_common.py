@@ -31,6 +31,17 @@ def get_network_list(destination):
     return networks
 
 
+def print_network_list(destination):
+    networks = get_network_list(destination)
+    networks.sort(key=lambda x: x['name'])
+    newlist = sorted(networks, key=lambda x: x['name'])
+    for net in newlist:
+        print net['name']
+        subnets = get_subnets(destination, net['id'])
+        for sub in subnets:
+            print "    ", '{:20}'.format(sub['name']), " ", sub['cidr']
+
+
 def get_network_by_name(destination, name):
     networks = get_network_list(destination)
     from_network = filter(lambda networks: networks['name'] == name, networks)
@@ -141,6 +152,16 @@ def get_routers(destination):
     routers = neutron.list_routers()['routers']
     # print routers
     return routers
+
+
+def print_routers(destination):
+    routers = get_routers(destination)
+
+    routers.sort(key=lambda x: x['name'])
+    newlist = sorted(routers, key=lambda x: x['name'])
+    print "Name:                  Status:"
+    for router in newlist:
+        print '{:20}'.format(router['name']), " ", router['status']
 
 
 def get_router(destination, router):
@@ -359,6 +380,7 @@ def main():
     # network_create_net(args)
     # compare_and_create_networks()
     # print get_routers('from')
+    # print_routers('from')
     # print get_routers('to')
     # compare_and_create_routers()
     #print get_subnet('from', '8cb27f87-406f-4fcd-99c1-98da2238fd90')
@@ -366,7 +388,7 @@ def main():
     # get_subnets('from', '0dfd0dee-7253-40c3-8157-45d9b2ffe07c')
     # get_subnets('to', '5618c10d-f055-4244-b439-56df4e23334a')
     # get_router('from', '8cd5e812-9300-4c41-b913-db8e221d883c')
-    print get_ports('from')
+    # print get_ports('from')
     # create_port()
     # compare_and_create_ports()
     # find_port_by_ip('to', '11.11.11.3')
@@ -376,6 +398,7 @@ def main():
     # associate_floating_ip_to_fixed_port('to')
     # print find_float_by_floatip('from', '172.29.248.10')
     # associate_all_ips()
+    print_network_list('from')
 
 
 if __name__ == "__main__":

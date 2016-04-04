@@ -33,9 +33,16 @@ def get_nova(destination):
 def get_security_groups(destination):
     nova = get_nova(destination)
     groups = nova.security_groups.list()
-   # print groups
-
     return groups
+
+
+def print_security_groups(destination):
+    groups = get_security_groups(destination)
+    groups.sort(key=lambda x: x.name)
+    newlist = sorted(groups, key=lambda x: x.name)
+    print "Name                   Description"
+    for group in newlist:
+        print '{:20}'.format(group.name), " ", group.description
 
 
 def compare_and_create_security_groups():
@@ -465,7 +472,8 @@ def main():
     #read_ids_from_file("./id_file")
     #power_off_vms('from', "./id_file")
     # create_image_from_vm('from', "./id_file")
-    migrate_vms_from_image("./id_file")
+    # migrate_vms_from_image("./id_file")
+    print_security_groups('from')
 
 
 

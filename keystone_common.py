@@ -60,6 +60,18 @@ def get_to_tenant_list():
     return tenants
 
 
+def print_tenants(destination):
+    if destination == 'to':
+        tenants = get_to_tenant_list()
+    else:
+        tenants = get_from_tenant_list()
+    tenants.sort(key=lambda x: x.name)
+    newlist = sorted(tenants, key=lambda x: x.name)
+    print "Name:                  Description:"
+    for tenant in newlist:
+        print '{:20}'.format(tenant.name), " ", tenant.description
+
+
 # let's assume the tenants are as they should be or compare_and_create_tenants() was already called here.
 def get_from_to_name_tenant_ids():
     from_tenants = get_from_tenant_list()
@@ -193,8 +205,9 @@ def main():
     #get_from_tenant_names()
     # get_users('from')
     # get_users('to')
-    compare_and_create_users()
+    # compare_and_create_users()
     # print get_from_to_name_user_ids()
+    print_tenants('from')
 
 if __name__ == "__main__":
         main()

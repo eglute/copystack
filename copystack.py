@@ -16,24 +16,23 @@ def main(opts, args):
     print "From:", auth.from_auth_ip
     print "To:", auth.to_auth_ip
     if opts.report:
-        from_tenants = keystone_common.get_from_tenant_list()
         print "--------------- From Tenants: ---------------------"
-        print from_tenants
-        to_tenants = keystone_common.get_to_tenant_list()
+        keystone_common.print_tenants('from')
         print "\n--------------- To Tenants: ------------------------"
-        print to_tenants
+        keystone_common.print_tenants('to')
 
-        from_networks = neutron_common.get_network_list('from')
-        print "\n--------------- From Networks: ---------------------"
-        print from_networks
-        print "\n--------------- To Networks: ------------------------"
-        to_networks = neutron_common.get_network_list('to')
-        print to_networks
+        print "\n--------------- From Networks (with subnets): ---------------------"
+        neutron_common.print_network_list('from')
+        print "\n--------------- To Networks (with subnets): ------------------------"
+        neutron_common.print_network_list('to')
+        print "\n--------------- From Routers: ---------------------"
+        neutron_common.print_routers('from')
+        print "\n--------------- To Routers: ---------------------"
+        neutron_common.print_routers('to')
         print "\n--------------- From Security Groups: ------------------------"
-        from_sec = nova_common.get_security_groups('from')
-        print from_sec
+        nova_common.print_security_groups('from')
         print "\n--------------- To Security Groups: ------------------------"
-        print nova_common.get_security_groups('to')
+        nova_common.print_security_groups('to')
         print "\n--------------- From Images: ------------------------"
         from_images = glance_common.get_images('from')
         print "Image UUID / Image Status / Image Name"
