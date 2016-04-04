@@ -40,7 +40,7 @@ def print_security_groups(destination):
     groups = get_security_groups(destination)
     groups.sort(key=lambda x: x.name)
     newlist = sorted(groups, key=lambda x: x.name)
-    print "Name                   Description"
+    print "Name:                  Description:"
     for group in newlist:
         print '{:20}'.format(group.name), " ", group.description
 
