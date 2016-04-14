@@ -215,8 +215,12 @@ def update_roles(old_user, new_user, tenant):
 
     for role in from_roles:
         rol = filter(lambda to_roles: to_roles.name == role.name, to_roles)
-        keystone.roles.add_user_role(new_user, role=rol[0], tenant=to_tenant[0])
-        print "Role added:", rol[0].name, " to user:", new_user.name
+        try:
+            keystone.roles.add_user_role(new_user, role=rol[0], tenant=to_tenant[0])
+            print "Role added:", rol[0].name, " to user:", new_user.name
+        except Exception, e:
+            print "No new roles added for user:", new_user.name
+
 
 
 def get_roles(destination):

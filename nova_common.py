@@ -20,6 +20,7 @@ import glance_common
 import neutron_common
 import cinder_common
 import utils
+import time
 from auth_stack import AuthStack
 from novaclient.client import exceptions as nova_exc
 
@@ -48,8 +49,8 @@ def print_security_groups(destination):
 def compare_and_create_security_groups():
     from_groups = get_security_groups('from')
     to_groups = get_security_groups('to')
-    #print from_groups
-    #print to_groups
+    # print from_groups
+    # print to_groups
 
     new_groups = []
     from_names = map(lambda from_groups: from_groups.name, from_groups)
@@ -72,10 +73,10 @@ def create_security_group(destination, from_group):
     #need to create rules after all the groups are created since rules can use groups.
     #create_security_rules(destination, from_group, to_group)
     #print to_group.rules
+    print "Security group ", to_group.name, "created."
     return to_group
 
 
-#todo: fix this
 def create_security_rules(destination, from_group, to_group, new_groups):
     nova = get_nova(destination)
 
@@ -174,11 +175,17 @@ def create_vm(from_vm, image='default'):
     #out of luck for duplicate group names...
     group_names_map = map(lambda groups: groups['name'], groups)
     group_names = set(group_names_map)
-    # print group_names
+    group_names = list(group_names)
+    print "groups: ", group_names
     metadata = from_vm.metadata
     metadata.update({'original_vm_id':from_vm.id})
     server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
                                  meta=metadata, security_groups=group_names, key_name=from_vm.key_name)
+    
+    #todo: fix this properly. though it should not be necessery, for some reason sec. groups don't get attached on creation
+    time.sleep(20)
+    for g in group_names:
+        server.add_security_group(g)
     print "Created VM:", server.name
     return server
 
@@ -369,7 +376,7 @@ def get_vm_by_original_id(destination, original_id):
 def get_keypairs(destination):
     nova = get_nova(destination)
     keys = nova.keypairs.list()
-    print keys
+    # print keys
     return keys
 
 
@@ -457,9 +464,9 @@ def get_volume_id_list_for_vm_ids(destination, id_file):
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
-    #compare_and_create_security_groups()
+    compare_and_create_security_groups()
     #get_vm_list('from')
-    get_flavor_list('from')
+    # get_flavor_list('from')
     #compare_and_create_flavors()
     #get_quotas('from')
     #compare_and_update_quotas()
@@ -472,7 +479,7 @@ def main():
     #read_ids_from_file("./id_file")
     #power_off_vms('from', "./id_file")
     # create_image_from_vm('from', "./id_file")
-    # migrate_vms_from_image("./id_file")
+    migrate_vms_from_image("./id_file")
     # print_security_groups('from')
 
 

@@ -160,14 +160,13 @@ if __name__ == "__main__":
 
         parser = optparse.OptionParser()
         parser.add_option("-t", "--tenants", action='store_true', dest='tenants',
-                          help='Print to and from tenants. Tenant names must match before running the rest of copystack')
+                          help='Run this command as Admin. Print to and from tenants. Tenant names must match before '
+                               'running the rest of copystack')
         parser.add_option("-x", "--createtenants", action='store_true', dest='createtenants',
                           help='Run this command as Admin. Create tenants from->to.'
                                'Tenant names must match before running the rest of copystack')
         parser.add_option("-u", "--users", action='store_true', dest='users',
                           help='Run this command as Admin. Create users from->to. Users created without passwords')
-        parser.add_option("-p", "--publickeys", action='store_true', dest='publickeys',
-                          help='Copy public keys from -> to')
         parser.add_option("-q", "--quota", action='store_true', dest='quota',
                           help='Run this command as Admin. Print differences in individual quotas for each tenant')
         parser.add_option("-c", "--copynets", action="store_true", dest='copynets',
@@ -181,6 +180,8 @@ if __name__ == "__main__":
                                'in error, delete them from OpenStack command line with "neutron port-delete" command.')
         parser.add_option("-s", "--copysec", action="store_true", dest='copysec',
                           help='Copy security groups from -> to')
+        parser.add_option("-p", "--publickeys", action='store_true', dest='publickeys',
+                          help='Copy public keys from -> to')
         parser.add_option("-d", "--download", action="store_true", dest='download',
                           help='Download all non-migration images to a specified path, for example, ./downloads/.'
                           ' Images with names that start with "migration_vm_image_" or "migration_volume_image_" '
