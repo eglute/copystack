@@ -68,9 +68,9 @@ def print_tenants(destination):
         tenants = get_from_tenant_list()
     tenants.sort(key=lambda x: x.name)
     newlist = sorted(tenants, key=lambda x: x.name)
-    print "Name:                  Description:"
+    print "Tenant ID:                         Name:                  Description:"
     for tenant in newlist:
-        print '{:20}'.format(tenant.name), " ", tenant.description
+        print tenant.id, " ", '{:20}'.format(tenant.name), " ", tenant.description, " "
 
 
 # let's assume the tenants are as they should be or compare_and_create_tenants() was already called here.

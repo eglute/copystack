@@ -38,8 +38,9 @@ def print_network_list(destination):
     for net in newlist:
         print net['name']
         subnets = get_subnets(destination, net['id'])
-        for sub in subnets:
-            print "    ", '{:20}'.format(sub['name']), " ", sub['cidr']
+        if subnets:
+            for sub in subnets:
+                print "    ", '{:20}'.format(sub['name']), " ", sub['cidr']
 
 
 def get_network_by_name(destination, name):
@@ -159,9 +160,9 @@ def print_routers(destination):
 
     routers.sort(key=lambda x: x['name'])
     newlist = sorted(routers, key=lambda x: x['name'])
-    print "Name:                  Status:"
+    print "Name:                  Status:      Tenant ID"
     for router in newlist:
-        print '{:20}'.format(router['name']), " ", router['status']
+        print '{:20}'.format(router['name']), " ", '{:10}'.format(router['status']), " ", router['tenant_id']
 
 
 def get_router(destination, router):

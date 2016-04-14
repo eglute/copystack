@@ -226,11 +226,11 @@ def get_flavor_list(destination):
     nova = get_nova(destination)
 
     # There is no api flag for "--all", so need to make separate calls...
-    flavors_public = nova.flavors.list(detailed=True, is_public=False)
-    flavors_private = nova.flavors.list(detailed=True, is_public=True)
-    flavors = flavors_private + flavors_public
-    print flavors
-    return flavors
+    flavors_public = nova.flavors.list(detailed=True)
+    # flavors_private = nova.flavors.list(detailed=True, is_public=True)
+    # flavors = flavors_private + flavors_public
+    # print flavors_public
+    return flavors_public
 
 
 def compare_and_create_flavors():
@@ -459,7 +459,7 @@ def main():
     #create_security_group('to', 'foo')
     #compare_and_create_security_groups()
     #get_vm_list('from')
-    #get_flavor_list('from')
+    get_flavor_list('from')
     #compare_and_create_flavors()
     #get_quotas('from')
     #compare_and_update_quotas()
@@ -473,7 +473,7 @@ def main():
     #power_off_vms('from', "./id_file")
     # create_image_from_vm('from', "./id_file")
     # migrate_vms_from_image("./id_file")
-    print_security_groups('from')
+    # print_security_groups('from')
 
 
 

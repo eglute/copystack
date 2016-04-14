@@ -13,14 +13,20 @@ from auth_stack import AuthStack
 
 def main(opts, args):
     auth = AuthStack()
-    print "From:", auth.from_auth_ip
-    print "To:", auth.to_auth_ip
+    print "From:", auth.from_auth_ip, " Username:", auth.from_username, " Tenant:", auth.from_tenant_name
+    print "To:  ", auth.to_auth_ip, " Username:", auth.to_username, " Tenant:", auth.to_tenant_name
+
     if opts.report:
         print "--------------- From Tenants: ---------------------"
-        keystone_common.print_tenants('from')
+        try:
+            keystone_common.print_tenants('from')
+        except Exception, e:
+            print "To print tenant info, switch to admin user"
         print "\n--------------- To Tenants: ------------------------"
-        keystone_common.print_tenants('to')
-
+        try:
+            keystone_common.print_tenants('to')
+        except Exception, e:
+            print "To print tenant info, switch to admin user"
         print "\n--------------- From Networks (with subnets): ---------------------"
         neutron_common.print_network_list('from')
         print "\n--------------- To Networks (with subnets): ------------------------"
@@ -43,6 +49,14 @@ def main(opts, args):
         print "Image UUID / Image Status / Image Name"
         for i in to_images:
             print i.id, " ", i.status, " ", i.name
+        print "\n--------------- From Flavors: ------------------------"
+        from_flavors = nova_common.get_flavor_list('from')
+        for f in from_flavors:
+            print f.name
+        print "\n--------------- To Flavors: ------------------------"
+        to_flavors = nova_common.get_flavor_list('to')
+        for f in to_flavors:
+            print f.name
         print "\n--------------- From VMs: ------------------------"
         vms = nova_common.print_vm_list_ids('from')
         print "\n--------------- To VMs: ------------------------"
@@ -157,11 +171,12 @@ if __name__ == "__main__":
         parser.add_option("-q", "--quota", action='store_true', dest='quota',
                           help='Run this command as Admin. Print differences in individual quotas for each tenant')
         parser.add_option("-c", "--copynets", action="store_true", dest='copynets',
-                          help='Copy networks and subnets from->to')
+                          help='Run this command as Admin. Copy networks and subnets from->to')
         parser.add_option("-w", "--routers", action="store_true", dest='routers',
-                          help='Copy routers from->to')
+                          help='Run this command as Admin. Copy routers from->to')
         parser.add_option("-W", "--addmissinginterfaces", action="store_true", dest='addmissinginterfaces',
-                          help='Add missing interfaces between routers and networks and additional ports. '
+                          help='Run this command as Admin. Add missing interfaces between routers and networks and '
+                               'additional ports. '
                                'It will skip duplicates, but will print an exception that it did so. If ports created'
                                'in error, delete them from OpenStack command line with "neutron port-delete" command.')
         parser.add_option("-s", "--copysec", action="store_true", dest='copysec',
