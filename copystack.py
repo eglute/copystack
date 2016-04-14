@@ -148,13 +148,14 @@ if __name__ == "__main__":
         parser.add_option("-t", "--tenants", action='store_true', dest='tenants',
                           help='Print to and from tenants. Tenant names must match before running the rest of copystack')
         parser.add_option("-x", "--createtenants", action='store_true', dest='createtenants',
-                          help='Create tenants from->to. Tenant names must match before running the rest of copystack')
+                          help='Run this command as Admin. Create tenants from->to.'
+                               'Tenant names must match before running the rest of copystack')
         parser.add_option("-u", "--users", action='store_true', dest='users',
-                          help='Create users from->to. Users created without passwords')
+                          help='Run this command as Admin. Create users from->to. Users created without passwords')
         parser.add_option("-p", "--publickeys", action='store_true', dest='publickeys',
                           help='Copy public keys from -> to')
         parser.add_option("-q", "--quota", action='store_true', dest='quota',
-                          help='Differences in individual quotas for each tenant')
+                          help='Run this command as Admin. Print differences in individual quotas for each tenant')
         parser.add_option("-c", "--copynets", action="store_true", dest='copynets',
                           help='Copy networks and subnets from->to')
         parser.add_option("-w", "--routers", action="store_true", dest='routers',

@@ -15,6 +15,7 @@
 # limitations under the License.
 
 from auth_stack import AuthStack
+import keystoneclient.v2_0.users
 
 # Useful CLI commands:
 # view tenant details:
@@ -151,11 +152,15 @@ def compare_and_create_users():
 # #todo: lookup tenant and add on creation
 def create_user(destination, user):
     keystone = get_keystone(destination)
+    tenant = find_opposite_tenant_id(user.tenantId)
     if hasattr(user, 'email'):
-        new_user = keystone.users.create(user.name, email=user.email, enabled=user.enabled)
+        new_user = keystone.users.create(user.name, tenant_id=tenant['to_id'], email=user.email, enabled=user.enabled)
     else:
-        new_user = keystone.users.create(user.name, enabled=user.enabled)
-    print "Created new user:", new_user.name
+        new_user = keystone.users.create(user.name, tenant_id=tenant['to_id'], enabled=user.enabled)
+
+    print "Created new user:", new_user.name, ". This user has no password. Set password manually."
+    update_roles(user, new_user, tenant)
+
     return new_user
 
 
@@ -193,6 +198,50 @@ def find_opposite_user_id(user_id):
     # if didn't find anything, return a lot of nones.
     return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
 
+
+def list_roles(destination, user_id, tenant_id):
+    keystone = get_keystone(destination)
+
+    roles = keystone.users.list_roles(user_id, tenant=tenant_id)
+    return roles
+
+
+def update_roles(old_user, new_user, tenant):
+    keystone = get_keystone('to')
+    to_tenants = keystone.tenants.list()
+    to_tenant = filter(lambda to_tenants: to_tenants.id == tenant['to_id'], to_tenants)
+    from_roles = list_roles('from', old_user.id, tenant['from_id'])
+    to_roles = get_roles('to')
+
+    for role in from_roles:
+        rol = filter(lambda to_roles: to_roles.name == role.name, to_roles)
+        keystone.roles.add_user_role(new_user, role=rol[0], tenant=to_tenant[0])
+        print "Role added:", rol[0].name, " to user:", new_user.name
+
+
+def get_roles(destination):
+    keystone = get_keystone(destination)
+    roles = keystone.roles.list()
+    return roles
+
+
+def find_opposite_role(role_id):
+    from_roles = get_roles('from')
+    to_roles = get_roles('to')
+
+    from_role = filter(lambda from_roles: from_roles.id == role_id, from_roles)
+    if from_role:
+        to_role = filter(lambda to_roles: to_roles.name == from_role[0].name, to_roles)
+        return {'from_id': from_role[0].id, 'name': from_role[0].name, 'to_id': to_role[0].id}
+
+    to_role = filter(lambda to_roles: to_roles.id == role_id, to_roles)
+    if to_role:
+        from_role = filter(lambda from_roles: from_roles.name == to_role[0].name, from_roles)
+        return {'from_id': from_role[0].id, 'name': to_role[0].name, 'to_id': to_role[0].id}
+
+    # if didn't find anything, return a lot of nones.
+    return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
+
 def main():
     #compare_and_create_tenants()
     #get_from_to_name_tenant_ids()
@@ -203,11 +252,12 @@ def main():
     #get_from_tenant_list()
     #get_to_tenant_list()
     #get_from_tenant_names()
-    # get_users('from')
+    # print get_users('from')
     # get_users('to')
     # compare_and_create_users()
     # print get_from_to_name_user_ids()
-    print_tenants('from')
-
+    # print_tenants('from')
+    # print list_roles("from", '08d53ca0a9304f28ad299a9a63dc4b68', 'a370cc1a5e4e409c80f41d50c3fa0ee5')
+    print get_roles_for_tenant('from', 'a370cc1a5e4e409c80f41d50c3fa0ee5')
 if __name__ == "__main__":
         main()

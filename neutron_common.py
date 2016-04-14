@@ -179,7 +179,7 @@ def compare_and_create_routers():
     for name in from_names:
         if name not in to_names:
             from_router = filter(lambda from_routers: from_routers['name'] == name, from_routers)
-            print from_router
+            # print from_router
             create_router('to', from_router[0])
             # new_network = network_create_net('to', from_router[0])
             # print "New network created: "
@@ -196,8 +196,10 @@ def create_router(destination, router):
     matching_subnet = find_corresponding_subnet_name_by_id(router['external_gateway_info']['network_id'],
                                                            matching_network['id'],
                                                            router['external_gateway_info']['external_fixed_ips'][0]['subnet_id'])
+    matching_tenant = keystone_common.find_opposite_tenant_id(router['tenant_id'])
     body = {'router': {
                 'name': router['name'],
+                'tenant_id': matching_tenant['to_id']
             }}
     new_router = neutron.create_router(body=body)
     print "New Router created:", new_router
@@ -217,7 +219,7 @@ def add_router_gateway(destination, router, old_router, matching_network, matchi
                         }]}
     neutron = get_neutron(destination)
     updated_router = neutron.add_gateway_router(router['id'], body)
-    print updated_router
+    # print updated_router
     return updated_router
 
 
@@ -270,6 +272,7 @@ def compare_and_create_ports():
                 from_port[0]['device_owner'].startswith('compute:None')):
                     create_ip_ports('to', from_port[0])
 
+
     associate_all_ips()
 
 
@@ -282,7 +285,7 @@ def add_interface_router(destination, port):
     new_router = find_corresponding_router_name_by_id(old_router['id'])
     new_network = find_corresponding_network_name_by_id(old_network['id'])
     old_subnet_id = port['fixed_ips'][0]['subnet_id']
-    print old_subnet_id
+    # print old_subnet_id
     new_subnet = find_corresponding_subnet_name_by_id(old_network['id'], new_network['id'], old_subnet_id) #todo: change to list of things
     body = {'subnet_id': new_subnet['id'],
             'fixed_ips': [{
@@ -300,13 +303,23 @@ def add_interface_router(destination, port):
 def create_ip_ports(destination, port):
     neutron = get_neutron(destination)
     corspd_network = find_corresponding_network_name_by_id(port['network_id'])
+    if port['device_owner'].startswith('network:floatingip'):
+        print "---port['fixed_ips'][0]['ip_address']", port['fixed_ips'][0]['ip_address']
+        fip = find_float_by_floatip('from', port['fixed_ips'][0]['ip_address'])
+        corspd_tenant = keystone_common.find_opposite_tenant_id(fip['tenant_id'])
+    else:
+        corspd_tenant = keystone_common.find_opposite_tenant_id(port['tenant_id'])
 
+
+    print "old port tenant", port['tenant_id']
+    print "corresponding tenant in port creation", corspd_tenant
     try:
         if port['device_owner'].startswith('network:floatingip'):
             body = {
                     "floatingip": {
                         "floating_network_id": corspd_network['id'],
-                        "floating_ip_address": port['fixed_ips'][0]['ip_address']
+                        "floating_ip_address": port['fixed_ips'][0]['ip_address'],
+                        "tenant_id": corspd_tenant['to_id']
                     }
             }
             new_port = neutron.create_floatingip(body=body)
@@ -314,6 +327,7 @@ def create_ip_ports(destination, port):
         else:
             body = {'port': {
                 'network_id': corspd_network['id'],
+                "tenant_id": corspd_tenant['to_id'],
                 'fixed_ips':[{
                     'ip_address': port['fixed_ips'][0]['ip_address']
                     }],
@@ -337,7 +351,7 @@ def find_port_by_ip(destination, ip):
 def find_float_by_floatip(destination, ip):
     ports = get_floatingip_list(destination)
     port_ip = filter(lambda ports: ports['floating_ip_address'] == ip, ports)
-    # print port_ip
+    print port_ip
     return port_ip[0]
 
 
@@ -374,6 +388,7 @@ def associate_floating_ip_to_fixed_port(destination, to_float_port_id, to_fixed_
     neutron.update_floatingip(to_float_port_id, body=body)
     print "Updated floating to fixed IP association, port: ", to_float_port_id, " to ", to_fixed_port_id
 
+
 def main():
     # check(args)
     # get_network_list('from')
@@ -392,13 +407,13 @@ def main():
     # create_port()
     # compare_and_create_ports()
     # find_port_by_ip('to', '11.11.11.3')
-    # print get_neutron_security_group_list('from')
+    print get_neutron_security_group_list('from')
     # print get_neutron_security_group_list('to')
     # print get_floatingip_list('from')
     # associate_floating_ip_to_fixed_port('to')
     # print find_float_by_floatip('from', '172.29.248.10')
     # associate_all_ips()
-    print_network_list('from')
+    # print_network_list('from')
 
 
 if __name__ == "__main__":
