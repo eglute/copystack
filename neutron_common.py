@@ -352,7 +352,7 @@ def create_ip_ports(destination, port):
 def find_port_by_ip(destination, ip):
     ports = get_ports(destination)
     port_ip = filter(lambda ports: ports['fixed_ips'][0]['ip_address'] == ip, ports)
-    print port_ip
+    # print port_ip
     return port_ip[0]
 
 

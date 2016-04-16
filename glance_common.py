@@ -27,6 +27,12 @@ def get_glance(destination):
     return client
 
 
+def get_image(destination, uuid):
+    glance = get_glance(destination)
+    image = glance.images.get(uuid)
+    return image
+
+
 def get_images(destination):
     glance = get_glance(destination)
     images = glance.images.list()

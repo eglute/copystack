@@ -183,17 +183,21 @@ def create_volume_from_image(destination, volume, single=False):
 
 
 def create_volume_from_image_by_vm_ids(id_file):
-    volume_ids = nova_common.get_volume_id_list_for_vm_ids('from', id_file)
-    from_volumes = get_volume_list('from')
-    # to_volumes = get_volume_list('to')
-    # from_names = map(lambda from_volumes: from_volumes.display_name, from_volumes)
-    # to_names = map(lambda to_volumes: to_volumes.display_name, to_volumes)
-    for volume in from_volumes:
-        if volume.id in volume_ids:
-            create_volume_from_image('to', volume)
-            #print volume.display_name
-    #print from_names
-    #print to_names
+    ready = nova_common.check_vm_are_on('to', id_file)
+    if ready:
+        volume_ids = nova_common.get_volume_id_list_for_vm_ids('from', id_file)
+        from_volumes = get_volume_list('from')
+        # to_volumes = get_volume_list('to')
+        # from_names = map(lambda from_volumes: from_volumes.display_name, from_volumes)
+        # to_names = map(lambda to_volumes: to_volumes.display_name, to_volumes)
+        for volume in from_volumes:
+            if volume.id in volume_ids:
+                create_volume_from_image('to', volume)
+                #print volume.display_name
+        #print from_names
+        #print to_names
+    else:
+        print "All servers being migrated must be in ACTIVE status for this action to proceed."
 
 
 def upload_volume_to_image_by_volume_id(destination, vol_id, single=False):

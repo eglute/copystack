@@ -132,6 +132,12 @@ def main(opts, args):
             nova_common.migrate_vms_from_image(id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if opts.securitygroups:
+        if args:
+            print args[0]
+            nova_common.attach_security_groups(id_file=args[0])
+        else:
+            print "Please provide file with VM UUIDs being migrated, for example, ./id_file"
     if opts.createvolumes:
         if args:
             print args[0]
@@ -192,7 +198,8 @@ if __name__ == "__main__":
                                'Will not check for duplicate image names, since duplicate names are allowed.'
                           ' Images with names that start with "migration_vm_image_" or "migration_volume_image_" '
                                'will not be moved. All others will be.')
-        parser.add_option("-f", "--flavors", action='store_true', dest='flavors', help='Copy flavors from -> to')
+        parser.add_option("-f", "--flavors", action='store_true', dest='flavors',
+                          help='Run this as a tenant, but one with admin privilages. Copy flavors from -> to')
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
         parser.add_option("-m", "--shutdown", action="store_true", dest='shutdown',
                           help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
@@ -211,6 +218,9 @@ if __name__ == "__main__":
                                'Volumes associated with the VMs will also be uploaded.')
         parser.add_option("-g", "--migratevms", action="store_true", dest='migratevms',
                           help='Create migrated VMs each UUID provided in a file, for example, ./id_file. ')
+        parser.add_option("-G", "--securitygroups", action="store_true", dest='securitygroups',
+                          help='Attach security groups to migrated VMs for each UUID provided in the original '
+                               'migration file, for example, ./id_file. ')
         parser.add_option("-z", "--createvmvolumes", action="store_true", dest='createvolumes',
                           help='Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
                                ' for example, ./id_file. ')

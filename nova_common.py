@@ -161,33 +161,44 @@ def create_vm(from_vm, image='default'):
 
     nics = []
     for network, nets in networks.iteritems():
-        # net = neutron_common.get_network_by_name('to', network)
-        #print ip[0]
         for ip in nets:
-            print ip
             port = neutron_common.find_port_by_ip('to', ip)
             # nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
             if not port['device_owner'].startswith('network:floatingip'):
                 nic = {'port-id': port['id']}
                 nics.append(nic)
 
-    groups = from_vm.security_groups
-    #out of luck for duplicate group names...
-    group_names_map = map(lambda groups: groups['name'], groups)
-    group_names = set(group_names_map)
-    group_names = list(group_names)
-    print "groups: ", group_names
+    #include original image info as metadata:
+    img = glance_common.get_image('from', from_vm.image['id'])
     metadata = from_vm.metadata
     metadata.update({'original_vm_id':from_vm.id})
+    metadata.update({'original_image_id': img.id})
+    metadata.update({'original_image_name': img.name})
+    #attaching security groups during server creation does not seem to work, so moved to a separate task
     server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-                                 meta=metadata, security_groups=group_names, key_name=from_vm.key_name)
-    
-    #todo: fix this properly. though it should not be necessery, for some reason sec. groups don't get attached on creation
-    time.sleep(20)
-    for g in group_names:
-        server.add_security_group(g)
-    print "Created VM:", server.name
+                                 meta=metadata, key_name=from_vm.key_name)
+    print "Server created:", server.name
     return server
+
+
+def attach_security_groups(id_file):
+    ready = check_vm_are_on('to', id_file)
+    if ready:
+        ids = utils.read_ids_from_file(id_file)
+        nova = get_nova('from')
+        for uuid in ids:
+            try:
+                old_server = nova.servers.get(uuid)
+                new_server = get_vm_by_original_id('to', uuid)
+                groups = old_server.security_groups
+                print "Attaching security groups to:", new_server.name
+                for g in groups:
+                    print "Group:", g['name']
+                    new_server.add_security_group(g['name'])
+            except Exception, e:
+                print str(e)
+    else:
+        print "All VMs must be powered on for this action to proceed"
 
 
 def migrate_vms_from_image(id_file):
@@ -201,7 +212,7 @@ def migrate_vms_from_image(id_file):
             if server.status == 'SHUTOFF':
                 print "Finding image for server with UUID:", uuid
                 new_name = "migration_vm_image_" + server.id
-                print new_name
+                # print new_name
                 image = glance_common.get_image_by_name("to", new_name)
                 if image:
                     print "Found image with name: ", image.name
@@ -418,9 +429,34 @@ def power_off_vms(destination, id_file):
             print "Server with UUID", uuid, "not found"
 
 
+def check_vm_are_on(destination, id_file):
+    ids = utils.read_ids_from_file(id_file)
+    # nova = get_nova(destination)
+    ready = True
+    for uuid in ids:
+        try:
+            server = get_vm_by_original_id('to', uuid)
+            # server = nova.servers.get(uuid)
+            if server.status != 'ACTIVE':
+                print "Server", server.name, "is not ACTIVE."
+                ready = False
+        except nova_exc.NotFound:
+            print "Server with UUID", uuid, "not found"
+    return ready
+
+
 def create_image_from_vm(destination, id_file):
     ids = utils.read_ids_from_file(id_file)
     nova = get_nova(destination)
+    for uuid in ids:
+        try:
+            server = nova.servers.get(uuid)
+            if server.status != 'SHUTOFF':
+                print "Server", server.name, "is not shut off."
+                print "All servers in the migration ID file must be turned off for image creation to start."
+                return
+        except nova_exc.NotFound:
+            print "Server with UUID", uuid, "not found"
     for uuid in ids:
         try:
             server = nova.servers.get(uuid)
@@ -464,10 +500,10 @@ def get_volume_id_list_for_vm_ids(destination, id_file):
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
-    compare_and_create_security_groups()
-    #get_vm_list('from')
-    # get_flavor_list('from')
-    #compare_and_create_flavors()
+    # compare_and_create_security_groups()
+    # print get_vm_list('from')
+    # print get_flavor_list('from')
+    compare_and_create_flavors()
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
@@ -479,7 +515,7 @@ def main():
     #read_ids_from_file("./id_file")
     #power_off_vms('from', "./id_file")
     # create_image_from_vm('from', "./id_file")
-    migrate_vms_from_image("./id_file")
+    # migrate_vms_from_image("./id_file")
     # print_security_groups('from')
 
 
