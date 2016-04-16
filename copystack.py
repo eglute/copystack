@@ -175,6 +175,8 @@ if __name__ == "__main__":
                           help='Run this command as Admin. Create users from->to. Users created without passwords')
         parser.add_option("-q", "--quota", action='store_true', dest='quota',
                           help='Run this command as Admin. Print differences in individual quotas for each tenant')
+        parser.add_option("-f", "--flavors", action='store_true', dest='flavors',
+                          help='Run this command as Admin. Copy flavors from -> to')
         parser.add_option("-c", "--copynets", action="store_true", dest='copynets',
                           help='Run this command as Admin. Copy networks and subnets from->to')
         parser.add_option("-w", "--routers", action="store_true", dest='routers',
@@ -198,8 +200,7 @@ if __name__ == "__main__":
                                'Will not check for duplicate image names, since duplicate names are allowed.'
                           ' Images with names that start with "migration_vm_image_" or "migration_volume_image_" '
                                'will not be moved. All others will be.')
-        parser.add_option("-f", "--flavors", action='store_true', dest='flavors',
-                          help='Run this as a tenant, but one with admin privilages. Copy flavors from -> to')
+
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
         parser.add_option("-m", "--shutdown", action="store_true", dest='shutdown',
                           help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
@@ -222,16 +223,19 @@ if __name__ == "__main__":
                           help='Attach security groups to migrated VMs for each UUID provided in the original '
                                'migration file, for example, ./id_file. ')
         parser.add_option("-z", "--createvmvolumes", action="store_true", dest='createvolumes',
-                          help='Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
+                          help='Tenant must have admin access on both sides. '
+                               'Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
                                ' for example, ./id_file. ')
         parser.add_option("-v", "--singlevolumeimagecreate", action='store_true', dest='singlevolumeimagecreate',
-                          help='Create images of unattached volumes')
+                          help='Tenant must have admin access on both sides. Create images of unattached volumes')
         parser.add_option("-V", "--singlevolumeimagedownload", action='store_true', dest='singlevolumeimagedownload',
-                          help='Download images of unattached volumes to a specified path, for example, ./downloads/ ')
+                          help='Tenant must have admin access on both sides. Download images of unattached volumes '
+                               'to a specified path, for example, ./downloads/ ')
         parser.add_option("-y", "--singlevolumeimageupload", action='store_true', dest='singlevolumeimageupload',
-                          help='Upload images of unattached volumes from a specified path, for example, ./downloads/ ')
+                          help='Tenant must have admin access on both sides. Upload images of unattached volumes from '
+                               'a specified path, for example, ./downloads/ ')
         parser.add_option("-Y", "--singlevolumecreate", action='store_true', dest='singlevolumecreate',
-                          help='Create un-attached volumes form images')
+                          help='Tenant must have admin access on both sides. Create un-attached volumes from images')
 
 
         (opts, args) = parser.parse_args()

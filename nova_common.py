@@ -155,6 +155,9 @@ def create_vm(from_vm, image='default'):
     nova = get_nova('to')
 
     flavor = get_flavor_by_id('to', from_vm.flavor['id'])
+    if flavor is None:
+        print "Error: Cannot continue for this VM without proper flavor"
+        return None
     if image == 'default':
         image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
     networks = from_vm.networks
@@ -164,9 +167,10 @@ def create_vm(from_vm, image='default'):
         for ip in nets:
             port = neutron_common.find_port_by_ip('to', ip)
             # nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
-            if not port['device_owner'].startswith('network:floatingip'):
-                nic = {'port-id': port['id']}
-                nics.append(nic)
+            if port:
+                if not port['device_owner'].startswith('network:floatingip'):
+                    nic = {'port-id': port['id']}
+                    nics.append(nic)
 
     #include original image info as metadata:
     img = glance_common.get_image('from', from_vm.image['id'])
@@ -228,15 +232,22 @@ def migrate_vms_from_image(id_file):
                 else:
                     print "Did not find image in 'to' environment with name:", new_name
             else:
-                print "Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+                print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
         except nova_exc.NotFound:
-            print "Server with UUID", uuid, "not found"
+            print "2 Server with UUID", uuid, "not found"
 
 
 def get_flavor_by_id(destination, flavor_id):
-    nova = get_nova(destination)
-    fl = nova.flavors.get(flavor=flavor_id)
-    return fl
+    try:
+        nova = get_nova(destination)
+        fl = nova.flavors.get(flavor=flavor_id)
+        # fpp = nova.flavor_access.list(flavor=flavor_id)
+        # print fpp
+        return fl
+    except Exception, e:
+        print str(e)
+        print "Error: Flavor with ID:", flavor_id, "could not be found"
+        return None
 
 
 # nova flavor-list --all for checking all flavors for admin, private and public
@@ -244,10 +255,13 @@ def get_flavor_list(destination):
     nova = get_nova(destination)
 
     # There is no api flag for "--all", so need to make separate calls...
-    flavors_public = nova.flavors.list(detailed=True)
-    # flavors_private = nova.flavors.list(detailed=True, is_public=True)
+    flavors_public = nova.flavors.list(detailed=True, is_public=True)
+    flavors_private = nova.flavors.list(detailed=True, is_public=False)
+    for f in flavors_private:
+        if f not in flavors_public:
+            flavors_public.append(f)
     # flavors = flavors_private + flavors_public
-    # print flavors_public
+    # print flavors
     return flavors_public
 
 
@@ -259,11 +273,9 @@ def compare_and_create_flavors():
     for name in from_names:
         if name not in to_names:
             from_flavor = filter(lambda from_flavors: from_flavors.name == name, from_flavors)
-            print from_flavor
             new_flavor = create_flavor('to', from_flavor[0])
             new_flavor.set_keys(from_flavor[0].get_keys())
-            print "New flavor created: "
-            print new_flavor
+            print "New flavor created:", new_flavor.name
 
 
 def create_flavor(destination, flavor):
@@ -271,6 +283,7 @@ def create_flavor(destination, flavor):
     swap = 0
     if isinstance(flavor.swap, (int, long)):
         swap = flavor.swap
+
     new_flavor = nova.flavors.create(name=flavor.name,
                                      ram=flavor.ram,
                                      vcpus=flavor.vcpus,
@@ -280,6 +293,12 @@ def create_flavor(destination, flavor):
                                      swap=swap,
                                      rxtx_factor=flavor.rxtx_factor,
                                      is_public=flavor.is_public)
+    if flavor.is_public is False:
+        from_nova = get_nova('from')
+        access = from_nova.flavor_access.list(flavor=flavor.id)
+        for acc in access:
+            to_tenant = keystone_common.find_opposite_tenant_id(acc.tenant_id)
+            nova.flavor_access.add_tenant_access(flavor=new_flavor.id, tenant=to_tenant['to_id'])
     return new_flavor
 
 
@@ -424,9 +443,9 @@ def power_off_vms(destination, id_file):
                 print "Shutting down server with UUID:", uuid
                 server.stop()
             else:
-                print "Server with UUID:", uuid, "is not running. It must be in ACTIVE status for this action."
+                print "3 Server with UUID:", uuid, "is not running. It must be in ACTIVE status for this action."
         except nova_exc.NotFound:
-            print "Server with UUID", uuid, "not found"
+            print "4 Server with UUID", uuid, "not found"
 
 
 def check_vm_are_on(destination, id_file):
@@ -441,7 +460,7 @@ def check_vm_are_on(destination, id_file):
                 print "Server", server.name, "is not ACTIVE."
                 ready = False
         except nova_exc.NotFound:
-            print "Server with UUID", uuid, "not found"
+            print "5 Server with UUID", uuid, "not found"
     return ready
 
 
@@ -456,7 +475,7 @@ def create_image_from_vm(destination, id_file):
                 print "All servers in the migration ID file must be turned off for image creation to start."
                 return
         except nova_exc.NotFound:
-            print "Server with UUID", uuid, "not found"
+            print "6 Server with UUID", uuid, "not found"
     for uuid in ids:
         try:
             server = nova.servers.get(uuid)
@@ -469,7 +488,7 @@ def create_image_from_vm(destination, id_file):
                 print new_name
                 server.create_image(new_name, metadata)
             else:
-                print "Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+                print "7 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
             if server.__dict__['os-extended-volumes:volumes_attached']:
                 print "Creating image from volume attached to the VM, volume id:"
                 volumes = server.__dict__['os-extended-volumes:volumes_attached']
@@ -477,7 +496,7 @@ def create_image_from_vm(destination, id_file):
                     print vol['id']
                     cinder_common.upload_volume_to_image_by_volume_id(destination, vol['id'])
         except nova_exc.NotFound:
-            print "Server with UUID", uuid, "not found"
+            print "8 Server with UUID", uuid, "not found"
 
 
 def get_volume_id_list_for_vm_ids(destination, id_file):
@@ -493,7 +512,7 @@ def get_volume_id_list_for_vm_ids(destination, id_file):
                     print vol['id']
                     volume_ids.append(vol['id'])
         except nova_exc.NotFound:
-            print "Server with UUID", uuid, "not found"
+            print "9 Server with UUID", uuid, "not found"
     return volume_ids
 
 
@@ -517,6 +536,7 @@ def main():
     # create_image_from_vm('from', "./id_file")
     # migrate_vms_from_image("./id_file")
     # print_security_groups('from')
+    # get_flavor_by_id('from', 'a97d80f0-e309-436e-95cc-bb2a02139225')
 
 
 
