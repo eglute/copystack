@@ -223,19 +223,18 @@ if __name__ == "__main__":
                           help='Attach security groups to migrated VMs for each UUID provided in the original '
                                'migration file, for example, ./id_file. ')
         parser.add_option("-z", "--createvmvolumes", action="store_true", dest='createvolumes',
-                          help='Tenant must have admin access on both sides. '
-                               'Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
+                          help='Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
                                ' for example, ./id_file. ')
         parser.add_option("-v", "--singlevolumeimagecreate", action='store_true', dest='singlevolumeimagecreate',
-                          help='Tenant must have admin access on both sides. Create images of unattached volumes')
+                          help='Create images of unattached volumes')
         parser.add_option("-V", "--singlevolumeimagedownload", action='store_true', dest='singlevolumeimagedownload',
-                          help='Tenant must have admin access on both sides. Download images of unattached volumes '
+                          help='Download images of unattached volumes '
                                'to a specified path, for example, ./downloads/ ')
         parser.add_option("-y", "--singlevolumeimageupload", action='store_true', dest='singlevolumeimageupload',
-                          help='Tenant must have admin access on both sides. Upload images of unattached volumes from '
+                          help='Upload images of unattached volumes from '
                                'a specified path, for example, ./downloads/ ')
         parser.add_option("-Y", "--singlevolumecreate", action='store_true', dest='singlevolumecreate',
-                          help='Tenant must have admin access on both sides. Create un-attached volumes from images')
+                          help='Create un-attached volumes from images')
 
 
         (opts, args) = parser.parse_args()

@@ -112,8 +112,11 @@ def create_volume(destination, volume):
 
 def create_volume_from_image(destination, volume, single=False):
     cinder = get_cinder(destination)
-    from_tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
-    tenant = keystone_common.find_opposite_tenant_id(from_tenant)
+    try:
+        from_tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
+        tenant = keystone_common.find_opposite_tenant_id(from_tenant)
+    except Exception, e:
+        tenant = None
     # user = keystone_common.find_opposite_user_id(volume.user_id)
     if single:
         image_name = "single_migration_volume_image_" + volume.id
