@@ -87,11 +87,20 @@ def download_images(destination, path):
 
 def download_images_by_vm_uuid(destination, path, uuid_file):
     ids = utils.read_ids_from_file(uuid_file)
+    ready = True
+    for uuid in ids:
+        image_name = "migration_vm_image_" + uuid
+        image = get_image_by_name(destination, image_name)
+        if image.status != "active":
+            print "Image", image.name, "is not in active status. All migration images must be active before proceeding"
+            ready = False
+            return ready
     for uuid in ids:
         image_name = "migration_vm_image_" + uuid
         print "Downloading image name:", image_name
         image = get_image_by_name(destination, image_name)
         image_download(image.id, path, fname=image_name)
+    return ready
 
 
 def download_images_by_volume_uuid(destination, path, volumes, single=False):
