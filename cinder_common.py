@@ -239,6 +239,15 @@ def create_single_volumes_from_images():
         create_volume_from_image('to', volume, single=True)
 
 
+def print_volumes(destination):
+    vols = get_volume_list(destination)
+    vols.sort(key=lambda x: x.status)
+    newlist = sorted(vols, key=lambda x: x.status)
+    print "Volumes sorted by status (id name status size):"
+    for volume in vols:
+        print volume.id, volume.display_name, volume.status, volume.size
+
+
 def main():
     # get_volume_list('from')
     #get_volume_list('to')
@@ -248,6 +257,8 @@ def main():
     # print get_single_volumes('from')
     # upload_single_volumes_to_image('from')
     # download_single_volumes('from', './downloads/')
-    create_volume_from_image_by_vm_ids('./id_file')
+    # create_volume_from_image_by_vm_ids('./id_file')
+    print_volumes('from')
+
 if __name__ == "__main__":
         main()

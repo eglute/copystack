@@ -181,7 +181,7 @@ def image_download(id, path, fname='default'):
     else:
         fname = path + fname
     data = glance.images.data(id)
-    print "Downloading to" + fname
+    print "Downloading to " + fname
     save_image(data, fname)
 
 

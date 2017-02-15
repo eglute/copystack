@@ -61,6 +61,10 @@ def main(opts, args):
         vms = nova_common.print_vm_list_ids('from')
         print "\n--------------- To VMs: ------------------------"
         vms = nova_common.print_vm_list_ids('to')
+        print "\n--------------- From Volumes: ------------------------"
+        volumes = cinder_common.print_volumes('from')
+        print "\n--------------- To Volumes: ------------------------"
+        volumes = cinder_common.print_volumes('to')
     if opts.copynets:
         neutron_common.compare_and_create_networks()
     if opts.routers:
