@@ -13,8 +13,6 @@ from auth_stack import AuthStack
 
 def main(opts, args):
     auth = AuthStack()
-    print "From:", auth.from_auth_ip, " Username:", auth.from_username, " Tenant:", auth.from_tenant_name
-    print "To:  ", auth.to_auth_ip, " Username:", auth.to_username, " Tenant:", auth.to_tenant_name
 
     if opts.report:
         print "--------------- From Tenants: ---------------------"
