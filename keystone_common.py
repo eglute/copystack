@@ -16,6 +16,13 @@
 
 from auth_stack import AuthStack
 import keystoneclient.v2_0.users
+from log import logging
+
+logger = logging.getLogger('copystack.keystone_common')
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+logger.addHandler(ch)
+
 
 # Useful CLI commands:
 # view tenant details:
@@ -60,6 +67,17 @@ def get_to_tenant_list():
     #print tenants
     return tenants
 
+def get_to_projects_list():
+    keystone = get_keystone('to')
+    tenants = keystone.projects.list()
+    #print tenants
+    return tenants
+
+def get_from_projects_list():
+    keystone = get_keystone('from')
+    tenants = keystone.projects.list()
+    #print tenants
+    return tenants
 
 def print_tenants(destination):
     if destination == 'to':
@@ -251,7 +269,8 @@ def main():
     #get_from_to_name_tenant_ids()
     #print find_opposite_tenant_id('e99e58c687ec4a608f4323d22a29c08e')
     # print get_from_tenant_list()
-    #get_to_tenant_list()
+    projects = get_from_tenant_list()
+    print projects
     #get_keystone('to')
     #get_from_tenant_list()
     #get_to_tenant_list()
@@ -262,6 +281,6 @@ def main():
     # print get_from_to_name_user_ids()
     # print_tenants('from')
     # print list_roles("from", '08d53ca0a9304f28ad299a9a63dc4b68', 'a370cc1a5e4e409c80f41d50c3fa0ee5')
-    print get_roles_for_tenant('from', 'a370cc1a5e4e409c80f41d50c3fa0ee5')
+    # print get_roles_for_tenant('from', 'a370cc1a5e4e409c80f41d50c3fa0ee5')
 if __name__ == "__main__":
         main()

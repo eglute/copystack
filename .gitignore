@@ -7,3 +7,11 @@
 /downloads
 from_auth
 to_auth
+
+*.cert
+
+to_auth
+
+from_auth
+
+from_auth

@@ -184,6 +184,39 @@ def create_vm(from_vm, image='default'):
     print "Server created:", server.name
     return server
 
+#TODO: fix this to actually read from a mapping....
+def create_vm_with_network_mapping(from_vm, image='default'):
+    nova = get_nova('to')
+
+    flavor = get_flavor_by_id('to', from_vm.flavor['id'])
+    if flavor is None:
+        print "Error: Cannot continue for this VM without proper flavor"
+        return None
+    if image == 'default':
+        image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
+    networks = from_vm.networks
+
+    nics = []
+    for network, nets in networks.iteritems():
+        for ip in nets:
+            port = neutron_common.find_port_by_ip('to', ip)
+            # nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+            if port:
+                if not port['device_owner'].startswith('network:floatingip'):
+                    nic = {'port-id': port['id']}
+                    nics.append(nic)
+
+    #include original image info as metadata:
+    img = glance_common.get_image('from', from_vm.image['id'])
+    metadata = from_vm.metadata
+    metadata.update({'original_vm_id':from_vm.id})
+    metadata.update({'original_image_id': img.id})
+    metadata.update({'original_image_name': img.name})
+    #attaching security groups during server creation does not seem to work, so moved to a separate task
+    server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
+                                 meta=metadata, key_name=from_vm.key_name)
+    print "Server created:", server.name
+    return server
 
 def attach_security_groups(id_file):
     ready = check_vm_are_on('to', id_file)
@@ -237,6 +270,38 @@ def migrate_vms_from_image(id_file):
             print "2 Server with UUID", uuid, "not found"
 
 
+def migrate_vms_from_image_with_network_mapping(id_file):
+    ids = utils.read_ids_from_file(id_file)
+    nova_from = get_nova("from")
+    to_vms = get_vm_list('to')
+
+    for uuid in ids:
+        try:
+            server = nova_from.servers.get(uuid)
+            if server.status == 'SHUTOFF':
+                print "Finding image for server with UUID:", uuid
+                new_name = "migration_vm_image_" + server.id
+                # print new_name
+                image = glance_common.get_image_by_name("to", new_name)
+                if image:
+                    print "Found image with name: ", image.name
+                    # need to check for VMs that were already re-created on the TO side:
+                    dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
+                    duplicate = False
+                    for dup in dup_vms:
+                        if dup.metadata['original_vm_id'] == server.id:
+                            print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
+                            duplicate = True
+                    if duplicate is False:
+                        create_vm(server, image=image)
+                else:
+                    print "Did not find image in 'to' environment with name:", new_name
+            else:
+                print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+        except nova_exc.NotFound:
+            print "2 Server with UUID", uuid, "not found"
+
+
 def get_flavor_by_id(destination, flavor_id):
     try:
         nova = get_nova(destination)
@@ -255,6 +320,11 @@ def get_flavor_list(destination):
     nova = get_nova(destination)
 
     # There is no api flag for "--all", so need to make separate calls...
+    fl = nova.flavors
+    print fl
+    lt = fl.list()
+    print lt
+
     flavors_public = nova.flavors.list(detailed=True, is_public=True)
     flavors_private = nova.flavors.list(detailed=True, is_public=False)
     for f in flavors_private:
@@ -521,8 +591,8 @@ def main():
     #create_security_group('to', 'foo')
     # compare_and_create_security_groups()
     # print get_vm_list('from')
-    # print get_flavor_list('from')
-    compare_and_create_flavors()
+    print get_flavor_list('from')
+    # compare_and_create_flavors()
     #get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
