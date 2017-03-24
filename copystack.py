@@ -8,7 +8,7 @@ import neutron_common
 import nova_common
 import glance_common
 import cinder_common
-from auth_stack import AuthStack
+from auth_stack2 import AuthStack
 
 
 def main(opts, args):

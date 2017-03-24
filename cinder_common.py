@@ -17,7 +17,7 @@
 import glance_common
 import keystone_common
 import nova_common
-from auth_stack import AuthStack
+from auth_stack2 import AuthStack
 import time
 
 
@@ -258,7 +258,7 @@ def main():
     # upload_single_volumes_to_image('from')
     # download_single_volumes('from', './downloads/')
     # create_volume_from_image_by_vm_ids('./id_file')
-    print_volumes('from')
+    print_volumes('to')
 
 if __name__ == "__main__":
         main()

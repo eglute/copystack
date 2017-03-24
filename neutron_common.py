@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import keystone_common
-from auth_stack import AuthStack
+from auth_stack2 import AuthStack
 
 
 def get_neutron(destination):
@@ -409,6 +409,11 @@ def associate_floating_ip_to_fixed_port(destination, to_float_port_id, to_fixed_
     print "Updated floating to fixed IP association, port: ", to_float_port_id, " to ", to_fixed_port_id
 
 
+#todo: fix this
+def compare_network_info_to_file():
+    print "fix this"
+
+
 def main():
     # check(args)
     # get_network_list('from')
@@ -425,7 +430,7 @@ def main():
     # get_router('from', '8cd5e812-9300-4c41-b913-db8e221d883c')
     # print get_ports('from')
     # create_port()
-    compare_and_create_ports()
+    # compare_and_create_ports()
     # find_port_by_ip('to', '11.11.11.3')
     # print get_neutron_security_group_list('from')
     # print get_neutron_security_group_list('to')
@@ -433,7 +438,7 @@ def main():
     # associate_floating_ip_to_fixed_port('to')
     # print find_float_by_floatip('from', '172.29.248.10')
     # associate_all_ips()
-    # print_network_list('from')
+    print_network_list('from')
 
 
 if __name__ == "__main__":

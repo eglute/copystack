@@ -21,7 +21,7 @@ import neutron_common
 import cinder_common
 import utils
 import time
-from auth_stack import AuthStack
+from auth_stack2 import AuthStack
 from novaclient.client import exceptions as nova_exc
 
 
@@ -320,11 +320,6 @@ def get_flavor_list(destination):
     nova = get_nova(destination)
 
     # There is no api flag for "--all", so need to make separate calls...
-    fl = nova.flavors
-    print fl
-    lt = fl.list()
-    print lt
-
     flavors_public = nova.flavors.list(detailed=True, is_public=True)
     flavors_private = nova.flavors.list(detailed=True, is_public=False)
     for f in flavors_private:
@@ -593,11 +588,11 @@ def main():
     # print get_vm_list('from')
     print get_flavor_list('from')
     # compare_and_create_flavors()
-    #get_quotas('from')
+    # get_quotas('from')
     #compare_and_update_quotas()
     #create_vm()
     #compare_and_create_vms()
-    #compare_and_report_quotas()
+    # compare_and_report_quotas()
     #get_keypairs('from')
     #compare_and_create_keypairs()
     #print_vm_list_ids('from')

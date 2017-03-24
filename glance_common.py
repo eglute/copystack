@@ -18,7 +18,7 @@ import os
 import keystone_common
 import nova_common
 import utils
-from auth_stack import AuthStack
+from auth_stack2 import AuthStack
 
 
 def get_glance(destination):

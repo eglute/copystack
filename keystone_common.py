@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from auth_stack import AuthStack
+from auth_stack2 import AuthStack
 import keystoneclient.v2_0.users
 from log import logging
 
@@ -269,14 +269,14 @@ def main():
     #get_from_to_name_tenant_ids()
     #print find_opposite_tenant_id('e99e58c687ec4a608f4323d22a29c08e')
     # print get_from_tenant_list()
-    projects = get_from_tenant_list()
-    print projects
+    # projects = get_from_tenant_list()
+    # print projects
     #get_keystone('to')
     #get_from_tenant_list()
     #get_to_tenant_list()
     #get_from_tenant_names()
     # print get_users('from')
-    # get_users('to')
+    print get_users('from')
     # compare_and_create_users()
     # print get_from_to_name_user_ids()
     # print_tenants('from')
