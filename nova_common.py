@@ -172,6 +172,8 @@ def create_vm(from_vm, image='default'):
                     nic = {'port-id': port['id']}
                     nics.append(nic)
 
+    print "======"
+    print nics
     #include original image info as metadata:
     img = glance_common.get_image('from', from_vm.image['id'])
     metadata = from_vm.metadata
