@@ -156,22 +156,32 @@ def image_create(destination, image, url):
     if image.min_ram is not None:
         min_ram = image.min_ram
     print "this might take a while..."
-    with open(url, 'r') as fimage:
-        img = glance.images.create(data=fimage,
-                                   name=image.name,
-                                   container_format=image.container_format,
-                                   disk_format=image.disk_format,
-                                   # owner=tenant,
-                                   size=image.size,
+    img = glance.images.create(name=image.name, container_format=image.container_format,
                                    min_ram=min_ram,
                                    min_disk=min_disk,
-                                   #properties=image.properties, #dont want to copy all the properties, as they cause lots of unpleasant issues
-                                   properties=props,
-                                   is_public=image.is_public,
-                                   protected=image.protected
-                                   )
-        print img
-    fimage.closed
+                                   # properties=props,
+                                   visibility=image.visibility,
+                                   protected=image.protected)
+    glance.images.update(img.id, props)
+    print url
+    glance.images.upload(img.id, open(url, 'rb'))
+
+    # with open(url, 'r') as fimage:
+    #     img = glance.images.create(data=fimage,
+    #                                name=image.name,
+    #                                container_format=image.container_format,
+    #                                disk_format=image.disk_format,
+    #                                # owner=tenant,
+    #                                size=image.size,
+    #                                min_ram=min_ram,
+    #                                min_disk=min_disk,
+    #                                #properties=image.properties, #dont want to copy all the properties, as they cause lots of unpleasant issues
+    #                                properties=props,
+    #                                visibility=image.visibility,
+    #                                protected=image.protected
+    #                                )
+    #     print img
+    # fimage.closed
 
 
 def image_download(id, path, fname='default'):
