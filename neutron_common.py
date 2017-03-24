@@ -95,7 +95,7 @@ def network_create_net(destination, network):
     neutron = get_neutron(destination)
 
     # need a "to" tenant id.
-    tenant_info = keystone_common.find_opposite_tenant_id(network['tenant_id'])
+    tenant_info = keystone_common.find_opposite_project_id(network['tenant_id'])
     new_network = {'network': {'name': network['name'],
                             'tenant_id': tenant_info['to_id'],
                             'admin_state_up': network['admin_state_up'],
@@ -315,9 +315,9 @@ def create_ip_ports(destination, port):
     corspd_network = find_corresponding_network_name_by_id(port['network_id'])
     if port['device_owner'].startswith('network:floatingip'):
         fip = find_float_by_floatip('from', port['fixed_ips'][0]['ip_address'])
-        corspd_tenant = keystone_common.find_opposite_tenant_id(fip['tenant_id'])
+        corspd_tenant = keystone_common.find_opposite_project_id(fip['tenant_id'])
     else:
-        corspd_tenant = keystone_common.find_opposite_tenant_id(port['tenant_id'])
+        corspd_tenant = keystone_common.find_opposite_project_id(port['tenant_id'])
 
     # print "old port tenant", port['tenant_id']
     # print "corresponding tenant in port creation", corspd_tenant
