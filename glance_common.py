@@ -156,7 +156,9 @@ def image_create(destination, image, url):
     if image.min_ram is not None:
         min_ram = image.min_ram
     print "this might take a while..."
-    img = glance.images.create(name=image.name, container_format=image.container_format,
+    img = glance.images.create(name=image.name,
+                                   container_format=image.container_format,
+                                   disk_format=image.disk_format,
                                    min_ram=min_ram,
                                    min_disk=min_disk,
                                    # properties=props,
