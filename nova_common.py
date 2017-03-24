@@ -362,7 +362,7 @@ def create_flavor(destination, flavor):
         from_nova = get_nova('from')
         access = from_nova.flavor_access.list(flavor=flavor.id)
         for acc in access:
-            to_tenant = keystone_common.find_opposite_tenant_id(acc.tenant_id)
+            to_tenant = keystone_common.find_opposite_project_id(acc.tenant_id)
             nova.flavor_access.add_tenant_access(flavor=new_flavor.id, tenant=to_tenant['to_id'])
     return new_flavor
 
@@ -375,12 +375,12 @@ def get_quotas(destination, tenant):
 
 
 def compare_and_report_quotas():
-    from_tenants = keystone_common.get_from_tenant_list()
+    from_tenants = keystone_common.get_from_project_list()
     print "Differences in individual quotas for each tenant:"
     for from_tenant in from_tenants:
 
         from_quotas = get_quotas('from', from_tenant.id)
-        to_tenant = keystone_common.find_opposite_tenant_id(from_tenant.id)
+        to_tenant = keystone_common.find_opposite_project_id(from_tenant.id)
         to_quotas = get_quotas('to', to_tenant['to_id'])
         print "\nFrom tenant id:", from_tenant.id, "To tenant id:", to_tenant['to_id']
         compare_quotas(from_quotas, to_quotas)
@@ -430,12 +430,12 @@ def compare_quotas(from_quotas, to_quotas):
 
 # this does not work, see comment bellow.
 def compare_and_update_quotas():
-    from_tenants = keystone_common.get_from_tenant_list()
+    from_tenants = keystone_common.get_from_project_list()
     for from_tenant in from_tenants:
         print "from tenant id "
         print from_tenant.id
         from_quotas = get_quotas('from', from_tenant.id)
-        to_tenant = keystone_common.find_opposite_tenant_id(from_tenant.id)
+        to_tenant = keystone_common.find_opposite_project_id(from_tenant.id)
         print "to tenant_id"
         print to_tenant['to_id']
         to_quotas = get_quotas('to', to_tenant['to_id'])

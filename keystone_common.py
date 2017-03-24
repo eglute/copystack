@@ -261,7 +261,7 @@ def compare_and_create_users():
 # #todo: lookup tenant and add on creation
 def create_user(destination, user):
     keystone = get_keystone(destination)
-    tenant = find_opposite_project_id(user.default_project)
+    tenant = find_opposite_project_id(user.default_project_id)
     if hasattr(user, 'email'):
         new_user = keystone.users.create(user.name, project_id=tenant['to_id'], email=user.email, enabled=user.enabled)
     else:
