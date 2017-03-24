@@ -16,7 +16,8 @@ from novaclient import client as nova_client
 from neutronclient.neutron import client as neutron_client
 from glanceclient import Client as glance_client
 from cinderclient.client import Client as cinder_client
-from cinderclient import exceptions as c_exc
+# from cinderclient import exceptions as c_exc
+
 from neutronclient.common import exceptions as n_exc
 from novaclient.client import exceptions as nova_exc
 from glanceclient import exc as g_exc
@@ -176,10 +177,10 @@ class AuthStack(object):
         auth_ref = self.get_from_auth_ref()
         project_id = auth_ref.session.get_project_id()
         print project_id
-        endpoint_url = ('{ip}:8776/v1/{project_id}'.format
+        endpoint_url = ('{ip}:8776/v2/{project_id}'.format
                        (ip=self.from_auth_ip, project_id=project_id))
 
-        cinder = cinder_client('1', session=auth_ref.session)
+        cinder = cinder_client('2', session=auth_ref.session)
         cinder.client.management_url = endpoint_url
 
         return cinder
@@ -188,10 +189,10 @@ class AuthStack(object):
 
         auth_ref = self.get_to_auth_ref()
         project_id = auth_ref.session.get_project_id()
-        endpoint_url = ('{ip}:8776/v1/{project_id}'.format
+        endpoint_url = ('{ip}:8776/v2/{project_id}'.format
                        (ip=self.to_auth_ip, project_id=project_id))
 
-        cinder = cinder_client('1', session=auth_ref.session)
+        cinder = cinder_client('2', session=auth_ref.session)
         cinder.client.management_url = endpoint_url
         return cinder
 
