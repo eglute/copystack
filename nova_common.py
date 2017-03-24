@@ -586,7 +586,7 @@ def main():
     #create_security_group('to', 'foo')
     # compare_and_create_security_groups()
     # print get_vm_list('from')
-    print get_flavor_list('from')
+    print get_flavor_list('to')
     # compare_and_create_flavors()
     # get_quotas('from')
     #compare_and_update_quotas()

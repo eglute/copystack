@@ -47,9 +47,23 @@ def get_from_tenant_list():
     return tenants
 
 
+def get_from_project_list():
+    keystone = get_keystone('from')
+    projects = keystone.projects.list()
+    #print projects
+    return projects
+
+
 def get_from_tenant_names():
     tenants = get_from_tenant_list()
     names = map(lambda tenants: tenants.name, tenants)
+    names = sorted(names)
+    return names
+
+
+def get_from_project_names():
+    projects = get_from_project_list()
+    names = map(lambda projects: projects.name, projects)
     names = sorted(names)
     return names
 
@@ -60,6 +74,12 @@ def get_to_tenant_names():
     names = sorted(names)
     return names
 
+def get_to_project_names():
+    projects = get_to_project_list()
+    names = map(lambda projects: projects.name, projects)
+    names = sorted(names)
+    return names
+
 
 def get_to_tenant_list():
     keystone = get_keystone('to')
@@ -67,17 +87,39 @@ def get_to_tenant_list():
     #print tenants
     return tenants
 
+
+def get_to_project_list():
+    keystone = get_keystone('to')
+    projects = keystone.projects.list()
+    #print tenants
+    return projects
+
+
 def get_to_projects_list():
     keystone = get_keystone('to')
     tenants = keystone.projects.list()
     #print tenants
     return tenants
 
+
 def get_from_projects_list():
     keystone = get_keystone('from')
     tenants = keystone.projects.list()
     #print tenants
     return tenants
+
+
+def print_projects(destination):
+    if destination == 'to':
+        projects = get_to_project_list()
+    else:
+        projects = get_from_project_list()
+    projects.sort(key=lambda x: x.name)
+    newlist = sorted(projects, key=lambda x: x.name)
+    print "Project ID:                         Name:                  Description:"
+    for project in newlist:
+        print project.id, " ", '{:20}'.format(project.name), " ", project.description, " "
+
 
 def print_tenants(destination):
     if destination == 'to':
@@ -105,6 +147,18 @@ def get_from_to_name_tenant_ids():
     return tenant_ids
 
 
+def get_from_to_name_project_ids():
+    from_projects = get_from_project_list()
+    to_projects = get_to_project_list()
+
+    project_ids = list()
+    for to_project in to_projects:
+        from_project = filter(lambda from_projects: from_projects.name == to_project.name, from_projects)
+        tenant = {'from_id': from_project[0].id, 'to_id': to_project.id, 'name': from_project[0].name}
+        project_ids.append(tenant)
+
+    return project_ids
+
 # finds opposite tenant ID based on matching tenant names.
 # returns the following format:
 # {'to_id': u'e99e58c687ec4a608f4323d22a29c08e', 'name': u'foobar1', 'from_id': u'eaeb181cbdaa429483960f3c7a5c95fe'}
@@ -126,6 +180,24 @@ def find_opposite_tenant_id(tenant_id):
     return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
 
 
+def find_opposite_project_id(project_id):
+    from_projects = get_from_project_list()
+    to_projects = get_to_project_list()
+
+    from_project = filter(lambda from_project: from_project.id == project_id, from_projects)
+    if from_project:
+        to_project = filter(lambda to_tenants: to_tenants.name == from_project[0].name, to_projects)
+        return {'from_id': from_project[0].id, 'name': from_project[0].name, 'to_id': to_project[0].id}
+
+    to_project = filter(lambda to_tenants: to_tenants.id == project_id, to_projects)
+    if to_project:
+        from_project = filter(lambda from_tenants: from_tenants.name == to_project[0].name, from_projects)
+        return {'from_id': from_project[0].id, 'name': to_project[0].name, 'to_id': to_project[0].id}
+
+    # if didn't find anything, return a lot of nones.
+    return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
+
+
 def compare_and_create_tenants():
     from_tenants = get_from_tenant_list()
     to_tenants = get_to_tenant_list()
@@ -138,11 +210,30 @@ def compare_and_create_tenants():
             from_tenant = filter(lambda from_tenants: from_tenants.name == name, from_tenants)
             new_tenant = create_tenant('to', from_tenant[0])
 
+def compare_and_create_projects():
+    from_tenants = get_from_project_list()
+    to_tenants = get_to_project_list()
+
+    from_names = map(lambda from_tenants: from_tenants.name, from_tenants)
+    to_names = map(lambda to_tenants: to_tenants.name, to_tenants)
+
+    for name in from_names:
+        if name not in to_names:
+            from_tenant = filter(lambda from_tenants: from_tenants.name == name, from_tenants)
+            new_tenant = create_project('to', from_tenant[0])
+
 
 def create_tenant(destination, tenant):
     keystone = get_keystone(destination)
     new_tenant = keystone.tenants.create(tenant_name=tenant.name, description=tenant.description, enabled=tenant.enabled)
     print "Created tenant", new_tenant.name
+    return new_tenant
+
+
+def create_project(destination, tenant):
+    keystone = get_keystone(destination)
+    new_tenant = keystone.projects.create(project_name=tenant.name, description=tenant.description, enabled=tenant.enabled)
+    print "Created project", new_tenant.name
     return new_tenant
 
 
@@ -172,9 +263,9 @@ def create_user(destination, user):
     keystone = get_keystone(destination)
     tenant = find_opposite_tenant_id(user.tenantId)
     if hasattr(user, 'email'):
-        new_user = keystone.users.create(user.name, tenant_id=tenant['to_id'], email=user.email, enabled=user.enabled)
+        new_user = keystone.users.create(user.name, project_id=tenant['to_id'], email=user.email, enabled=user.enabled)
     else:
-        new_user = keystone.users.create(user.name, tenant_id=tenant['to_id'], enabled=user.enabled)
+        new_user = keystone.users.create(user.name, project_id=tenant['to_id'], enabled=user.enabled)
 
     print "Created new user:", new_user.name, ". This user has no password. Set password manually."
     update_roles(user, new_user, tenant)
@@ -226,7 +317,7 @@ def list_roles(destination, user_id, tenant_id):
 
 def update_roles(old_user, new_user, tenant):
     keystone = get_keystone('to')
-    to_tenants = keystone.tenants.list()
+    to_tenants = keystone.projects.list()
     to_tenant = filter(lambda to_tenants: to_tenants.id == tenant['to_id'], to_tenants)
     from_roles = list_roles('from', old_user.id, tenant['from_id'])
     to_roles = get_roles('to')
@@ -238,7 +329,6 @@ def update_roles(old_user, new_user, tenant):
             print "Role added:", rol[0].name, " to user:", new_user.name
         except Exception, e:
             print "No new roles added for user:", new_user.name
-
 
 
 def get_roles(destination):
@@ -276,11 +366,15 @@ def main():
     #get_to_tenant_list()
     #get_from_tenant_names()
     # print get_users('from')
-    print get_users('from')
+    # print get_users('to')
     # compare_and_create_users()
     # print get_from_to_name_user_ids()
-    # print_tenants('from')
+    # print_tenants('to')
+    # print get_from_project_list()
     # print list_roles("from", '08d53ca0a9304f28ad299a9a63dc4b68', 'a370cc1a5e4e409c80f41d50c3fa0ee5')
     # print get_roles_for_tenant('from', 'a370cc1a5e4e409c80f41d50c3fa0ee5')
+    projects = get_from_project_list()
+    print projects
+
 if __name__ == "__main__":
         main()

@@ -155,15 +155,15 @@ class AuthStack(object):
     def get_from_glance_client(self):
 
         auth_ref = self.get_from_auth_ref()
-        endpoint_url = '{ip}:9292/v1'.format(ip=self.from_auth_ip)
-        glance = glance_client('1', endpoint=endpoint_url, session=auth_ref.session)
+        endpoint_url = '{ip}:9292'.format(ip=self.from_auth_ip)
+        glance = glance_client('2', session=auth_ref.session, endpoint=endpoint_url)
         return glance
 
     def get_to_glance_client(self):
 
         auth_ref = self.get_to_auth_ref()
-        endpoint_url = '{ip}:9292/v1'.format(ip=self.to_auth_ip)
-        glance = glance_client('1', endpoint=endpoint_url, session=auth_ref.session)
+        endpoint_url = '{ip}:9292'.format(ip=self.to_auth_ip)
+        glance = glance_client('2', endpoint=endpoint_url, session=auth_ref.session)
         return glance
 
     def get_glance_client(self, destination):

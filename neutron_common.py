@@ -438,7 +438,7 @@ def main():
     # associate_floating_ip_to_fixed_port('to')
     # print find_float_by_floatip('from', '172.29.248.10')
     # associate_all_ips()
-    print_network_list('from')
+    print_network_list('to')
 
 
 if __name__ == "__main__":

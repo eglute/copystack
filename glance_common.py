@@ -208,7 +208,11 @@ def main():
     #image_download()
     #create_images("./downloads/")
     #get_image_by_original_id('to', '64737c30-b1fe-4a93-a14d-259395f61364')
-    print get_images('from')
+
+    from_images = get_images('from')
+    print "Image UUID / Image Status / Image Name"
+    for i in from_images:
+        print i.id, " ", i.status, " ", i.name
     #print get_images('to')
     #download_images_by_vm_uuid('from', './downloads/', 'id_file')
     #upload_images_by_vm_uuid('./downloads/', 'id_file')

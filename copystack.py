@@ -17,16 +17,16 @@ def main(opts, args):
     print "To:  ", auth.to_auth_ip, " Username:", auth.to_username, " Tenant:", auth.to_tenant_name
 
     if opts.report:
-        print "--------------- From Tenants: ---------------------"
+        print "--------------- From Projects: ---------------------"
         try:
-            keystone_common.print_tenants('from')
+            keystone_common.print_projects('from')
         except Exception, e:
-            print "To print tenant info, switch to admin user"
-        print "\n--------------- To Tenants: ------------------------"
+            print "To print project info, switch to admin user"
+        print "\n--------------- To Projects: ------------------------"
         try:
-            keystone_common.print_tenants('to')
+            keystone_common.print_projects('to')
         except Exception, e:
-            print "To print tenant info, switch to admin user"
+            print "To print project info, switch to admin user"
         print "\n--------------- From Networks (with subnets): ---------------------"
         neutron_common.print_network_list('from')
         print "\n--------------- To Networks (with subnets): ------------------------"
@@ -91,10 +91,10 @@ def main(opts, args):
     if opts.quota:
         nova_common.compare_and_report_quotas()
     if opts.tenants:
-        print keystone_common.get_from_tenant_names()
-        print keystone_common.get_to_tenant_names()
+        print keystone_common.get_from_project_names()
+        print keystone_common.get_to_project_names()
     if opts.createtenants:
-        keystone_common.compare_and_create_tenants()
+        keystone_common.compare_and_create_projects()
     if opts.publickeys:
         nova_common.compare_and_create_keypairs()
     if opts.users:
