@@ -232,7 +232,7 @@ def create_tenant(destination, tenant):
 
 def create_project(destination, tenant):
     keystone = get_keystone(destination)
-    new_tenant = keystone.projects.create(project_name=tenant.name, description=tenant.description, enabled=tenant.enabled)
+    new_tenant = keystone.projects.create(tenant.name, tenant.domain_id, description=tenant.description, enabled=tenant.enabled)
     print "Created project", new_tenant.name
     return new_tenant
 
@@ -261,7 +261,7 @@ def compare_and_create_users():
 # #todo: lookup tenant and add on creation
 def create_user(destination, user):
     keystone = get_keystone(destination)
-    tenant = find_opposite_tenant_id(user.tenantId)
+    tenant = find_opposite_project_id(user.default_project)
     if hasattr(user, 'email'):
         new_user = keystone.users.create(user.name, project_id=tenant['to_id'], email=user.email, enabled=user.enabled)
     else:
@@ -373,8 +373,11 @@ def main():
     # print get_from_project_list()
     # print list_roles("from", '08d53ca0a9304f28ad299a9a63dc4b68', 'a370cc1a5e4e409c80f41d50c3fa0ee5')
     # print get_roles_for_tenant('from', 'a370cc1a5e4e409c80f41d50c3fa0ee5')
-    projects = get_from_project_list()
-    print projects
+    # projects = get_from_project_list()
+    # create_project('to', projects[0])
+    # print projects
 
+    users = get_users('from')
+    print users[0]
 if __name__ == "__main__":
         main()
