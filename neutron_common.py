@@ -197,7 +197,7 @@ def create_router(destination, router):
     matching_subnet = find_corresponding_subnet_name_by_id(router['external_gateway_info']['network_id'],
                                                            matching_network['id'],
                                                            router['external_gateway_info']['external_fixed_ips'][0]['subnet_id'])
-    matching_tenant = keystone_common.find_opposite_tenant_id(router['tenant_id'])
+    matching_tenant = keystone_common.find_opposite_project_id(router['tenant_id'])
     body = {'router': {
                 'name': router['name'],
                 'tenant_id': matching_tenant['to_id']
