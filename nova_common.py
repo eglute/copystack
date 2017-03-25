@@ -108,7 +108,7 @@ def get_vm_list(destination):
     nova = get_nova(destination)
     #network = neutron_common.get_network_by_name('to', 'foobar1')
     #print network[0]
-    servers = nova.servers.list()
+    servers = nova.servers.list(detailed='True')
     for s in servers:
         server = nova.servers.get(s.id)
         #print server
@@ -587,7 +587,7 @@ def main():
     #create_security_group('to', 'foo')
     # compare_and_create_security_groups()
     # print get_vm_list('from')
-    print get_flavor_list('to')
+    # print get_flavor_list('to')
     # compare_and_create_flavors()
     # get_quotas('from')
     #compare_and_update_quotas()
@@ -604,7 +604,8 @@ def main():
     # print_security_groups('from')
     # get_flavor_by_id('from', 'a97d80f0-e309-436e-95cc-bb2a02139225')
 
-
+    vms = get_vm_list('from')
+    print vms
 
 if __name__ == "__main__":
         main()
