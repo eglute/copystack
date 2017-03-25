@@ -268,7 +268,11 @@ def compare_and_create_ports():
             # if (from_port[0]['device_owner'].startswith('network:router_gateway') or
             if from_port[0]['device_owner'].startswith('network:router_interface'):
             # cannot simply just add a new port for some reason, need to do this for ports to come up in active status
-                new_thing = add_interface_router('to', from_port[0])
+                try:
+                    new_thing = add_interface_router('to', from_port[0])
+                except Exception, e:
+                    print "Somthing bad happened when trying to add a router interface. Check that routers match on source and destination"
+                    print str(e)
             fixed_ip = filter(lambda to_ports: to_ports['fixed_ips'][0]['ip_address'] == from_port[0]['fixed_ips'][0]['ip_address'], to_ports)
             if fixed_ip:
                 print "Port with fixed ip", fixed_ip[0]['fixed_ips'][0]['ip_address'], "already exists, skipping it."
