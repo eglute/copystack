@@ -172,8 +172,6 @@ def create_vm(from_vm, image='default'):
                     nic = {'port-id': port['id']}
                     nics.append(nic)
 
-    print "======"
-    print nics
     #include original image info as metadata:
     img = glance_common.get_image('from', from_vm.image['id'])
     metadata = from_vm.metadata
@@ -183,10 +181,9 @@ def create_vm(from_vm, image='default'):
     #attaching security groups during server creation does not seem to work, so moved to a separate task
     server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
                                  meta=metadata, key_name=from_vm.key_name)
-    time.sleep(5)
 
-    print "Server created:", server.name
-    return server
+    print "Server created:", from_vm.name
+
 
 #TODO: fix this to actually read from a mapping....
 def create_vm_with_network_mapping(from_vm, image='default'):
