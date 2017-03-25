@@ -312,7 +312,11 @@ def add_interface_router(destination, port):
 # vm instances. Equivalent of 'neutron port-create egle-net --fixed-ip ip_address=11.11.11.3'
 def create_ip_ports(destination, port):
     neutron = get_neutron(destination)
-    corspd_network = find_corresponding_network_name_by_id(port['network_id'])
+    try:
+        corspd_network = find_corresponding_network_name_by_id(port['network_id'])
+    except Exception, e:
+        print "Couldn't find a matching network, please check that source and destination networks match."
+        return
     if port['device_owner'].startswith('network:floatingip'):
         fip = find_float_by_floatip('from', port['fixed_ips'][0]['ip_address'])
         corspd_tenant = keystone_common.find_opposite_project_id(fip['tenant_id'])
