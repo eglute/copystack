@@ -126,10 +126,15 @@ def print_vm_list_ids(destination):
     vms.sort(key=lambda x: x.status)
     newlist = sorted(vms, key=lambda x: x.status)
 
-    print "VMs sorted by status (id status name):"
+    print "VMs sorted by status (id status flavor_id name):"
     for vm in newlist:
-        print vm.id, " ",vm. status, " ", vm.name
+        print vm.id, " ", vm. status, " ", vm.flavor['id'], vm.name
 
+
+def print_flavor_list(destination):
+    to_flavors = get_flavor_list(destination)
+    for f in to_flavors:
+        print '{:5}'.format(f.id), f.name
 
 # todo: check that it is not used and remove
 def compare_and_create_vms():

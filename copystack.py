@@ -28,9 +28,15 @@ def main(opts, args):
         except Exception, e:
             print "To print project info, switch to admin user"
         print "\n--------------- From Users: ---------------------"
-        keystone_common.print_user_names('from')
+        try:
+            keystone_common.print_user_names('from')
+        except Exception, e:
+            print "To print user info, switch to admin user"
         print "\n--------------- To Users: ---------------------"
-        keystone_common.print_user_names('to')
+        try:
+            keystone_common.print_user_names('to')
+        except Exception, e:
+            print "To print user info, switch to admin user"
         print "\n--------------- From Networks (with subnets): ---------------------"
         neutron_common.print_network_list('from')
         print "\n--------------- To Networks (with subnets): ------------------------"
@@ -54,13 +60,9 @@ def main(opts, args):
         for i in to_images:
             print i.id, " ", i.status, " ", i.name
         print "\n--------------- From Flavors: ------------------------"
-        from_flavors = nova_common.get_flavor_list('from')
-        for f in from_flavors:
-            print f.name
+        nova_common.print_flavor_list('from')
         print "\n--------------- To Flavors: ------------------------"
-        to_flavors = nova_common.get_flavor_list('to')
-        for f in to_flavors:
-            print f.name
+        nova_common.print_flavor_list('to')
         print "\n--------------- From VMs: ------------------------"
         vms = nova_common.print_vm_list_ids('from')
         print "\n--------------- To VMs: ------------------------"
