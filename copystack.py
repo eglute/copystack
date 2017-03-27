@@ -27,6 +27,10 @@ def main(opts, args):
             keystone_common.print_projects('to')
         except Exception, e:
             print "To print project info, switch to admin user"
+        print "\n--------------- From Users: ---------------------"
+        keystone_common.print_user_names('from')
+        print "\n--------------- To Users: ---------------------"
+        keystone_common.print_user_names('to')
         print "\n--------------- From Networks (with subnets): ---------------------"
         neutron_common.print_network_list('from')
         print "\n--------------- To Networks (with subnets): ------------------------"

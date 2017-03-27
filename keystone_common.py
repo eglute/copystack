@@ -263,9 +263,9 @@ def create_user(destination, user):
     keystone = get_keystone(destination)
     tenant = find_opposite_project_id(user.default_project_id)
     if hasattr(user, 'email'):
-        new_user = keystone.users.create(user.name, project_id=tenant['to_id'], email=user.email, enabled=user.enabled)
+        new_user = keystone.users.create(name=user.name, project_id=tenant['to_id'], email=user.email, enabled=user.enabled)
     else:
-        new_user = keystone.users.create(user.name, project_id=tenant['to_id'], enabled=user.enabled)
+        new_user = keystone.users.create(name=user.name, project_id=tenant['to_id'], enabled=user.enabled)
 
     print "Created new user:", new_user.name, ". This user has no password. Set password manually."
     update_roles(user, new_user, tenant)
@@ -311,7 +311,7 @@ def find_opposite_user_id(user_id):
 def list_roles(destination, user_id, tenant_id):
     keystone = get_keystone(destination)
 
-    roles = keystone.users.list_roles(user_id, tenant=tenant_id)
+    roles = keystone.roles.list(user_id, project=tenant_id)
     return roles
 
 
@@ -325,7 +325,7 @@ def update_roles(old_user, new_user, tenant):
     for role in from_roles:
         rol = filter(lambda to_roles: to_roles.name == role.name, to_roles)
         try:
-            keystone.roles.add_user_role(new_user, role=rol[0], tenant=to_tenant[0])
+            keystone.roles.grant(project=to_tenant[0], user=new_user, role=rol[0])
             print "Role added:", rol[0].name, " to user:", new_user.name
         except Exception, e:
             print "No new roles added for user:", new_user.name
@@ -354,6 +354,15 @@ def find_opposite_role(role_id):
     # if didn't find anything, return a lot of nones.
     return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
 
+
+def print_user_names(destination):
+    us = get_users(destination)
+    users = sorted(us, key=lambda x: x.name)
+    print "Name:                     Domain:"
+    for u in users:
+        print '{:25}'.format(u.name), u.domain_id
+
+
 def main():
     #compare_and_create_tenants()
     #get_from_to_name_tenant_ids()
@@ -377,7 +386,6 @@ def main():
     # create_project('to', projects[0])
     # print projects
 
-    users = get_users('from')
-    print users[0]
+    print_user_names('from')
 if __name__ == "__main__":
         main()

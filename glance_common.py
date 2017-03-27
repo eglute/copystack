@@ -65,7 +65,7 @@ def create_images(path):
         if i.name.startswith('migration_vm_image_') or i.name.startswith('migration_volume_image_'):
                 continue
         else:
-            if (i.status == 'active') and (i.deleted == False):
+            if i.status == 'active':
                 filename = path + i.id
                 image_create('to', i, filename)
 
@@ -77,7 +77,7 @@ def download_images(destination, path):
             if i.name.startswith('migration_vm_image_') or i.name.startswith('migration_volume_image_'):
                 continue
             else:
-                if (i.status == 'active') and (i.deleted == False):
+                if i.status == 'active':
                     image_download(i.id, path)
                 else:
                     print "Image with this id is not available for downloads: " + i.id

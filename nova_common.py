@@ -108,7 +108,8 @@ def get_vm_list(destination):
     nova = get_nova(destination)
     #network = neutron_common.get_network_by_name('to', 'foobar1')
     #print network[0]
-    servers = nova.servers.list(search_opts={'all_tenants':'1'})
+    # servers = nova.servers.list(search_opts={'all_tenants':'1'})
+    servers = nova.servers.list()
     for s in servers:
         server = nova.servers.get(s.id)
         #print server
