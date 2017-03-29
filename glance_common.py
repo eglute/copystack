@@ -85,6 +85,17 @@ def download_images(destination, path):
         print "Invalid directory provided"
 
 
+def download_image_by_uuid(destination, path, uuid):
+    if os.access(os.path.dirname(path), os.W_OK):
+        i = get_image(destination, uuid=uuid)
+        if i.status == 'active':
+            image_download(i.id, path)
+        else:
+            print "Image with this id is not available for downloads: " + i.id
+    else:
+        print "Invalid directory provided"
+
+
 def download_images_by_vm_uuid(destination, path, uuid_file):
     ids = utils.read_ids_from_file(uuid_file)
     ready = True
@@ -221,10 +232,10 @@ def main():
     #create_images("./downloads/")
     #get_image_by_original_id('to', '64737c30-b1fe-4a93-a14d-259395f61364')
 
-    from_images = get_images('from')
-    print "Image UUID / Image Status / Image Name"
-    for i in from_images:
-        print i.id, " ", i.status, " ", i.name
+    # from_images = get_images('from')
+    # print "Image UUID / Image Status / Image Name"
+    # for i in from_images:
+    #     print i.id, " ", i.status, " ", i.name
     #print get_images('to')
     #download_images_by_vm_uuid('from', './downloads/', 'id_file')
     #upload_images_by_vm_uuid('./downloads/', 'id_file')
@@ -232,5 +243,6 @@ def main():
 
     # volumes = nova_common.get_volume_id_list_for_vm_ids('from', './id_file')
     # download_images_by_volume_uuid('from','./downloads/', volumes=volumes)
+    download_image_by_uuid('from', '/download', 'dd752ad4-6a97-41fe-b996-1231a6ded587')
 if __name__ == "__main__":
         main()
