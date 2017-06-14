@@ -180,7 +180,7 @@ class AuthStack(object):
         endpoint_url = ('{ip}:8776/v2/{project_id}'.format
                        (ip=self.from_auth_ip, project_id=project_id))
 
-        cinder = cinder_client('2', session=auth_ref.session)
+        cinder = cinder_client('2', session=auth_ref.session, bypass_url=endpoint_url)
         cinder.client.management_url = endpoint_url
 
         return cinder
@@ -192,7 +192,7 @@ class AuthStack(object):
         endpoint_url = ('{ip}:8776/v2/{project_id}'.format
                        (ip=self.to_auth_ip, project_id=project_id))
 
-        cinder = cinder_client('2', session=auth_ref.session)
+        cinder = cinder_client('2', session=auth_ref.session, bypass_url=endpoint_url)
         cinder.client.management_url = endpoint_url
         return cinder
 
