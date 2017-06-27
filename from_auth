@@ -1,6 +1,8 @@
-export OS_USERNAME=myadmin
-export OS_PASSWORD=mypassword
-export OS_TENANT_NAME=MyProject
-export OS_AUTH_URL=http://172.16.56.128:35357/v2.0/
-export OS_REGION_NAME=RegionOne
-export OS_AUTH_IP=172.16.56.128
+export OS_USERNAME=admin
+export OS_PASSWORD=soverysecret!
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL=https://172.16.56.128:5000/v3
+export OS_AUTH_IP=https://172.16.56.128
+export OS_CACERT=/Users/eglute/copystack/fromhaproxy.cert
+export USER_DOMAIN_ID=default
+export PROJECT_DOMAIN_ID=default
