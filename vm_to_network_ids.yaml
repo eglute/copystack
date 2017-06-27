@@ -1,0 +1,7 @@
+vms:
+  from_vm:
+   - from_vm_id 32d285b5-d5e8-495b-b549-856e5bb67f56
+   - from_vm_name foo
+     to_subnet:
+       - to_subnet_id sdkfjsd
+       - to_subnet_ip 1.1.1.1

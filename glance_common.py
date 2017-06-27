@@ -59,21 +59,22 @@ def get_image_by_original_id(destination, original_id):
 
 
 # Create all images found, since name uniqueness in images is not guaranteed...
-def create_images(path):
-    from_images = get_images('from')
-    for i in from_images:
-        if i.name.startswith('migration_vm_image_') or i.name.startswith('migration_volume_image_'):
-                continue
-        else:
-            if i.status == 'active':
-                filename = path + i.id
-                image_create('to', i, filename)
+def create_images(path, uuid_file):
+    ids = utils.read_ids_from_file(uuid_file)
+    for uuid in ids:
+        filename = path + uuid
+        image = get_image('from', uuid)
+        if image.status == 'active':
+            print "Uploading image name:", image.name
+            image_create('to', image, filename)
 
 
-def download_images(destination, path):
+def download_images(destination, path, uuid_file):
+    ids = utils.read_ids_from_file(uuid_file)
+
     if os.access(os.path.dirname(path), os.W_OK):
-        images = get_images(destination)
-        for i in images:
+        for uuid in ids:
+            i = get_image(destination, uuid=uuid)
             if i.name.startswith('migration_vm_image_') or i.name.startswith('migration_volume_image_'):
                 continue
             else:
@@ -158,8 +159,8 @@ def image_create(destination, image, url):
 
     # tenant = keystone_common.find_opposite_tenant_id(image.owner)
     #insert original image id into the properties:
-    props = {}
-    props.update({'original_image_id': image.id})
+    props = {'original_image_id': image.id}
+    # props.update({'original_image_id': image.id})
     min_disk = 0
     if image.min_disk is not None:
         min_disk = image.min_disk
@@ -175,7 +176,7 @@ def image_create(destination, image, url):
                                    # properties=props,
                                    visibility=image.visibility,
                                    protected=image.protected)
-    glance.images.update(img.id, props)
+    glance.image_tags.update(img.id, props)
     print url
     glance.images.upload(img.id, open(url, 'rb'))
 
@@ -223,6 +224,15 @@ def save_image(data, path):
             image.close()
 
 
+def print_images(destination):
+    fi = get_images(destination)
+    from_images = sorted(fi, key=lambda x: x.name)
+
+    print "Image UUID / Image Status / Image Name"
+    for i in from_images:
+        print i.id, " ", i.status, " ", i.name
+
+
 def main():
     #auth_ref = get_auth_ref('from')
     #check('from', auth_ref)
@@ -243,6 +253,6 @@ def main():
 
     # volumes = nova_common.get_volume_id_list_for_vm_ids('from', './id_file')
     # download_images_by_volume_uuid('from','./downloads/', volumes=volumes)
-    download_image_by_uuid('from', '/download', 'dd752ad4-6a97-41fe-b996-1231a6ded587')
+    download_image_by_uuid('from', '/downloads', 'dd752ad4-6a97-41fe-b996-1231a6ded587')
 if __name__ == "__main__":
         main()

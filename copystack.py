@@ -50,15 +50,10 @@ def main(opts, args):
         print "\n--------------- To Security Groups: ------------------------"
         nova_common.print_security_groups('to')
         print "\n--------------- From Images: ------------------------"
-        from_images = glance_common.get_images('from')
-        print "Image UUID / Image Status / Image Name"
-        for i in from_images:
-            print i.id, " ", i.status, " ", i.name
+        glance_common.print_images('from')
         print "\n--------------- To Images: ------------------------"
         to_images = glance_common.get_images('to')
-        print "Image UUID / Image Status / Image Name"
-        for i in to_images:
-            print i.id, " ", i.status, " ", i.name
+        glance_common.print_images('to')
         print "\n--------------- From Flavors: ------------------------"
         nova_common.print_flavor_list('from')
         print "\n--------------- To Flavors: ------------------------"
@@ -78,17 +73,21 @@ def main(opts, args):
     if opts.copysec:
         nova_common.compare_and_create_security_groups()
     if opts.download:
-        if args:
+        if len(args) == 2:
             print args[0]
-            glance_common.download_images('from', path=args[0])
+            print args[1]
+            ready = glance_common.download_images('from', path=args[0], uuid_file=args[1])
         else:
-            print "Please provide download directory, for example, ./downloads/"
+            print "Please provide download directory and file with image UUIDs to be downloaded, " \
+                  "for example, ./downloads/ ./id_file"
     if opts.upload:
-        if args:
+        if len(args) == 2:
             print args[0]
-            glance_common.create_images(path=args[0])
+            print args[1]
+            glance_common.create_images(path=args[0], uuid_file=args[1])
         else:
-            print "Please provide image directory, for example, ./downloads/"
+            print "Please provide download directory and file with image UUIDs to be uploaded, " \
+                  "for example, ./downloads/ ./id_file"
     if opts.flavors:
         nova_common.compare_and_create_flavors()
     #todo: fix this
@@ -203,6 +202,8 @@ if __name__ == "__main__":
                           help='Copy public keys from -> to')
         parser.add_option("-d", "--download", action="store_true", dest='download',
                           help='Download all non-migration images to a specified path, for example, ./downloads/.'
+                          'for each UUID provided in a file, for example, ./id_file. '
+                          'First argument directory path, second path to a file. '
                           ' Images with names that start with "migration_vm_image_" or "migration_volume_image_" '
                                'will not be moved. All others will be.')
         parser.add_option("-l", "--upload", action="store_true", dest='upload',
