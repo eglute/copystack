@@ -1,0 +1,17 @@
+clouds:
+  to:
+    auth:
+      username: myadmin
+      password: mypassword
+      tenant_name: MyProject
+      auth_url: http://172.16.56.129:35357
+    region_name: RegionOne
+    identity_api_version: 3
+  from:
+    auth:
+      username: myadmin
+      password: mypassword
+      tenant_name: MyProject
+      auth_url: http://172.16.56.128:35357
+    region_name: RegionOne
+    identity_api_version: 3
