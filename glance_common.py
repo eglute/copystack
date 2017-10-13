@@ -123,7 +123,10 @@ def download_images_by_volume_uuid(destination, path, volumes, single=False):
             image_name = "migration_volume_image_" + uuid
         print "Downloading image name:", image_name
         image = get_image_by_name(destination, image_name)
-        image_download(image.id, path, fname=image_name)
+        if image:
+            image_download(image.id, path, fname=image_name)
+        else:
+            print "No image ", image_name, "found."
 
 
 def upload_images_by_vm_uuid(path, uuid_file):

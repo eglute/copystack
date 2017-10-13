@@ -176,7 +176,6 @@ class AuthStack(object):
     def get_from_cinder_client(self):
         auth_ref = self.get_from_auth_ref()
         project_id = auth_ref.session.get_project_id()
-        print project_id
         endpoint_url = ('{ip}:8776/v2/{project_id}'.format
                        (ip=self.from_auth_ip, project_id=project_id))
 

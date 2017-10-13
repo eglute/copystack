@@ -62,10 +62,10 @@ def main(opts, args):
         vms = nova_common.print_vm_list_ids('from')
         print "\n--------------- To VMs: ------------------------"
         vms = nova_common.print_vm_list_ids('to')
-        # print "\n--------------- From Volumes: ------------------------"
-        # volumes = cinder_common.print_volumes('from')
-        # print "\n--------------- To Volumes: ------------------------"
-        # volumes = cinder_common.print_volumes('to')
+        print "\n--------------- From Volumes: ------------------------"
+        volumes = cinder_common.print_volumes('from')
+        print "\n--------------- To Volumes: ------------------------"
+        volumes = cinder_common.print_volumes('to')
     if opts.copynets:
         neutron_common.compare_and_create_networks()
     if opts.routers:
@@ -92,7 +92,11 @@ def main(opts, args):
         nova_common.compare_and_create_flavors()
     #todo: fix this
     if opts.singlevolumeimagecreate:
-        cinder_common.upload_single_volumes_to_image('from')
+        if args:
+            # print args[0]
+            cinder_common.upload_single_volumes_to_image('from', uuid_file=args[0])
+        else:
+            print "Please provide file with volume UUIDs, for example, ./id_volume_file"
     if opts.quota:
         nova_common.compare_and_report_quotas()
     if opts.tenants:
@@ -106,13 +110,13 @@ def main(opts, args):
         keystone_common.compare_and_create_users()
     if opts.shutdown:
         if args:
-            print args[0]
+            # print args[0]
             nova_common.power_off_vms('from', id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
     if opts.createimages:
         if args:
-            print args[0]
+            # print args[0]
             nova_common.create_image_from_vm('from', id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
@@ -150,24 +154,24 @@ def main(opts, args):
             print "Please provide file with VM UUIDs being migrated, for example, ./id_file"
     if opts.createvolumes:
         if args:
-            print args[0]
             cinder_common.create_volume_from_image_by_vm_ids(id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
     if opts.singlevolumeimagedownload:
-        if args:
-            print args[0]
-            cinder_common.download_single_volumes('from', path=args[0])
+        if len(args) == 2:
+            cinder_common.download_single_volumes('from', path=args[0], id_file=args[1])
         else:
-            print "Please provide image directory, for example, ./downloads/"
+            print "Please provide image directory and file with volume ids, for example, ./downloads/ ./id_volume_file"
     if opts.singlevolumeimageupload:
-        if args:
-            print args[0]
-            cinder_common.upload_single_volume_images_to_clouds(path=args[0])
+        if len(args) == 2:
+            cinder_common.upload_single_volume_images_to_clouds(path=args[0], id_file=args[1])
         else:
-            print "Please provide image directory, for example, ./downloads/"
+            print "Please provide image directory and file with volume ids for example, ./downloads/ ./id_volume_file"
     if opts.singlevolumecreate:
-        cinder_common.create_single_volumes_from_images()
+        if args:
+            cinder_common.create_single_volumes_from_images(id_file=args[0])
+        else:
+            print "Please provide file with volume ids, for example, ./id_volume_file"
     if opts.addmissinginterfaces:
         neutron_common.compare_and_create_ports()
 
@@ -238,15 +242,17 @@ if __name__ == "__main__":
                           help='Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
                                ' for example, ./id_file. ')
         parser.add_option("-v", "--singlevolumeimagecreate", action='store_true', dest='singlevolumeimagecreate',
-                          help='Create images of unattached volumes')
+                          help='Create images of unattached volumes for each UUID provided in the ./id_volume_file')
         parser.add_option("-V", "--singlevolumeimagedownload", action='store_true', dest='singlevolumeimagedownload',
-                          help='Download images of unattached volumes '
-                               'to a specified path, for example, ./downloads/ ')
+                          help='Download images of unattached volumes as specified in volume ID file'
+                               'to a specified path, for example, ./downloads/ ./id_volume_file')
         parser.add_option("-y", "--singlevolumeimageupload", action='store_true', dest='singlevolumeimageupload',
                           help='Upload images of unattached volumes from '
-                               'a specified path, for example, ./downloads/ ')
+                               'a specified path as specified in volume ID file, for example, '
+                               './downloads/ ./id_volume_file')
         parser.add_option("-Y", "--singlevolumecreate", action='store_true', dest='singlevolumecreate',
-                          help='Create un-attached volumes from images')
+                          help='Create un-attached volumes from images as specified in volume ID file, '
+                               'for example, ./id_volume_file')
 
 
         (opts, args) = parser.parse_args()

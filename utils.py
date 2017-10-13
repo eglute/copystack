@@ -8,9 +8,10 @@ def read_ids_from_file(id_file):
     fimage.closed
     ids = []
     for i in list_ids:
-        uuid = i.split()[0]
-        #print uuid
-        ids.append(uuid)
+        if i and i.strip():
+            uuid = i.split()[0]
+            #print uuid
+            ids.append(uuid)
     return ids
 
 

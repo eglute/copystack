@@ -17,6 +17,7 @@
 import glance_common
 import keystone_common
 import nova_common
+import utils
 from auth_stack2 import AuthStack
 import time
 
@@ -35,6 +36,13 @@ def get_volume_list(destination):
     return volumes
 
 
+def get_volume_by_id(destination, uuid):
+    cinder = get_cinder(destination)
+    volume = cinder.volumes.get(uuid)
+    print "vvvvvvv name: ", volume.name
+    return volume
+
+
 # volumes that are not attached to any VMs
 def get_single_volumes(destination):
     volumes = get_volume_list(destination)
@@ -48,12 +56,12 @@ def get_single_volumes(destination):
 def compare_and_create_volumes():
     from_volumes = get_volume_list('from')
     to_volumes = get_volume_list('to')
-    from_names = map(lambda from_volumes: from_volumes.display_name, from_volumes)
-    to_names = map(lambda to_volumes: to_volumes.display_name, to_volumes)
+    from_names = map(lambda from_volumes: from_volumes.name, from_volumes)
+    to_names = map(lambda to_volumes: to_volumes.name, to_volumes)
     for volume in from_volumes:
-        if volume.display_name not in to_names:
+        if volume.name not in to_names:
             create_volume('to', volume)
-            #print volume.display_name
+            #print volume.name
     #print from_names
     #print to_names
 
@@ -66,8 +74,8 @@ def create_volume(destination, volume):
     if volume.volume_type == 'None':
         myvol = cinder.volumes.create(size=volume.size,
                                       snapshot_id=volume.snapshot_id,
-                                      display_name=volume.display_name,
-                                      display_description=volume.display_description,
+                                      name=volume.name,
+                                      description=volume.description,
                                       #volume_type=volume.volume_type,
                                       #user_id=volume.user_id, todo:fixthis
                                       project_id=tenant,
@@ -79,8 +87,8 @@ def create_volume(destination, volume):
     else:
         myvol = cinder.volumes.create(size=volume.size,
                                       snapshot_id=volume.snapshot_id,
-                                      display_name=volume.display_name,
-                                      display_description=volume.display_description,
+                                      name=volume.name,
+                                      description=volume.description,
                                       volume_type=volume.volume_type,
                                       #user_id=volume.user_id, todo:fixthis
                                       project_id=tenant,
@@ -89,7 +97,7 @@ def create_volume(destination, volume):
                                       #imageRef=volume.imageRef,
                                       source_volid=volume.source_volid
                                       )
-    print "Volume", myvol.display_name, "created"
+    print "Volume", myvol.name, "created"
     if volume.attachments:
         for att in volume.attachments:
             print att
@@ -103,9 +111,9 @@ def create_volume(destination, volume):
                 # Followed this advice: http://www.florentflament.com/blog/openstack-volume-in-use-although-vm-doesnt-exist.html
                 nova = nova_common.get_nova(destination)
                 nova.volumes.create_server_volume(vm.id, myvol.id, device)
-                print "Volume", myvol.display_name, "attached to VM", vm.name
+                print "Volume", myvol.name, "attached to VM", vm.name
             else:
-                print "Original Volume", volume.display_name, "was attached to a VM with ID", att['server_id'], \
+                print "Original Volume", volume.name, "was attached to a VM with ID", att['server_id'], \
                     "but this VM was not found in the current VM list"
     return myvol
 
@@ -127,8 +135,8 @@ def create_volume_from_image(destination, volume, single=False):
         if volume.volume_type == 'None':
             myvol = cinder.volumes.create(size=volume.size,
                                           snapshot_id=volume.snapshot_id,
-                                          display_name=volume.display_name,
-                                          display_description=volume.display_description,
+                                          name=volume.name,
+                                          description=volume.description,
                                           #volume_type=volume.volume_type,
                                           # user_id=user, #todo:fixthis
                                           project_id=tenant,
@@ -140,8 +148,8 @@ def create_volume_from_image(destination, volume, single=False):
         else:
             myvol = cinder.volumes.create(size=volume.size,
                                           snapshot_id=volume.snapshot_id,
-                                          display_name=volume.display_name,
-                                          display_description=volume.display_description,
+                                          name=volume.name,
+                                          description=volume.description,
                                           volume_type=volume.volume_type,
                                           # user_id=user, #todo:fixthis
                                           project_id=tenant,
@@ -150,7 +158,7 @@ def create_volume_from_image(destination, volume, single=False):
                                           imageRef=image.id,
                                           source_volid=volume.source_volid
                                           )
-        print "Volume", myvol.display_name, "created"
+        print "Volume", myvol.name, "created"
         #todo: wait for status to attach
         status = myvol.status
         while True:
@@ -176,9 +184,9 @@ def create_volume_from_image(destination, volume, single=False):
                     # Followed this advice: http://www.florentflament.com/blog/openstack-volume-in-use-although-vm-doesnt-exist.html
                     nova = nova_common.get_nova(destination)
                     nova.volumes.create_server_volume(vm.id, myvol.id, device)
-                    print "Volume", myvol.display_name, "attached to VM", vm.name
+                    print "Volume", myvol.name, "attached to VM", vm.name
                 else:
-                    print "Original Volume", volume.display_name, "was attached to a VM with ID", att['server_id'], \
+                    print "Original Volume", volume.name, "was attached to a VM with ID", att['server_id'], \
                         "but this VM was not found in the current VM list"
         return myvol
     else:
@@ -191,12 +199,12 @@ def create_volume_from_image_by_vm_ids(id_file):
         volume_ids = nova_common.get_volume_id_list_for_vm_ids('from', id_file)
         from_volumes = get_volume_list('from')
         # to_volumes = get_volume_list('to')
-        # from_names = map(lambda from_volumes: from_volumes.display_name, from_volumes)
-        # to_names = map(lambda to_volumes: to_volumes.display_name, to_volumes)
+        # from_names = map(lambda from_volumes: from_volumes.name, from_volumes)
+        # to_names = map(lambda to_volumes: to_volumes.name, to_volumes)
         for volume in from_volumes:
             if volume.id in volume_ids:
                 create_volume_from_image('to', volume)
-                #print volume.display_name
+                #print volume.name
         #print from_names
         #print to_names
     else:
@@ -214,29 +222,35 @@ def upload_volume_to_image_by_volume_id(destination, vol_id, single=False):
                                    container_format='bare', disk_format='raw')
 
 
-def upload_single_volumes_to_image(destination):
-    volumes = get_single_volumes(destination)
-    for vol in volumes:
-        print "Creating image from volume, volume id:", vol.id
-        upload_volume_to_image_by_volume_id(destination, vol.id, single=True)
+def upload_single_volumes_to_image(destination, uuid_file):
+    ids = utils.read_ids_from_file(uuid_file)
+
+    # volumes = get_single_volumes(destination)
+    for vol in ids:
+        print "Creating image from volume, volume id:", vol
+        upload_volume_to_image_by_volume_id(destination, vol, single=True)
 
 
-def download_single_volumes(destination, path):
-    vols = get_single_volumes(destination)
-    volumes = map(lambda vols: vols.id, vols)
+def download_single_volumes(destination, path, id_file):
+    volumes = utils.read_ids_from_file(id_file)
+    # vols = get_single_volumes(destination)
+    # volumes = map(lambda vols: vols.id, vols)
     glance_common.download_images_by_volume_uuid(destination, path, volumes, single=True)
 
 
-def upload_single_volume_images_to_clouds(path):
-    vols = get_single_volumes('from')
-    volumes = map(lambda vols: vols.id, vols)
+def upload_single_volume_images_to_clouds(path, id_file):
+    # vols = get_single_volumes('from')
+    # volumes = map(lambda vols: vols.id, vols)
+    volumes = utils.read_ids_from_file(id_file)
     glance_common.upload_volume_images(path, volumes)
 
 
-def create_single_volumes_from_images():
-    vols = get_single_volumes('from')
+def create_single_volumes_from_images(id_file):
+    # vols = get_single_volumes('from')
+    vols = utils.read_ids_from_file(id_file)
     for volume in vols:
-        create_volume_from_image('to', volume, single=True)
+        vol = get_volume_by_id('from', volume)
+        create_volume_from_image('to', vol, single=True)
 
 
 def print_volumes(destination):
@@ -244,8 +258,9 @@ def print_volumes(destination):
     vols.sort(key=lambda x: x.status)
     newlist = sorted(vols, key=lambda x: x.status)
     print "Volumes sorted by status (id name status size):"
+    # print newlist
     for volume in vols:
-        print volume.id, volume.display_name, volume.status, volume.size
+        print volume.id, volume.name, volume.status, volume.size
 
 
 def main():

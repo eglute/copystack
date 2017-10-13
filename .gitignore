@@ -9,9 +9,5 @@ from_auth
 to_auth
 
 *.cert
-
+from_auth
 to_auth
-
-from_auth
-
-from_auth
