@@ -39,7 +39,6 @@ def get_volume_list(destination):
 def get_volume_by_id(destination, uuid):
     cinder = get_cinder(destination)
     volume = cinder.volumes.get(uuid)
-    print "vvvvvvv name: ", volume.name
     return volume
 
 
@@ -161,6 +160,7 @@ def create_volume_from_image(destination, volume, single=False):
         print "Volume", myvol.name, "created"
         #todo: wait for status to attach
         status = myvol.status
+        """
         while True:
             vol = cinder.volumes.get(myvol.id)
             status = vol.status
@@ -170,7 +170,9 @@ def create_volume_from_image(destination, volume, single=False):
                 time.sleep(5)
             else:
                 break
-
+"""
+#todo: fix this. right now, there is error related to this bug in AIO being tested, error 3 described here: https://bugs.launchpad.net/tripleo/+bug/1638350
+        """
         if volume.attachments:
             for att in volume.attachments:
                 print att
@@ -189,6 +191,7 @@ def create_volume_from_image(destination, volume, single=False):
                     print "Original Volume", volume.name, "was attached to a VM with ID", att['server_id'], \
                         "but this VM was not found in the current VM list"
         return myvol
+        """
     else:
         print "Image", image_name, "for volume migration not found. Did you skip a step?"
 
