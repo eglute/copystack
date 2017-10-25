@@ -561,11 +561,15 @@ def create_image_from_vm(destination, id_file):
                 server.create_image(new_name, metadata)
             else:
                 print "7 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+
+            #cannot force volume attach: https://review.openstack.org/#/c/176174/
+
             # if server.__dict__['os-extended-volumes:volumes_attached']:
             #     print "Creating image from volume attached to the VM, volume id:"
             #     volumes = server.__dict__['os-extended-volumes:volumes_attached']
             #     for vol in volumes:
             #         print vol['id']
+            #         # cinder_common.
             #         cinder_common.upload_volume_to_image_by_volume_id(destination, vol['id'])
         except nova_exc.NotFound:
             print "8 Server with UUID", uuid, "not found"

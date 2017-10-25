@@ -124,7 +124,10 @@ def download_images_by_volume_uuid(destination, path, volumes, single=False):
         print "Downloading image name:", image_name
         image = get_image_by_name(destination, image_name)
         if image:
-            image_download(image.id, path, fname=image_name)
+            if image.status == 'active':
+                image_download(image.id, path, fname=image_name)
+            else:
+                print "WARNING: Image", image_name, "must be in active status to proceed. Please update and try again!"
         else:
             print "No image ", image_name, "found."
 
@@ -138,13 +141,15 @@ def upload_images_by_vm_uuid(path, uuid_file):
         image = get_image_by_name('from', image_name)
         print "Uploading image name:", image_name
         image_create('to', image, filename)
-    volume_ids = nova_common.get_volume_id_list_for_vm_ids('from', './id_file')
-    for volume_id in volume_ids:
-        image_name = "migration_volume_image_" + volume_id
-        filename = path + image_name
-        image = get_image_by_name('from', image_name)
-        print "Uploading image name:", image_name
-        image_create('to', image, filename)
+
+    #todo: update volume stuff
+    # volume_ids = nova_common.get_volume_id_list_for_vm_ids('from', './id_file')
+    # for volume_id in volume_ids:
+    #     image_name = "migration_volume_image_" + volume_id
+    #     filename = path + image_name
+    #     image = get_image_by_name('from', image_name)
+    #     print "Uploading image name:", image_name
+    #     image_create('to', image, filename)
 
 
 def upload_volume_images(path, volumes):

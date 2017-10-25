@@ -1,0 +1,26 @@
+export OS_USERNAME=admin
+export OS_PASSWORD=ac729d23d1fcca8ad5831ea2294a8b3b46b91d7fe09d3b1f59da5a645c
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL=https://198.61.196.185:5000/v3
+export OS_AUTH_IP=https://198.61.196.185
+export OS_CACERT=/Users/egle.sigler/src/copystack/to_auth.cert
+export USER_DOMAIN_ID=default
+export PROJECT_DOMAIN_ID=default
+
+
+
+#export OS_USERNAME=admin
+#export OS_PASSWORD=05925f0cb3138574676a88a97ebbf8371c
+#export OS_TENANT_NAME=admin
+#export OS_AUTH_URL=https://23.253.83.226:5000/v3
+#export OS_AUTH_IP=https://23.253.83.226
+#export OS_CACERT=/Users/egle/src/rpc/copystack/newton.haproxy.cert
+#export USER_DOMAIN_ID=default
+#export PROJECT_DOMAIN_ID=default
+
+#export OS_USERNAME=admin
+#export OS_PASSWORD=8bb665a689eb28620119
+#export OS_TENANT_NAME=admin
+#export OS_AUTH_URL=http://23.253.83.180:35357/v2.0
+#export OS_AUTH_IP=23.253.83.180
+#export OS_CACERT=no_cert

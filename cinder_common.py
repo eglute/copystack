@@ -221,6 +221,7 @@ def upload_volume_to_image_by_volume_id(destination, vol_id, single=False):
         image_name = "single_migration_volume_image_" + vol_id
     else:
         image_name = "migration_volume_image_" + vol_id
+    print "image name: ", image_name
     cinder.volumes.upload_to_image(volume, force=True, image_name=image_name,
                                    container_format='bare', disk_format='raw')
 
@@ -271,12 +272,12 @@ def main():
     #get_volume_list('to')
     #create_volume('from')
     #compare_and_create_volumes()
-    #upload_volume_to_image_by_volume_id('from', '5ce8ff78-87a7-465e-b455-8850adeb70fa')
+    upload_volume_to_image_by_volume_id('from', 'cc6ff51b-faaf-443f-8835-a985611db39a')
     # print get_single_volumes('from')
     # upload_single_volumes_to_image('from')
     # download_single_volumes('from', './downloads/')
     # create_volume_from_image_by_vm_ids('./id_file')
-    print_volumes('from')
+    # print_volumes('from')
 
 if __name__ == "__main__":
         main()
