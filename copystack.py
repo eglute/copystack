@@ -228,20 +228,20 @@ if __name__ == "__main__":
                           help='First argument directory path, second path to a file. '
                                'Download all images by VM UUID to a specified path, for example, ./downloads/ '
                                'for each UUID provided in a file, for example, ./id_file. '
-                               'Volumes associated with the VMs will also be downloaded.')
+                               'Volumes associated with the VMs will not be downloaded.')
         parser.add_option("-k", "--uploadbyvmid", action="store_true", dest='uploadbyvmid',
                           help='First argument directory path, second path to a file. '
                                'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
                                'for each UUID provided in a file, for example, ./id_file. '
-                               'Volumes associated with the VMs will also be uploaded.')
+                               'Volumes associated with the VMs will not be uploaded.')
         parser.add_option("-g", "--migratevms", action="store_true", dest='migratevms',
                           help='Create migrated VMs each UUID provided in a file, for example, ./id_file. ')
         parser.add_option("-G", "--securitygroups", action="store_true", dest='securitygroups',
                           help='Attach security groups to migrated VMs for each UUID provided in the original '
                                'migration file, for example, ./id_file. ')
-        parser.add_option("-z", "--createvmvolumes", action="store_true", dest='createvolumes',
-                          help='Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
-                               ' for example, ./id_file. ')
+        # parser.add_option("-z", "--createvmvolumes", action="store_true", dest='createvolumes',
+        #                   help='Create and attach volumes for VMs that were migrated from each UUID provided in a file,'
+        #                        ' for example, ./id_file. ')
         parser.add_option("-v", "--singlevolumeimagecreate", action='store_true', dest='singlevolumeimagecreate',
                           help='Create images of unattached volumes for each UUID provided in the ./id_volume_file')
         parser.add_option("-V", "--singlevolumeimagedownload", action='store_true', dest='singlevolumeimagedownload',
