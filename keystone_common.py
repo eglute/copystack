@@ -128,7 +128,7 @@ def print_tenants(destination):
         tenants = get_from_tenant_list()
     tenants.sort(key=lambda x: x.name)
     newlist = sorted(tenants, key=lambda x: x.name)
-    print "Tenant ID:                         Name:                  Description:"
+    print "Project ID:                         Name:                  Description:"
     for tenant in newlist:
         print tenant.id, " ", '{:20}'.format(tenant.name), " ", tenant.description, " "
 

@@ -160,7 +160,7 @@ def print_routers(destination):
 
     routers.sort(key=lambda x: x['name'])
     newlist = sorted(routers, key=lambda x: x['name'])
-    print "Name:                  Status:      Tenant ID"
+    print "Name:                  Status:      Project ID"
     for router in newlist:
         print '{:20}'.format(router['name']), " ", '{:10}'.format(router['status']), " ", router['tenant_id']
 

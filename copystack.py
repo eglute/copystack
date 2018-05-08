@@ -13,8 +13,8 @@ from auth_stack2 import AuthStack
 
 def main(opts, args):
     auth = AuthStack()
-    print "From:", auth.from_auth_ip, " Username:", auth.from_username, " Tenant:", auth.from_tenant_name
-    print "To:  ", auth.to_auth_ip, " Username:", auth.to_username, " Tenant:", auth.to_tenant_name
+    print "From:", auth.from_auth_ip, " Username:", auth.from_username, " Project:", auth.from_tenant_name
+    print "To:  ", auth.to_auth_ip, " Username:", auth.to_username, " Project:", auth.to_tenant_name
 
     if opts.report:
         print "--------------- From Projects: ---------------------"
@@ -99,10 +99,10 @@ def main(opts, args):
             print "Please provide file with volume UUIDs, for example, ./id_volume_file"
     if opts.quota:
         nova_common.compare_and_report_quotas()
-    if opts.tenants:
+    if opts.projects:
         print keystone_common.get_from_project_names()
         print keystone_common.get_to_project_names()
-    if opts.createtenants:
+    if opts.createprojects:
         keystone_common.compare_and_create_projects()
     if opts.publickeys:
         nova_common.compare_and_create_keypairs()
@@ -153,11 +153,11 @@ def main(opts, args):
             nova_common.attach_security_groups(id_file=args[0])
         else:
             print "Please provide file with VM UUIDs being migrated, for example, ./id_file"
-    if opts.createvolumes:
-        if args:
-            cinder_common.create_volume_from_image_by_vm_ids(id_file=args[0])
-        else:
-            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    # if opts.createvolumes:
+    #     if args:
+    #         cinder_common.create_volume_from_image_by_vm_ids(id_file=args[0])
+    #     else:
+    #         print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
     if opts.singlevolumeimagedownload:
         if len(args) == 2:
             cinder_common.download_single_volumes('from', path=args[0], id_file=args[1])
@@ -180,16 +180,16 @@ def main(opts, args):
 if __name__ == "__main__":
 
         parser = optparse.OptionParser()
-        parser.add_option("-t", "--tenants", action='store_true', dest='tenants',
-                          help='Run this command as Admin. Print to and from tenants. Tenant names must match before '
+        parser.add_option("-t", "--projects", action='store_true', dest='projects',
+                          help='Run this command as Admin. Print to and from projects. Project names must match before '
                                'running the rest of copystack')
-        parser.add_option("-x", "--createtenants", action='store_true', dest='createtenants',
-                          help='Run this command as Admin. Create tenants from->to.'
-                               'Tenant names must match before running the rest of copystack')
+        parser.add_option("-x", "--createprojects", action='store_true', dest='createprojects',
+                          help='Run this command as Admin. Create projects from->to.'
+                               'Project names must match before running the rest of copystack')
         parser.add_option("-u", "--users", action='store_true', dest='users',
                           help='Run this command as Admin. Create users from->to. Users created without passwords')
         parser.add_option("-q", "--quota", action='store_true', dest='quota',
-                          help='Run this command as Admin. Print differences in individual quotas for each tenant')
+                          help='Run this command as Admin. Print differences in individual quotas for each project')
         parser.add_option("-f", "--flavors", action='store_true', dest='flavors',
                           help='Run this command as Admin. Copy flavors from -> to')
         parser.add_option("-c", "--copynets", action="store_true", dest='copynets',
