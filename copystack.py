@@ -37,6 +37,16 @@ def main(opts, args):
             keystone_common.print_user_names('to')
         except Exception, e:
             print "To print user info, switch to admin user"
+        print "\n--------------- From Public Keys: ---------------------"
+        try:
+            nova_common.print_keys('from')
+        except Exception, e:
+            print "To print user info, switch to admin user"
+        print "\n--------------- To Public Keys: ---------------------"
+        try:
+            nova_common.print_keys('to')
+        except Exception, e:
+            print "To print public keys, switch to admin user"
         print "\n--------------- From Networks (with subnets): ---------------------"
         neutron_common.print_network_list('from')
         print "\n--------------- To Networks (with subnets): ------------------------"
