@@ -19,7 +19,7 @@ def main(opts, args):
     if opts.report:
         print "--------------- From Projects: ---------------------"
         try:
-            keystone_common.print_projects('from')
+            keystone_common.print_tenants('from')
         except Exception, e:
             print "To print project info, switch to admin user"
         print "\n--------------- To Projects: ------------------------"
@@ -110,7 +110,7 @@ def main(opts, args):
     if opts.quota:
         nova_common.compare_and_report_quotas()
     if opts.projects:
-        print keystone_common.get_from_project_names()
+        print keystone_common.get_from_tenant_names()
         print keystone_common.get_to_project_names()
     if opts.createprojects:
         keystone_common.compare_and_create_projects()

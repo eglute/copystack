@@ -69,12 +69,12 @@ class AuthStack(object):
         requests.packages.urllib3.disable_warnings()
 
     def get_from_auth_ref(self):
-        keystone = client_v2.Client(username=self.from_username, password=self.from_password,
-                            tenant_name=self.from_tenant_name, auth_url=self.from_auth_url, insecure=True)
+        keystone = client_v2.Client(certificates=self.from_cert, username=self.from_username, password=self.from_password,
+                            tenant_name=self.from_tenant_name, auth_url=self.from_auth_url)
 
         # keystone.management_url=self.from_auth_url
         # keystone.auth_url = self.from_auth_url
-        print keystone.auth_ref
+#        print keystone.auth_ref
         # print keystone
         return keystone
 
@@ -122,14 +122,19 @@ class AuthStack(object):
 
     def get_from_nova_client(self):
 
-        auth_ref = self.get_from_auth_ref()
+        auth_ref = self.get_from_auth_ref().auth_ref
+#        project_id = auth_ref.session.get_project_id()
+#        bypass_url = '{ip}:8774/v2.1/{tenant_id}' \
+#            .format(ip=self.from_auth_ip, tenant_id=project_id)
 
-        #todo: check this works for before newton. might have to change it to tenant_id
-        project_id = auth_ref.session.get_project_id()
-        bypass_url = '{ip}:8774/v2.1/{tenant_id}' \
-            .format(ip=self.from_auth_ip, tenant_id=project_id)
+#        nova = nova_client.Client('2.1', session=auth_ref.session, endpoint_override=bypass_url)
+        auth_token = auth_ref['token']['id']
+        tenant_id = auth_ref['token']['tenant']['id']
 
-        nova = nova_client.Client('2.1', session=auth_ref.session, endpoint_override=bypass_url)
+        bypass_url = '{ip}:8774/v2/{tenant_id}' \
+                     .format(ip=self.from_auth_ip, tenant_id=tenant_id)
+
+        nova = nova_client.Client('2', auth_token=auth_token, bypass_url=bypass_url, cacert=self.from_cert)
         return nova
 
     def get_to_nova_client(self):
