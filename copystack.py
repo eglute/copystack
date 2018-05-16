@@ -47,14 +47,14 @@ def main(opts, args):
             nova_common.print_keys('to')
         except Exception, e:
             print "To print public keys, switch to admin user"
-        print "\n--------------- From Networks (with subnets): ---------------------"
-        neutron_common.print_network_list('from')
-        print "\n--------------- To Networks (with subnets): ------------------------"
-        neutron_common.print_network_list('to')
-        print "\n--------------- From Routers: ---------------------"
-        neutron_common.print_routers('from')
-        print "\n--------------- To Routers: ---------------------"
-        neutron_common.print_routers('to')
+        # print "\n--------------- From Networks (with subnets): ---------------------"
+        # neutron_common.print_network_list('from')
+        # print "\n--------------- To Networks (with subnets): ------------------------"
+        # neutron_common.print_network_list('to')
+        # print "\n--------------- From Routers: ---------------------"
+        # neutron_common.print_routers('from')
+        # print "\n--------------- To Routers: ---------------------"
+        # neutron_common.print_routers('to')
         print "\n--------------- From Security Groups: ------------------------"
         nova_common.print_security_groups('from')
         print "\n--------------- To Security Groups: ------------------------"

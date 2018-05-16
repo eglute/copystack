@@ -10,8 +10,10 @@ import traceback
 
 from log import logging
 from keystoneauth1.identity import v3
+from keystoneauth1.identity import v2
 from keystoneauth1 import session
 from keystoneclient.v3 import client
+from keystoneclient.v2_0 import client as client_v2
 from novaclient import client as nova_client
 from neutronclient.neutron import client as neutron_client
 from glanceclient import Client as glance_client
@@ -67,18 +69,30 @@ class AuthStack(object):
         requests.packages.urllib3.disable_warnings()
 
     def get_from_auth_ref(self):
-        # keystone = client.Client(username=self.from_username, password=self.from_password,
-        #                     tenant_name=self.from_tenant_name, auth_url=self.from_auth_url)
-        # return keystone.auth_ref
+        keystone = client_v2.Client(username=self.from_username, password=self.from_password,
+                            tenant_name=self.from_tenant_name, auth_url=self.from_auth_url, insecure=True)
 
-        auth = v3.Password(auth_url=self.from_auth_url, username=self.from_username, password=self.from_password,
-                           project_name=self.from_tenant_name, user_domain_id=self.from_user_domain_id,
-                           project_domain_id=self.from_project_domain_id)
-        sess = session.Session(auth=auth,
-                               verify=self.from_cert)
-
-        keystone = client.Client(session=sess, endpoint_override=self.from_auth_url)
+        # keystone.management_url=self.from_auth_url
+        # keystone.auth_url = self.from_auth_url
+        print keystone.auth_ref
+        # print keystone
         return keystone
+
+
+        # auth = v3.Password(auth_url=self.from_auth_url, username=self.from_username, password=self.from_password,
+        #                    project_name=self.from_tenant_name, user_domain_id=self.from_user_domain_id,
+        #                    project_domain_id=self.from_project_domain_id)
+        # auth = v2.Password(auth_url=self.from_auth_url, username=self.from_username, password=self.from_password,
+        #                    tenant_name=self.from_tenant_name)
+        # sess = session.Session(auth=auth,
+        #                        verify=False)
+        # print sess
+        #
+        # keystone = client_v2.Client(token=sess.get_token(), endpoint=self.from_auth_url)
+        #
+        # return keystone
+
+
 
     def get_to_auth_ref(self):
         auth = v3.Password(auth_url=self.to_auth_url, username=self.to_username, password=self.to_password,
@@ -91,11 +105,11 @@ class AuthStack(object):
 
     def get_from_keystone_client(self):
 
-        # auth_ref = self.get_from_auth_ref()
-        # keystone = client.Client(auth_ref=auth_ref, endpoint=self.from_auth_url)
-        #
-        # return keystone
-        return self.get_from_auth_ref()
+        keystone = self.get_from_auth_ref()
+        # keystone = client_v2.Client(auth_ref=auth_ref, endpoint=self.from_auth_url)
+
+        return keystone
+        # return self.get_from_auth_ref()
 
     def get_to_keystone_client(self):
         return self.get_to_auth_ref()
