@@ -74,7 +74,7 @@ class AuthStack(object):
 
         # keystone.management_url=self.from_auth_url
         # keystone.auth_url = self.from_auth_url
-#        print keystone.auth_ref
+        #print keystone.auth_ref
         # print keystone
         return keystone
 
@@ -193,12 +193,23 @@ class AuthStack(object):
             return self.get_from_glance_client()
 
     def get_from_cinder_client(self):
-        auth_ref = self.get_from_auth_ref()
-        project_id = auth_ref.session.get_project_id()
-        endpoint_url = ('{ip}:8776/v2/{project_id}'.format
-                       (ip=self.from_auth_ip, project_id=project_id))
+        auth_ref = self.get_from_auth_ref().auth_ref
+        #project_id = auth_ref.session.get_project_id()
+        #endpoint_url = ('{ip}:8776/v1/{project_id}'.format
+        #               (ip=self.from_auth_ip, project_id=project_id))
 
-        cinder = cinder_client('2', session=auth_ref.session, bypass_url=endpoint_url)
+        token = auth_ref['token']['id']
+        tenant_id = auth_ref['token']['tenant']['id']
+        endpoint_url = ('{ip}:8776/v1/{tenant}'.format
+                       (ip=self.from_auth_ip, tenant=tenant_id))
+
+        print endpoint_url
+        #cinder = cinder_client('1', session=auth_ref.session, bypass_url=endpoint_url)
+        cinder = cinder_client('1', self.from_username, token,
+                               project_id=self.from_tenant_name,
+                               auth_url=self.from_auth_url, cacert=self.from_cert)
+        #cinder.client.management_url = endpoint_url
+        cinder.client.auth_token = token
         cinder.client.management_url = endpoint_url
 
         return cinder

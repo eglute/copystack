@@ -264,7 +264,8 @@ def print_volumes(destination):
     print "Volumes sorted by status (id name status size):"
     # print newlist
     for volume in vols:
-        print volume.id, volume.name, volume.status, volume.size
+        #print volume.id, volume.name, volume.status, volume.size
+        print volume.id, volume.status, volume.size
 
 
 def main():
@@ -272,12 +273,12 @@ def main():
     #get_volume_list('to')
     #create_volume('from')
     #compare_and_create_volumes()
-    upload_volume_to_image_by_volume_id('from', 'cc6ff51b-faaf-443f-8835-a985611db39a')
+    #upload_volume_to_image_by_volume_id('from', 'cc6ff51b-faaf-443f-8835-a985611db39a')
     # print get_single_volumes('from')
     # upload_single_volumes_to_image('from')
     # download_single_volumes('from', './downloads/')
     # create_volume_from_image_by_vm_ids('./id_file')
-    # print_volumes('from')
+    print_volumes('from')
 
 if __name__ == "__main__":
         main()

@@ -41,8 +41,10 @@ def get_images(destination):
 
 def get_image_by_name(destination, name):
     images = get_images(destination)
+    print "looking for inamge name: " + name
     for img in images:
         if img.name == name:
+            print "Found image name " + name
             return img
 
 
@@ -212,6 +214,7 @@ def image_download(id, path, fname='default'):
         fname = path + id
     else:
         fname = path + fname
+        print "Fname: "+ fname
     data = glance.images.data(id)
     print "Downloading to " + fname
     save_image(data, fname)
@@ -222,6 +225,7 @@ def save_image(data, path):
     :param data: binary data of the image
     :param path: path to save the image to
     """
+    print "Path: " + path
     image = open(path, 'wb')
     print "this might take a while..."
     try:
