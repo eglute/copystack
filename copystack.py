@@ -157,6 +157,17 @@ def main(opts, args):
             nova_common.migrate_vms_from_image(id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+
+    if opts.migratevmscustomnet:
+        if not args:
+            print "Please provide args, ./id_file demo-net"
+        elif len(args) == 2:
+            print args[0]
+            print args[1]
+            nova_common.migrate_vms_from_image_with_network_mapping(id_file=args[0], custom_network=args[1])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+
     if opts.securitygroups:
         if args:
             print args[0]
@@ -185,6 +196,17 @@ def main(opts, args):
             print "Please provide file with volume ids, for example, ./id_volume_file"
     if opts.addmissinginterfaces:
         neutron_common.compare_and_create_ports()
+    if opts.reportvms:
+        if args:
+            if len(args) == 1:
+                print "\n--------------- " + args[0] + " VMs: ------------------------"
+                dest = args[0].strip().lower()
+                vms = nova_common.print_vm_list_ids(args[0])
+        else:
+            print "\n--------------- From VMs: ------------------------"
+            vms = nova_common.print_vm_list_ids('from')
+            print "\n--------------- To VMs: ------------------------"
+            vms = nova_common.print_vm_list_ids('to')
 
 
 if __name__ == "__main__":
@@ -246,7 +268,12 @@ if __name__ == "__main__":
                                'Volumes associated with the VMs will not be uploaded.')
         parser.add_option("-g", "--migratevms", action="store_true", dest='migratevms',
                           help='Create migrated VMs each UUID provided in a file, for example, ./id_file. ')
-        parser.add_option("-G", "--securitygroups", action="store_true", dest='securitygroups',
+        parser.add_option("-G", "--migratevmscustomnet", action="store_true", dest='migratevmscustomnet',
+                          help='Create migrated VMs each UUID provided in a file, for example, ./id_file. '
+                               'on a custom network. Floating IPs will not be created. Provide network name or ID,'
+                               'for example, "demo-net. '
+                               ' Sample: -G ./id_file demo-net')
+        parser.add_option("-S", "--securitygroups", action="store_true", dest='securitygroups',
                           help='Attach security groups to migrated VMs for each UUID provided in the original '
                                'migration file, for example, ./id_file. ')
         # parser.add_option("-z", "--createvmvolumes", action="store_true", dest='createvolumes',
@@ -264,6 +291,10 @@ if __name__ == "__main__":
         parser.add_option("-Y", "--singlevolumecreate", action='store_true', dest='singlevolumecreate',
                           help='Create un-attached volumes from images as specified in volume ID file, '
                                'for example, ./id_volume_file')
+        parser.add_option("-R", "--reportvms", action='store_true', dest='reportvms',
+                          help='Print only VM report. Specify "from" or "to". Not specifying will print '
+                               'for both environments.')
+
 
 
         (opts, args) = parser.parse_args()
