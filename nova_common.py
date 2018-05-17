@@ -137,18 +137,18 @@ def print_flavor_list(destination):
         print '{:5}'.format(f.id), f.name
 
 # todo: check that it is not used and remove
-def compare_and_create_vms():
-    from_vms = get_vm_list('from')
-    to_vms = get_vm_list('to')
-    from_names = map(lambda from_vms: from_vms.name, from_vms)
-    to_names = map(lambda to_vms: to_vms.name, to_vms)
-    for name in from_names:
-        if name not in to_names:
-            from_vm_list = filter(lambda from_vms: from_vms.name == name, from_vms)
-            for from_vm in from_vm_list:
-                #print from_vm
-
-                create_vm(from_vm)
+# def compare_and_create_vms():
+#     from_vms = get_vm_list('from')
+#     to_vms = get_vm_list('to')
+#     from_names = map(lambda from_vms: from_vms.name, from_vms)
+#     to_names = map(lambda to_vms: to_vms.name, to_vms)
+#     for name in from_names:
+#         if name not in to_names:
+#             from_vm_list = filter(lambda from_vms: from_vms.name == name, from_vms)
+#             for from_vm in from_vm_list:
+#                 #print from_vm
+#
+#                 create_vm(from_vm)
             #new_flavor = create_flavor('to', from_flavor[0])
             #new_flavor.set_keys(from_flavor[0].get_keys())
             #print "New flavor created: "
@@ -191,8 +191,7 @@ def create_vm(from_vm, image='default'):
     print "Server created:", from_vm.name
 
 
-#TODO: fix this to actually read from a mapping....
-def create_vm_with_network_mapping(from_vm, image='default'):
+def create_vm_with_network_mapping(from_vm, image='default', network_name='none'):
     nova = get_nova('to')
 
     flavor = get_flavor_by_id('to', from_vm.flavor['id'])
@@ -201,17 +200,10 @@ def create_vm_with_network_mapping(from_vm, image='default'):
         return None
     if image == 'default':
         image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
-    networks = from_vm.networks
+    # networks = from_vm.networks
 
-    nics = []
-    for network, nets in networks.iteritems():
-        for ip in nets:
-            port = neutron_common.find_port_by_ip('to', ip)
-            # nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
-            if port:
-                if not port['device_owner'].startswith('network:floatingip'):
-                    nic = {'port-id': port['id']}
-                    nics.append(nic)
+    net = neutron_common.get_network_by_name('to', network_name)
+    nics = [{'net-id': net['id'] }]
 
     #include original image info as metadata:
     img = glance_common.get_image('from', from_vm.image['id'])
@@ -277,7 +269,7 @@ def migrate_vms_from_image(id_file):
             print "2 Server with UUID", uuid, "not found"
 
 
-def migrate_vms_from_image_with_network_mapping(id_file):
+def migrate_vms_from_image_with_network_mapping(id_file, custom_network='none'):
     ids = utils.read_ids_from_file(id_file)
     nova_from = get_nova("from")
     to_vms = get_vm_list('to')
@@ -300,7 +292,7 @@ def migrate_vms_from_image_with_network_mapping(id_file):
                             print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
                             duplicate = True
                     if duplicate is False:
-                        create_vm(server, image=image)
+                        create_vm_with_network_mapping(server, image=image, network_name=custom_network)
                 else:
                     print "Did not find image in 'to' environment with name:", new_name
             else:
