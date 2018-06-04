@@ -154,6 +154,17 @@ def upload_images_by_vm_uuid(path, uuid_file):
     #     image_create('to', image, filename)
 
 
+def upload_volume_images_by_vm_uuid(path, id_file):
+
+    volume_ids = nova_common.get_volume_id_list_for_vm_ids('from', id_file)
+    for volume_id in volume_ids:
+        image_name = "migration_volume_image_" + volume_id
+        filename = path + image_name
+        image = get_image_by_name('from', image_name)
+        print "Uploading image name:", image_name
+        image_create('to', image, filename)
+
+
 def upload_volume_images(path, volumes):
     for vol in volumes:
         image_name = "single_migration_volume_image_" + vol
