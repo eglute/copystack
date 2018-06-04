@@ -218,7 +218,7 @@ def create_vm_with_network_mapping(from_vm, image='default', network_name='none'
     return server
 
 
-def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='none'):
+def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='none', key='default'):
     nova = get_nova('to')
 
     flavor = get_flavor_by_id('to', from_vm.flavor['id'])
@@ -244,8 +244,10 @@ def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='no
     block_device_mapping = {volume.metadata['original_vm_device']: volume.id}
 
     print block_device_mapping
+    if key == 'default':
+        key = from_vm.key_name
     server = nova.servers.create(name=from_vm.name, image="", flavor=flavor.id, block_device_mapping=block_device_mapping, nics=nics,
-                                 meta=metadata, key_name=from_vm.key_name)
+                                 meta=metadata, key_name=key)
     print "Server created:", server.name
     return server
 
@@ -263,7 +265,31 @@ def attach_security_groups(id_file):
                 print "Attaching security groups to:", new_server.name
                 for g in groups:
                     print "Group:", g['name']
-                    new_server.add_security_group(g['name'])
+                    try:
+                        new_server.add_security_group(g['name'])
+                    except Exception, e:
+                        print "Something happened while trying to attach security group. Moving to the next group. " + str(e)
+            except Exception, e:
+                print str(e)
+    else:
+        print "All VMs must be powered on for this action to proceed"
+
+
+def attach_volumes(id_file):
+    ready = check_vm_are_on('to', id_file)
+    nova = get_nova("to")
+
+    if ready:
+        ids = utils.read_ids_from_file(id_file)
+        for uuid in ids:
+            try:
+                vm = get_vm_by_original_id('to', uuid)
+                to_volumes = cinder_common.get_volume_list_by_vm_id("to", uuid)
+                for to_v in to_volumes:
+                    if not to_v.attachments:
+                        nova.volumes.create_server_volume(vm.id, to_v.id, to_v.metadata['original_vm_device'])
+                        print "Volume id: " + to_v.id + " attached to VM id: " + vm.id
+
             except Exception, e:
                 print str(e)
     else:
@@ -334,7 +360,7 @@ def migrate_vms_from_image_with_network_mapping(id_file, custom_network='none'):
             print "2 Server with UUID", uuid, "not found"
 
 
-def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network='none'):
+def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network='none', key='default'):
     ids = utils.read_ids_from_file(id_file)
     nova_from = get_nova("from")
     to_vms = get_vm_list('to')
@@ -362,13 +388,14 @@ def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network
                                 print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
                                 duplicate = True
                         if duplicate is False:
-                            create_vm_from_volume_with_network_mapping(server, volume=boot_volume, network_name=custom_network)
+                            create_vm_from_volume_with_network_mapping(server, volume=boot_volume, network_name=custom_network, key=key)
                 else:
                     print "Original VM doesn't have volumes attached, cannot proceed to launch new VM from volume"
             else:
                 print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
         except nova_exc.NotFound:
             print "2 Server with UUID", uuid, "not found"
+
 
 def get_flavor_by_id(destination, flavor_id):
     try:
@@ -769,7 +796,8 @@ def main():
     # print_keys("to")
     # prepare_migrate_vms_from_image_snapshot("./id_file")
     # make_images_of_volumes_based_on_vms("from", "./id_file")
-    boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
+    # boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
+    attach_volumes('./id_file')
 
 
 if __name__ == "__main__":

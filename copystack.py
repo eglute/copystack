@@ -124,12 +124,14 @@ def main(opts, args):
             nova_common.power_off_vms('from', id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+    """
     if opts.createimages:
         if args:
             # print args[0]
             nova_common.create_image_from_vm('from', id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+    
     if opts.downloadbyvmid:
         if len(args) == 2:
             print args[0]
@@ -167,13 +169,18 @@ def main(opts, args):
             nova_common.migrate_vms_from_image_with_network_mapping(id_file=args[0], custom_network=args[1])
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    """
     if opts.bootvmsfromvolumescustomnet:
         if not args:
             print "Please provide args, ./id_file demo-net"
-        elif len(args) == 2:
+        elif len(args) >= 2:
             print args[0]
             print args[1]
-            nova_common.boot_from_volume_vms_from_image_with_network_mapping(id_file=args[0], custom_network=args[1])
+            key = "default"
+            if len(args) == 3:
+                key = args[2]
+
+            nova_common.boot_from_volume_vms_from_image_with_network_mapping(id_file=args[0], custom_network=args[1], key=key)
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
     if opts.securitygroups:
@@ -250,7 +257,13 @@ def main(opts, args):
             print args[0]
             nova_common.create_volumes_from_images_based_on_vms(id_file=args[0])
         else:
-            print "Please provide file with VM ids, for example, ./downloads/ ./id_file"
+            print "Please provide file with VM ids, for example, ./id_file"
+    if opts.adddvolumestovms:
+        if len(args) == 1:
+            print args[0]
+            nova_common.attach_volumes(id_file=args[0])
+        else:
+            print "Please provide file with VM ids, for example, ./id_file"
 
 
 if __name__ == "__main__":
@@ -295,8 +308,44 @@ if __name__ == "__main__":
                                'will not be moved. All others will be.')
 
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
-        parser.add_option("-m", "--shutdown", action="store_true", dest='shutdown',
+        parser.add_option("-0", "--shutdown", action="store_true", dest='shutdown',
                           help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
+        ####### VMs from volume snapshots
+        parser.add_option("-1", "--createsnapshotvm", action="store_true", dest='createsnapshotvm',
+                          help='Create snapshots from VMs Cinder volumes for each UUID provided in a file, '
+                               'for example, ./id_file. ')
+        parser.add_option("-2", "--createsvolumefromsnapshot", action="store_true", dest='createsvolumefromsnapshot',
+                          help='Create volumes from snapshots based on associated VM for each VM UUID provided in a file, '
+                               'for example, ./id_file. ')
+        parser.add_option("-3", "--createsimagesfromvolumesnapshots", action="store_true",
+                          dest='createsimagesfromvolumesnapshots',
+                          help='Create images from volumes based on snapshots based on associated VM for each VM UUID provided in a file, '
+                               'for example, ./id_file. ')
+        parser.add_option("-4", "--downloadbyvmidsnapshot", action="store_true", dest='downloadbyvmidsnapshot',
+                          help='First argument directory path, second path to a file. '
+                               'Download all images by VM UUID to a specified path, for example, ./downloads/ '
+                               'for each UUID provided in a file, for example, ./id_file.')
+        parser.add_option("-5", "--uploadimagebyvmidsnapshot", action="store_true", dest='uploadimagebyvmidsnapshot',
+                          help='First argument directory path, second path to a file. '
+                               'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
+                               'for each UUID provided in a file, for example, ./id_file. ')
+        parser.add_option("-6", "--volumefromimage", action="store_true", dest='volumefromimage',
+                          help='First argument directory path, second path to a file. '
+                               'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
+                               'for each UUID provided in a file, for example, ./id_file. '
+                               'Volumes associated with the VMs will not be uploaded.')
+        parser.add_option("-7", "--bootvmsfromvolumescustomnet", action="store_true",
+                          dest='bootvmsfromvolumescustomnet',
+                          help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
+                               'on a custom network. Floating IPs will not be created. Provide network name or ID,'
+                               'for example, "demo-net and optional public key name "key-name" '
+                               ' Sample: -7 ./id_file demo-net key-name')
+        parser.add_option("-8", "--adddvolumestovms", action="store_true", dest='adddvolumestovms',
+                          help='Attach additional volumes to migrated VMs for each UUID provided in the original '
+                               'migration file, for example, ./id_file.')
+
+        # standalone vms without volumes attached. commenting out for cleaner --help
+        """ 
         parser.add_option("-i", "--createimages", action="store_true", dest='createimages',
                           help='Create images from VMs for each UUID provided in a file, for example, ./id_file. '
                                'Volumes attached to VMs will also be their images created.')
@@ -317,7 +366,9 @@ if __name__ == "__main__":
                                'on a custom network. Floating IPs will not be created. Provide network name or ID,'
                                'for example, "demo-net. '
                                ' Sample: -G ./id_file demo-net')
-        parser.add_option("-S", "--securitygroups", action="store_true", dest='securitygroups',
+        """
+
+        parser.add_option("-9", "--securitygroups", action="store_true", dest='securitygroups',
                           help='Attach security groups to migrated VMs for each UUID provided in the original '
                                'migration file, for example, ./id_file. ')
         # parser.add_option("-z", "--createvmvolumes", action="store_true", dest='createvolumes',
@@ -338,36 +389,7 @@ if __name__ == "__main__":
         parser.add_option("-R", "--reportvms", action='store_true', dest='reportvms',
                           help='Print only VM report. Specify "from" or "to". Not specifying will print '
                                'for both environments.')
-        ####### VMs from volume snapshots
-        parser.add_option("-1", "--createsnapshotvm", action="store_true", dest='createsnapshotvm',
-                          help='Create snapshots from VMs Cinder volumes for each UUID provided in a file, '
-                               'for example, ./id_file. ')
-        parser.add_option("-2", "--createsvolumefromsnapshot", action="store_true", dest='createsvolumefromsnapshot',
-                          help='Create volumes from snapshots based on associated VM for each VM UUID provided in a file, '
-                               'for example, ./id_file. ')
-        parser.add_option("-3", "--createsimagesfromvolumesnapshots", action="store_true", dest='createsimagesfromvolumesnapshots',
-                          help='Create images from volumes based on snapshots based on associated VM for each VM UUID provided in a file, '
-                               'for example, ./id_file. ')
-        parser.add_option("-4", "--downloadbyvmidsnapshot", action="store_true", dest='downloadbyvmidsnapshot',
-                          help='First argument directory path, second path to a file. '
-                               'Download all images by VM UUID to a specified path, for example, ./downloads/ '
-                               'for each UUID provided in a file, for example, ./id_file.')
-        parser.add_option("-5", "--uploadimagebyvmidsnapshot", action="store_true", dest='uploadimagebyvmidsnapshot',
-                          help='First argument directory path, second path to a file. '
-                               'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
-                               'for each UUID provided in a file, for example, ./id_file. ')
-        parser.add_option("-6", "--volumefromimage", action="store_true", dest='volumefromimage',
-                          help='First argument directory path, second path to a file. '
-                               'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
-                               'for each UUID provided in a file, for example, ./id_file. '
-                               'Volumes associated with the VMs will not be uploaded.')
-        parser.add_option("-7", "--bootvmsfromvolumescustomnet", action="store_true", dest='bootvmsfromvolumescustomnet',
-                          help = 'Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
-                            'on a custom network. Floating IPs will not be created. Provide network name or ID,'
-                            'for example, "demo-net. '
-                            ' Sample: -G ./id_file demo-net')
-        parser.add_option("-8", "--addsecuritygroupsandvolumes", action="store_true", dest='addsecuritygroupsandvolumes',
-                          help='Attach security groups and additional volumes to migrated VMs')
+
 
 
         (opts, args) = parser.parse_args()
