@@ -344,7 +344,8 @@ def print_volumes(destination):
     print "Volumes sorted by status (id name status size):"
     # print newlist
     for volume in vols:
-        print volume.id, volume.name, volume.status, volume.size
+        #print volume.id, volume.name, volume.status, volume.size
+        print volume.id, volume.status, volume.size
 
 
 def get_snapshot_by_volume_id(destination, volume_id):
@@ -426,7 +427,7 @@ def main():
     #get_volume_list('to')
     #create_volume('from')
     #compare_and_create_volumes()
-    # upload_volume_to_image_by_volume_id('from', '2fbe79d6-e2d6-4fda-80a8-11d75d3504a0')
+    #upload_volume_to_image_by_volume_id('from', 'cc6ff51b-faaf-443f-8835-a985611db39a')
     # print get_single_volumes('from')
     # upload_single_volumes_to_image('from')
     # download_single_volumes('from', './downloads/')
@@ -434,6 +435,7 @@ def main():
     # print_volumes('from')
     # snaps = get_snapshot_by_volume_id("from", "15b70ee6-a4fe-4733-ba81-49bbd8abeced")
     get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
+
 
 if __name__ == "__main__":
         main()
