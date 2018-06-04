@@ -204,12 +204,12 @@ def create_volume_from_image(destination, volume, single=False):
         if volume.volume_type == 'None':
             myvol = cinder.volumes.create(size=volume.size,
                                           snapshot_id=volume.snapshot_id,
-                                          name=volume.name,
-                                          description=volume.description,
+                                          # name=volume.name,
+                                          # description=volume.description,
                                           #volume_type=volume.volume_type,
                                           # user_id=user, #todo:fixthis
                                           project_id=tenant,
-                                          availability_zone=volume.availability_zone,
+                                          # availability_zone=volume.availability_zone,
                                           metadata=meta,
                                           imageRef=image.id,
                                           source_volid=volume.source_volid
@@ -217,12 +217,12 @@ def create_volume_from_image(destination, volume, single=False):
         else:
             myvol = cinder.volumes.create(size=volume.size,
                                           snapshot_id=volume.snapshot_id,
-                                          name=volume.name,
-                                          description=volume.description,
-                                          volume_type=volume.volume_type,
+                                          # name=volume.name,
+                                          # description=volume.description,
+                                          # volume_type=volume.volume_type,
                                           # user_id=user, #todo:fixthis
                                           project_id=tenant,
-                                          availability_zone=volume.availability_zone,
+                                          # availability_zone=volume.availability_zone,
                                           metadata=meta,
                                           imageRef=image.id,
                                           source_volid=volume.source_volid
