@@ -19,7 +19,7 @@ def main(opts, args):
     if opts.report:
         print "--------------- From Projects: ---------------------"
         try:
-            keystone_common.print_projects('from')
+            keystone_common.print_tenants('from')
         except Exception, e:
             print "To print project info, switch to admin user"
         print "\n--------------- To Projects: ------------------------"
@@ -47,14 +47,14 @@ def main(opts, args):
             nova_common.print_keys('to')
         except Exception, e:
             print "To print public keys, switch to admin user"
-        print "\n--------------- From Networks (with subnets): ---------------------"
-        neutron_common.print_network_list('from')
-        print "\n--------------- To Networks (with subnets): ------------------------"
-        neutron_common.print_network_list('to')
-        print "\n--------------- From Routers: ---------------------"
-        neutron_common.print_routers('from')
-        print "\n--------------- To Routers: ---------------------"
-        neutron_common.print_routers('to')
+        # print "\n--------------- From Networks (with subnets): ---------------------"
+        # neutron_common.print_network_list('from')
+        # print "\n--------------- To Networks (with subnets): ------------------------"
+        # neutron_common.print_network_list('to')
+        # print "\n--------------- From Routers: ---------------------"
+        # neutron_common.print_routers('from')
+        # print "\n--------------- To Routers: ---------------------"
+        # neutron_common.print_routers('to')
         print "\n--------------- From Security Groups: ------------------------"
         nova_common.print_security_groups('from')
         print "\n--------------- To Security Groups: ------------------------"
@@ -110,7 +110,7 @@ def main(opts, args):
     if opts.quota:
         nova_common.compare_and_report_quotas()
     if opts.projects:
-        print keystone_common.get_from_project_names()
+        print keystone_common.get_from_tenant_names()
         print keystone_common.get_to_project_names()
     if opts.createprojects:
         keystone_common.compare_and_create_projects()

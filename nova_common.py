@@ -697,7 +697,7 @@ def get_volume_id_list_for_vm_ids(destination, id_file):
 
 
 def print_keys(destination):
-    keys = keys = get_keypairs(destination)
+    keys = get_keypairs(destination)
     for key in keys:
         print key.name
 
@@ -790,7 +790,6 @@ def main():
     # migrate_vms_from_image("./id_file")
     # print_security_groups('from')
     # get_flavor_by_id('from', 'a97d80f0-e309-436e-95cc-bb2a02139225')
-
     # vms = get_vm_list('from')
     # print vms
     # print_keys("to")
@@ -798,7 +797,6 @@ def main():
     # make_images_of_volumes_based_on_vms("from", "./id_file")
     # boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
     attach_volumes('./id_file')
-
 
 if __name__ == "__main__":
         main()

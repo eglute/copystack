@@ -386,6 +386,9 @@ def main():
     # create_project('to', projects[0])
     # print projects
 
-    print_user_names('from')
+    # print_user_names('from')
+    tenants = get_from_tenant_list()
+    print tenants
+    #get_keystone("from")
 if __name__ == "__main__":
         main()
