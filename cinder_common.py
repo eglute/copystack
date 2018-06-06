@@ -95,11 +95,12 @@ def verify_to_vm_volumes(uuid, from_volumes):
 
 
 def find_bootable_volume(volumes):
+    boots = ''
     for vol in volumes:
         if vol.bootable == 'true':
-            return vol
-
-    return None
+            boots = vol
+            return boots
+    return boots
 
 
 def compare_and_create_volumes():
@@ -117,14 +118,22 @@ def compare_and_create_volumes():
 
 def create_volume_snapshot(destination, volume, original_vm_id="none"):
     cinder = get_cinder(destination)
+
     name = "volume_snap_" + volume.id
-    # if volume.bootable == "true":
-    # if hasattr(volume, 'bootable'):
     meta = {'original_vm_id': original_vm_id, 'original_volume_id': volume.id, 'bootable': volume.bootable}
-    # else:
-    #     meta = {'original_vm_id': original_vm_id, 'original_volume_id': volume.id}
-    snap = cinder.volume_snapshots.create(volume_id=volume.id, force=True, name=name, description="Migration snapshot", metadata=meta)
-    print "Volume snapshot created: " + snap.name
+
+    # Cinder version 1 has different parameter names from 2 and up.
+    version = float(cinder.version)
+    if version >= 2.0:
+        snap = cinder.volume_snapshots.create(volume_id=volume.id, force=True, name=name,
+                                              description="Migration snapshot", metadata=meta)
+        print "Volume snapshot created: " + snap.name
+    else:
+        snap = cinder.volume_snapshots.create(volume_id=volume.id, force=True, display_name=name,
+                                              display_description="Migration snapshot")
+        cinder.volume_snapshots.set_metadata(snap, meta)
+        print "Volume snapshot created: " + snap.name
+
     return snap
 
 
@@ -201,60 +210,62 @@ def create_volume_from_image(destination, volume, single=False):
             for att in volume.attachments:
                 meta.update({'original_vm_id': att['server_id']})
                 meta.update({'original_vm_device': att['device']})
-        if volume.volume_type == 'None':
-            myvol = cinder.volumes.create(size=volume.size,
-                                          snapshot_id=volume.snapshot_id,
-                                          # name=volume.name,
-                                          # description=volume.description,
-                                          #volume_type=volume.volume_type,
-                                          # user_id=user, #todo:fixthis
-                                          project_id=tenant,
-                                          # availability_zone=volume.availability_zone,
-                                          metadata=meta,
-                                          imageRef=image.id,
-                                          source_volid=volume.source_volid
-                                          )
+
+        version = float(cinder.version)
+        if version >= 2.0:
+            if volume.volume_type == 'None':
+                myvol = cinder.volumes.create(size=volume.size,
+                                              snapshot_id=volume.snapshot_id,
+                                              name=volume.name,
+                                              description=volume.description,
+                                              #volume_type=volume.volume_type,
+                                              # user_id=user, #todo:fixthis
+                                              project_id=tenant,
+                                              metadata=meta,
+                                              imageRef=image.id,
+                                              source_volid=volume.source_volid
+                                              )
+            else:
+                myvol = cinder.volumes.create(size=volume.size,
+                                              snapshot_id=volume.snapshot_id,
+                                              name=volume.name,
+                                              description=volume.description,
+                                              volume_type=volume.volume_type,
+                                              project_id=tenant,
+                                              metadata=meta,
+                                              imageRef=image.id,
+                                              source_volid=volume.source_volid
+                                              )
+        # Handle cinder v1:
         else:
-            myvol = cinder.volumes.create(size=volume.size,
-                                          snapshot_id=volume.snapshot_id,
-                                          # name=volume.name,
-                                          # description=volume.description,
-                                          # volume_type=volume.volume_type,
-                                          # user_id=user, #todo:fixthis
-                                          project_id=tenant,
-                                          # availability_zone=volume.availability_zone,
-                                          metadata=meta,
-                                          imageRef=image.id,
-                                          source_volid=volume.source_volid
-                                          )
+            if volume.volume_type == 'None':
+                myvol = cinder.volumes.create(size=volume.size,
+                                              snapshot_id=volume.snapshot_id,
+                                              display_name=volume.display_name,
+                                              display_description=volume.display_description,
+                                              #volume_type=volume.volume_type,
+                                              # user_id=user, #todo:fixthis
+                                              project_id=tenant,
+                                              metadata=meta,
+                                              imageRef=image.id,
+                                              source_volid=volume.source_volid
+                                              )
+            else:
+                myvol = cinder.volumes.create(size=volume.size,
+                                              snapshot_id=volume.snapshot_id,
+                                              display_name=volume.display_name,
+                                              display_description=volume.display_description,
+                                              volume_type=volume.volume_type,
+                                              project_id=tenant,
+                                              metadata=meta,
+                                              imageRef=image.id,
+                                              source_volid=volume.source_volid
+                                              )
         bootable = False
         if volume.bootable == 'true':
             bootable = True # for some reason api returns a string and the next call expects a boolean.
         cinder.volumes.set_bootable(myvol, False)
-        print "Volume", myvol.name, "created"
-        #todo: wait for status to attach
-        status = myvol.status
-#todo: fix this. right now, there is error related to this bug in AIO being tested, error 3 described here: https://bugs.launchpad.net/tripleo/+bug/1638350
-        """
-        if volume.attachments:
-            for att in volume.attachments:
-                print att
-                print att['server_id']
-                device = att['device']
-                print device
-
-                vm = nova_common.get_vm_by_original_id('to', att['server_id'])
-                if vm:
-                    #myvol.attach(vm.id, device)
-                    # Followed this advice: http://www.florentflament.com/blog/openstack-volume-in-use-although-vm-doesnt-exist.html
-                    nova = nova_common.get_nova(destination)
-                    nova.volumes.create_server_volume(vm.id, myvol.id, device)
-                    print "Volume", myvol.name, "attached to VM", vm.name
-                else:
-                    print "Original Volume", volume.name, "was attached to a VM with ID", att['server_id'], \
-                        "but this VM was not found in the current VM list"
-        return myvol
-        """
+        print "Volume", myvol.id, "created"
     else:
         print "Image", image_name, "for volume migration not found. Did you skip a step?"
 
@@ -264,15 +275,9 @@ def create_volume_from_image_by_vm_ids(id_file):
     if ready:
         volume_ids = nova_common.get_volume_id_list_for_vm_ids('from', id_file)
         from_volumes = get_volume_list('from')
-        # to_volumes = get_volume_list('to')
-        # from_names = map(lambda from_volumes: from_volumes.name, from_volumes)
-        # to_names = map(lambda to_volumes: to_volumes.name, to_volumes)
         for volume in from_volumes:
             if volume.id in volume_ids:
                 create_volume_from_image('to', volume)
-                #print volume.name
-        #print from_names
-        #print to_names
     else:
         print "All servers being migrated must be in ACTIVE status for this action to proceed."
 
@@ -289,13 +294,20 @@ def upload_volume_to_image_by_volume_id(destination, vol_id, single=False):
                                    container_format='bare', disk_format='raw')
 
 
-def upload_volume_to_image_by_volume_name(destination, vol_id, name):
+def upload_volume_to_image_by_volume_name(destination, volume, name):
     cinder = get_cinder(destination)
-    volume = cinder.volumes.get(vol_id)
+
     image_name = "migration_volume_image_" + name
-    print "image name: ", image_name
+    container_format = 'bare'
+    disk_format = 'raw'
+    if hasattr(volume, 'volume_image_metadata'):
+        if volume.volume_image_metadata:
+            container_format = volume.volume_image_metadata['container_format']
+            disk_format = volume.volume_image_metadata['disk_format']
+
     cinder.volumes.upload_to_image(volume, force=True, image_name=image_name,
-                                   container_format='bare', disk_format='raw')
+                                   container_format=container_format, disk_format=disk_format)
+    print "Image " + image_name + " created from volume ID " + volume.id
 
 
 def upload_single_volumes_to_image(destination, uuid_file):
@@ -344,14 +356,18 @@ def print_volumes(destination):
     print "Volumes sorted by status (id name status size):"
     # print newlist
     for volume in vols:
-        #print volume.id, volume.name, volume.status, volume.size
         print volume.id, volume.status, volume.size
 
 
 def get_snapshot_by_volume_id(destination, volume_id):
     cinder = get_cinder(destination)
     name = "volume_snap_" + volume_id
-    snapshots = cinder.volume_snapshots.list(search_opts={'name': name})
+
+    version = float(cinder.version)
+    if version >= 2.0:
+        snapshots = cinder.volume_snapshots.list(search_opts={'name': name})
+    else:
+        snapshots = cinder.volume_snapshots.list(search_opts={'display_name': name})
     if len(snapshots) > 1:
         latest = None
         datum = None
@@ -372,53 +388,81 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
     cinder = get_cinder(destination)
     volume = get_volume_by_id(destination, volume_id)
     tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
-    # tenant = keystone_common.find_opposite_tenant_id(from_tenant)
 
-    if volume.volume_type == 'None':
-        myvol = cinder.volumes.create(
-                                      # size=volume.size,
-                                      snapshot_id=volume.snapshot_id,
-                                      name=snapshot.name,
-                                      description="Migration Volume",
-                                      # volume_type=volume.volume_type,
-                                      # user_id=volume.user_id, todo:fixthis
-                                      project_id=tenant,
-                                      availability_zone=volume.availability_zone,
-                                      metadata=snapshot.metadata,
-                                      # imageRef=volume.imageRef,
-                                      source_volid=volume.source_volid
-                                      )
+    version = float(cinder.version)
+    if version >= 2.0:
+
+        if hasattr(snapshot, 'metadata'):
+            meta = snapshot.metadata
+        else:
+            meta = {}
+        if hasattr(snapshot, 'name'):
+            snapshot_name = snapshot.name
+        else:
+            snapshot_name = ""
+        if volume.volume_type == 'None':
+            myvol = cinder.volumes.create(
+                                          # size=volume.size,
+                                          snapshot_id=volume.snapshot_id,
+                                          name=snapshot_name,
+                                          description="Migration Volume",
+                                          # volume_type=volume.volume_type,
+                                          # user_id=volume.user_id, todo:fixthis
+                                          project_id=tenant,
+                                          availability_zone=volume.availability_zone,
+                                          metadata=meta,
+                                          source_volid=volume_id
+                                          )
+        else:
+            myvol = cinder.volumes.create(size=volume.size,
+                                          snapshot_id=volume.snapshot_id,
+                                          name=snapshot_name,
+                                          description="Migration Volume",
+                                          volume_type=volume.volume_type,
+                                          # user_id=volume.user_id, todo:fixthis
+                                          project_id=tenant,
+                                          availability_zone=volume.availability_zone,
+                                          metadata=meta,
+                                          source_volid=volume_id
+                                          )
+    # cinder v1:
     else:
-        myvol = cinder.volumes.create(size=volume.size,
-                                      snapshot_id=volume.snapshot_id,
-                                      name=snapshot.name,
-                                      description="Migration Volume",
-                                      volume_type=volume.volume_type,
-                                      # user_id=volume.user_id, todo:fixthis
-                                      project_id=tenant,
-                                      availability_zone=volume.availability_zone,
-                                      metadata=snapshot.metadata,
-                                      # imageRef=volume.imageRef,
-                                      source_volid=volume.source_volid
-                                      )
+        if hasattr(snapshot, 'metadata'):
+            meta = snapshot.metadata
+        else:
+            meta = {}
+        if hasattr(snapshot, 'display_name'):
+            snapshot_name = snapshot.display_name
+        else:
+            snapshot_name = ""
+        if volume.volume_type == 'None':
+            myvol = cinder.volumes.create(
+                                          # size=volume.size,
+                                          snapshot_id=volume.snapshot_id,
+                                          display_name=snapshot_name,
+                                          display_description="Migration Volume",
+                                          # volume_type=volume.volume_type,
+                                          # user_id=volume.user_id, todo:fixthis
+                                          project_id=tenant,
+                                          availability_zone=volume.availability_zone,
+                                          metadata=meta,
+                                          # imageRef=volume.imageRef,
+                                          source_volid=volume_id
+                                          )
+        else:
+            myvol = cinder.volumes.create(size=volume.size,
+                                          snapshot_id=volume.snapshot_id,
+                                          display_name=snapshot_name,
+                                          display_description="Migration Volume",
+                                          volume_type=volume.volume_type,
+                                          # user_id=volume.user_id, todo:fixthis
+                                          project_id=tenant,
+                                          availability_zone=volume.availability_zone,
+                                          metadata=meta,
+                                          source_volid=volume_id
+                                          )
     print "Volume", myvol.id, "created"
-    # if volume.attachments:
-    #     for att in volume.attachments:
-    #         print att
-    #         print att['server_id']
-    #         device = att['device']
-    #         print device
-    #
-    #         vm = nova_common.get_vm_by_original_id('to', att['server_id'])
-    #         if vm:
-    #             # myvol.attach(vm.id, device)
-    #             # Followed this advice: http://www.florentflament.com/blog/openstack-volume-in-use-although-vm-doesnt-exist.html
-    #             nova = nova_common.get_nova(destination)
-    #             nova.volumes.create_server_volume(vm.id, myvol.id, device)
-    #             print "Volume", myvol.name, "attached to VM", vm.name
-    #         else:
-    #             print "Original Volume", volume.name, "was attached to a VM with ID", att['server_id'], \
-    #                 "but this VM was not found in the current VM list"
+
     return myvol
 
 
@@ -434,8 +478,8 @@ def main():
     # create_volume_from_image_by_vm_ids('./id_file')
     # print_volumes('from')
     # snaps = get_snapshot_by_volume_id("from", "15b70ee6-a4fe-4733-ba81-49bbd8abeced")
-    get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
-
+    # get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
+    get_cinder("from")
 
 if __name__ == "__main__":
         main()

@@ -710,13 +710,7 @@ def get_volumes_for_vm(destination, vm_uuid):
         if len(server.__dict__['os-extended-volumes:volumes_attached']) > 0:
             volumes = server.__dict__['os-extended-volumes:volumes_attached']
             for vol in volumes:
-                print vol['id']
                 vl = cinder_common.get_volume_by_id("from", vol['id'])
-                # print vl
-                # if vl.bootable == "true":
-                #     print vl.bootable
-                #     snapshot = cinder_common.create_volume_snapshot("from", vl, vm_uuid)
-                    # volume_ids.append(snapshot.id)
                 volume_objects.append(vl)
 
     except nova_exc.NotFound:
@@ -728,12 +722,10 @@ def get_volumes_for_vm(destination, vm_uuid):
 # Create snapshot of those volumes
 # Create glance images of all volumes related to a VM
 def prepare_migrate_vms_from_image_snapshot(id_file):
-    # nova = get_nova("from")
     ids = utils.read_ids_from_file(id_file)
     ready = check_vm_are_off("from", id_file)
     if ready:
         for vm_uuid in ids:
-            # server = nova.servers(vm_uuid)
             volumes = get_volumes_for_vm("from", vm_uuid)
             for v in volumes:
                 cinder_common.create_volume_snapshot("from", v, vm_uuid)
@@ -757,7 +749,7 @@ def make_images_of_volumes_based_on_vms(destination, id_file):
         for vol in volumes:
             name = vol.metadata['original_volume_id']
             print "original volume name "  + name + ", snapshot volume id: " + vol.id
-            cinder_common.upload_volume_to_image_by_volume_name(destination, vol.id, name)
+            cinder_common.upload_volume_to_image_by_volume_name(destination, vol, name)
 
 
 def download_images_of_volumes_based_on_vms(destination, path, id_file):
@@ -795,8 +787,9 @@ def main():
     # print_keys("to")
     # prepare_migrate_vms_from_image_snapshot("./id_file")
     # make_images_of_volumes_based_on_vms("from", "./id_file")
-    # boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
-    attach_volumes('./id_file')
+    boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
+    # make_images_of_volumes_based_on_vms("from", './id_file')
+    # make_volumes_from_snapshots("from", './id_file')
 
 if __name__ == "__main__":
         main()
