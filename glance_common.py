@@ -41,7 +41,7 @@ def get_images(destination):
 
 def get_image_by_name(destination, name):
     images = get_images(destination)
-    print "looking for inamge name: " + name
+    print "looking for imamge name: " + name
     for img in images:
         if img.name == name:
             print "Found image name " + name

@@ -182,7 +182,8 @@ def main(opts, args):
 
             nova_common.boot_from_volume_vms_from_image_with_network_mapping(id_file=args[0], custom_network=args[1], key=key)
         else:
-            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+            print "Please provide file with VM UUIDs to be migrated, network to attach them to, and optional key, " \
+                  "for example, ./id_file demo-net public-key"
     if opts.securitygroups:
         if args:
             print args[0]
@@ -330,10 +331,9 @@ if __name__ == "__main__":
                                'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
                                'for each UUID provided in a file, for example, ./id_file. ')
         parser.add_option("-6", "--volumefromimage", action="store_true", dest='volumefromimage',
-                          help='First argument directory path, second path to a file. '
+                          help='First argument path to a file with original VM IDs. '
                                'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
-                               'for each UUID provided in a file, for example, ./id_file. '
-                               'Volumes associated with the VMs will not be uploaded.')
+                               'for each UUID provided in a file, for example, ./id_file. ')
         parser.add_option("-7", "--bootvmsfromvolumescustomnet", action="store_true",
                           dest='bootvmsfromvolumescustomnet',
                           help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
