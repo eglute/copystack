@@ -221,7 +221,7 @@ def create_vm_with_network_mapping(from_vm, image='default', network_name='none'
 def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='none', key='default'):
     nova = get_nova('to')
 
-    flavor = get_flavor_by_id('to', from_vm.flavor['id'])
+    flavor = get_flavor_by_name('to', from_vm.flavor['id'])
     if flavor is None:
         print "Error: Cannot continue for this VM without proper flavor"
         return None
@@ -409,6 +409,21 @@ def get_flavor_by_id(destination, flavor_id):
         print "Error: Flavor with ID:", flavor_id, "could not be found"
         return None
 
+
+def get_flavor_by_name(destination, flavor_id):
+    try:
+        from_nova = get_nova("from")
+        nova = get_nova("to")
+        flavor = get_flavor_by_id("from", flavor_id)
+        name = flavor.name
+        flavors = nova.flavors.list()
+        for fl in flavors:
+            if fl.name == name:
+                return fl
+    except Exception, e:
+        print str(e)
+        print "Error: Flavor with name:", name, "could not be found"
+        return None
 
 # nova flavor-list --all for checking all flavors for admin, private and public
 def get_flavor_list(destination):
