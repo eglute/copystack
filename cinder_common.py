@@ -353,10 +353,27 @@ def print_volumes(destination):
     vols = get_volume_list(destination)
     vols.sort(key=lambda x: x.status)
     newlist = sorted(vols, key=lambda x: x.status)
-    print "Volumes sorted by status (id name status size):"
+    print "Volumes sorted by status (id status type size):"
     # print newlist
     for volume in vols:
-        print volume.id, volume.status, volume.size
+        if hasattr(volume, 'display_name'):
+            print volume.id, volume.status, volume.volume_type, volume.size, volume.display_name
+        else:
+            print volume.id, volume.status, volume.volume_type, volume.size, volume.name
+
+
+def print_detail_volumes(destination):
+    vols = get_volume_list(destination)
+    vols.sort(key=lambda x: x.status)
+    newlist = sorted(vols, key=lambda x: x.status)
+    print "Volumes sorted by status (id status type size name host availability zone):"
+    # print newlist
+    for volume in vols:
+        host = getattr(volume, "os-vol-host-attr:host")
+        if hasattr(volume, 'display_name'):
+            print volume.id, volume.status, volume.volume_type, volume.size, volume.display_name, host, volume.availability_zone
+        else:
+            print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone
 
 
 def get_snapshot_by_volume_id(destination, volume_id):
@@ -466,6 +483,46 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
     return myvol
 
 
+def print_volume_types(destination):
+    cinder = get_cinder(destination)
+    types = cinder.volume_types.list()
+
+    print "Volume Types:"
+    for type in types:
+        print type.name
+    # print types
+
+
+def get_volume_backups(destination):
+    cinder = get_cinder(destination)
+    backups = cinder.backups.list()
+    return backups
+
+
+def print_volume_backups(destination):
+    backups = get_volume_backups(destination)
+    print "Volume Backups (ID, volume id, name, size, status)"
+    for backup in backups:
+        print backup.id, backup.volume_id, backup.name, backup.size, backup.status
+
+
+def get_cinder_pools(destination):
+    cinder = get_cinder(destination)
+    try:
+        pools = cinder.pools.list()
+        return pools
+    except Exception, e:
+        print "No pool info available"
+        return []
+
+
+def print_cinder_pools(destination):
+    pools = get_cinder_pools(destination)
+    for pool in pools:
+        print pool.name
+
+
+
 def main():
     # get_volume_list('from')
     #get_volume_list('to')
@@ -479,7 +536,9 @@ def main():
     # print_volumes('from')
     # snaps = get_snapshot_by_volume_id("from", "15b70ee6-a4fe-4733-ba81-49bbd8abeced")
     # get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
-    get_cinder("from")
+    # get_cinder("from")
+    print_cinder_pools("to")
+
 
 if __name__ == "__main__":
         main()
