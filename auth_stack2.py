@@ -103,13 +103,7 @@ class AuthStack(object):
         return keystone
 
     def get_from_keystone_client(self):
-
-        keystone = self.get_from_auth_ref()
-        if self.from_keystone_version == '2':
-            keystone = client_v2.Client(auth_ref=self.get_from_auth_ref().auth_ref, endpoint=self.from_auth_url)
-
-        return keystone
-        # return self.get_from_auth_ref()
+        return self.get_from_auth_ref()
 
     def get_to_keystone_client(self):
         return self.get_to_auth_ref()
