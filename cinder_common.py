@@ -538,6 +538,7 @@ def main():
     # get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
     # get_cinder("from")
     print_cinder_pools("to")
+    make_volume_from_snapshot("from", "ed1692f3-de70-4787-96b4-927c27deceb6", "b0730b31-9c82-4534-a4a3-5d739462dbbe ")
 
 
 if __name__ == "__main__":

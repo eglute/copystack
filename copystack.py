@@ -17,12 +17,10 @@ def main(opts, args):
     print "To:  ", auth.to_auth_ip, " Username:", auth.to_username, " Project:", auth.to_tenant_name
 
     if opts.report:
-        print "--------------- From Projects: ---------------------"
         try:
-            keystone_common.print_tenants('from')
+            keystone_common.print_projects('from')
         except Exception, e:
             print "To print project info, switch to admin user"
-        print "\n--------------- To Projects: ------------------------"
         try:
             keystone_common.print_projects('to')
         except Exception, e:
@@ -117,7 +115,7 @@ def main(opts, args):
     if opts.publickeys:
         nova_common.compare_and_create_keypairs()
     if opts.users:
-        keystone_common.compare_and_create_users()
+        keystone_common.compare_and_create_users_by_project()
     if opts.shutdown:
         if args:
             # print args[0]
