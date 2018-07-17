@@ -199,8 +199,8 @@ class AuthStack(object):
     # this is really more about which keystone version is running... if keystone 2, use this call
     # if keystone 3, the other
     def get_from_cinder_client_keystone2(self):
-        auth_ref1 = self.get_from_auth_ref().auth_ref
-        auth_ref = self.get_from_auth_ref()
+        auth_ref = self.get_from_auth_ref().auth_ref
+        # auth_ref = self.get_from_auth_ref()
         token = auth_ref['token']['id']
         tenant_id = auth_ref['token']['tenant']['id']
         endpoint_url = ('{ip}:8776/v1/{tenant}'.format
