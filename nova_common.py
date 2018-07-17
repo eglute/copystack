@@ -776,6 +776,11 @@ def create_volumes_from_images_based_on_vms(id_file):
     volumes = get_volume_id_list_for_vm_ids("from", id_file)
     cinder_common.create_volumes_from_images_by_vm_id(volumes)
 
+
+def manage_volumes_based_on_vms(id_file, host):
+    volumes = get_volume_id_list_for_vm_ids("from", id_file)
+    cinder_common.manage_volumes_by_vm_id(host, volumes)
+
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
