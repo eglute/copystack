@@ -522,10 +522,69 @@ def print_cinder_pools(destination):
         print pool.name
 
 
+def change_volume_type(destination, volume_id, type):
+    cinder = get_cinder(destination)
+    volume = get_volume_by_id(destination, volume_id)
+    cinder.volumes.retype(volume, type, "on-demand")
+    print "Volume retyped"
+
+
+#cinder manage --name vol3 --volume-type lvm1 egle-pike-dns-1@lvm#LVM_iSCSI volume-e7c4df78-4dc4-4c62-ad88-3c846b901e78
+def manage_volume(destination, reference, host, name, type=None, bootable=False, metadata=None):
+    print "foo"
+    cinder = get_cinder(destination)
+    ref = {'source-name': reference}
+    cinder.volumes.manage(host, ref, name=name, volume_type=type, bootable=bootable, metadata=metadata)
+
+
+def manage_volumes_by_vm_id(host, volumes):
+    for volume in volumes:
+        vol = get_volume_by_id('from', volume)
+        manage_volume_from_id('to', host, vol)
+
+
+def manage_volume_from_id(destination, host, volume):
+    cinder = get_cinder(destination)
+    #todo: verify tenant/user info
+    # try:
+    #     from_tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
+    #     tenant = keystone_common.find_opposite_tenant_id(from_tenant)
+    # except Exception, e:
+    #     print "No tenant ID found, setting tenant to None"
+    #     tenant = None
+
+    # manage_volume("to", )
+    #reference, host, type, name, bootable=False, metadata=None
+    meta = volume.metadata
+    meta.update({'original_volume_id': volume.id})
+    meta.update({'original_boot_status': volume.bootable})
+    if volume.attachments:
+        for att in volume.attachments:
+            meta.update({'original_vm_id': att['server_id']})
+            meta.update({'original_vm_device': att['device']})
+    type = volume.volume_type
+    bootable = False
+    if volume.bootable == 'true':
+        bootable = True  # for some reason api returns a string and the next call expects a boolean.
+    name = volume.name
+    manage_volume(destination, host, name, type=type, bootable=bootable, metadata=meta)
+
+
+def print_manageable_volumes(destination, host):
+    cinder = get_cinder(destination)
+    mvs = cinder.volumes.list_manageable(host=host, detailed=True)
+#{u'cinder_id': None, u'reason_not_safe': u'volume in use', u'reference': {u'source-name': u'cinder-volumes-pool'}, u'safe_to_manage': False, u'extra_info': None, u'size': 973}
+
+    print '{:38}'.format("Cinder ID "), '{:45}'.format("Source name  "), "Safe to manage  Reason not safe    Size      Extra info"
+    for mv in mvs:
+        print  '{:38}'.format(mv._info['cinder_id']), '{:45}'.format(mv._info['reference']['source-name']), \
+            mv._info['safe_to_manage'], "          ", \
+            '{:17}'.format(mv._info['reason_not_safe']), '{:5}'.format(mv._info['size']), "    ", mv._info['extra_info']
+
 
 def main():
     # get_volume_list('from')
-    #get_volume_list('to')
+    # get_volume_list('to')
     #create_volume('from')
     #compare_and_create_volumes()
     #upload_volume_to_image_by_volume_id('from', 'cc6ff51b-faaf-443f-8835-a985611db39a')
@@ -537,9 +596,11 @@ def main():
     # snaps = get_snapshot_by_volume_id("from", "15b70ee6-a4fe-4733-ba81-49bbd8abeced")
     # get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
     # get_cinder("from")
-    print_cinder_pools("to")
-    make_volume_from_snapshot("from", "ed1692f3-de70-4787-96b4-927c27deceb6", "b0730b31-9c82-4534-a4a3-5d739462dbbe ")
-
+    # print_cinder_pools("to")
+    # make_volume_from_snapshot("from", "ed1692f3-de70-4787-96b4-927c27deceb6", "b0730b31-9c82-4534-a4a3-5d739462dbbe ")
+    # change_volume_type("to", 'f10073c4-3292-4585-b165-23174b0656f6', 'lvm1')
+    # print_manageable_volumes("from", host='egle-aio-liberty-2@lvm#LVM_iSCSI')
+    manage_volume("to", 'volume-886398cf-c9c0-40cc-bfd4-f5cf7a56d1ab', 'egle-pike-dns-1@lvm#LVM_iSCSI', 'foo', bootable=True)
 
 if __name__ == "__main__":
         main()

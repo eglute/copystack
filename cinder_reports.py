@@ -19,6 +19,7 @@ def main(opts, args):
     if opts.report:
         print "\n--------------- From Volumes: ------------------------"
         volumes = cinder_common.print_detail_volumes('from')
+    if opts.Report:
         print "\n--------------- To Volumes: ------------------------"
         volumes = cinder_common.print_detail_volumes('to')
     if opts.types:
@@ -36,15 +37,31 @@ def main(opts, args):
         cinder_common.print_cinder_pools('from')
         print "\n--------------- To Volume Pools: ------------------------"
         cinder_common.print_cinder_pools('to')
+    if opts.Manage:
+        if args:
+            print "\n--------------- To Manageable Volumes: ------------------------"
+            cinder_common.print_manageable_volumes('to', host=args[0])
+        else:
+            print "Please provide host name, similar to sample-aio-liberty-2@lvm#LVM_iSCSI"
+    if opts.manage:
+        if args:
+            print "\n--------------- From Volume Pools: ------------------------"
+            cinder_common.print_manageable_volumes('from', host=args[0])
+        else:
+            print "Please provide host name, similar to sample-aio-liberty-2@lvm#LVM_iSCSI"
 
 
 if __name__ == "__main__":
     parser = optparse.OptionParser()
-    parser.add_option("-r", "--report", action='store_true', dest='report', help='Print volumes with details')
+    parser.add_option("-r", "--report", action='store_true', dest='report', help='Print FROM volumes with details')
+    parser.add_option("-R", "--Report", action='store_true', dest='Report', help='Print TO volumes with details')
     parser.add_option("-t", "--types", action='store_true', dest='types', help='Print available volume types')
     parser.add_option("-b", "--backups", action='store_true', dest='backups', help='Print volume backups')
     parser.add_option("-p", "--pools", action='store_true', dest='pools', help='Print volume pools')
-
+    parser.add_option("-m", "--manage", action='store_true', dest='manage', help='Print FROM manageable volumes. '
+                                        'Please provide host name, similar to sample-aio-liberty-2@lvm#LVM_iSCSI')
+    parser.add_option("-M", "--Manage", action='store_true', dest='Manage', help='Print TO manageable volumes. '
+                                        'Please provide host name, similar to sample-aio-liberty-2@lvm#LVM_iSCSI')
 
     (opts, args) = parser.parse_args()
     main(opts, args)
