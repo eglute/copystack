@@ -321,14 +321,14 @@ def main():
     subparsers.add_parser('cinder')
     subparsers.add_parser('keystone')
     subparsers.add_parser('nova')
-    subparsers.add_parser('migrate')
+    # subparsers.add_parser('migrate')
     subparsers.add_parser('move')
 
     add_cinder_command_options(subparsers)
     add_keystone_command_options(subparsers)
     add_nova_command_options(subparsers)
     add_neutron_command_options(subparsers)
-    add_migrate_command_options(subparsers)
+    # add_migrate_command_options(subparsers)
     add_move_command_options(subparsers)
 
     args = parser.parse_args()
