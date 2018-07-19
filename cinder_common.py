@@ -369,10 +369,14 @@ def print_detail_volumes(destination):
     print "Volumes sorted by status (id status type size name host availability zone):"
     # print newlist
     for volume in vols:
-        host = getattr(volume, "os-vol-host-attr:host")
-        if hasattr(volume, 'display_name'):
-            print volume.id, volume.status, volume.volume_type, volume.size, volume.display_name, host, volume.availability_zone
+        if hasattr(volume, "os-vol-host-attr:host"):
+            host = getattr(volume, "os-vol-host-attr:host")
+            if hasattr(volume, 'display_name'):
+                print volume.id, volume.status, volume.volume_type, volume.size, volume.display_name, host, volume.availability_zone
+            else:
+                print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone
         else:
+            host = 'no_host_info'
             print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone
 
 
