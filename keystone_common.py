@@ -418,9 +418,9 @@ def find_opposite_role(role_id):
 
 
 def print_user_names(destination):
-    us = get_users(destination)
-    users = sorted(us, key=lambda x: x.name)
     auth = AuthStack()
+    us = get_users_based_on_project(destination, auth.from_tenant_name)
+    users = sorted(us, key=lambda x: x.name)
     version = '3'
     if destination == "from":
         if auth.from_keystone_version == '2':

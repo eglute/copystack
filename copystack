@@ -78,11 +78,11 @@ def cinder_actions(args):
 def add_keystone_command_options(subparsers):
     keystone_parser = subparsers.add_parser('keystone', help='Run keystone reports.')
 
-    keystone_parser.add_argument("-f", "--fromusers", action='store_true', dest='fromusers', help='Print FROM users')
-    keystone_parser.add_argument("-t", "--tousers", action='store_true', dest='tousers', help='Print TO users')
+    keystone_parser.add_argument("-u", "--fromusers", action='store_true', dest='fromusers', help='Print FROM users')
+    keystone_parser.add_argument("-U", "--tousers", action='store_true', dest='tousers', help='Print TO users')
     keystone_parser.add_argument("-p", "--fromprojects", action='store_true', dest='fromprojects',
                       help='Print FROM projects (or tenants)')
-    keystone_parser.add_argument("-r", "--toprojects", action='store_true', dest='toprojects',
+    keystone_parser.add_argument("-P", "--toprojects", action='store_true', dest='toprojects',
                       help='Print TO projects (or tenants)')
 
 
