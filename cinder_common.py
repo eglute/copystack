@@ -522,11 +522,22 @@ def print_cinder_pools(destination):
         print pool.name
 
 
-def change_volume_type(destination, volume_id, type):
+def change_volume_type(destination, volume_id, vtype):
     cinder = get_cinder(destination)
     volume = get_volume_by_id(destination, volume_id)
-    cinder.volumes.retype(volume, type, "on-demand")
-    print "Volume retyped"
+    if hasattr(volume, 'volume_type'):
+        if volume.volume_type == vtype:
+            print "Volume " + volume_id + " already type " + vtype
+            return
+    cinder.volumes.retype(volume, vtype, "on-demand")
+    print "Volume " + volume_id + " retyped to " + vtype
+
+
+def retype_volumes_by_volume_ids(destination, volume_id_file, type):
+    cinder = get_cinder(destination)
+    volume_ids = utils.read_ids_from_file(volume_id_file)
+    for volume in volume_ids:
+        change_volume_type(destination, volume, type)
 
 
 #cinder manage --name vol3 --volume-type lvm1 egle-pike-dns-1@lvm#LVM_iSCSI volume-e7c4df78-4dc4-4c62-ad88-3c846b901e78
@@ -567,7 +578,9 @@ def manage_volume_from_id(destination, host, volume):
     if volume.bootable == 'true':
         bootable = True  # for some reason api returns a string and the next call expects a boolean.
     name = volume.name
-    manage_volume(destination, host, name, type=type, bootable=bootable, metadata=meta)
+    #TODO: check what the reference most likely will be...
+    reference = 'volume-' + volume.id
+    manage_volume(destination, reference, host, name, type=type, bootable=bootable, metadata=meta)
 
 
 def print_manageable_volumes(destination, host):
@@ -599,8 +612,11 @@ def main():
     # print_cinder_pools("to")
     # make_volume_from_snapshot("from", "ed1692f3-de70-4787-96b4-927c27deceb6", "b0730b31-9c82-4534-a4a3-5d739462dbbe ")
     # change_volume_type("to", 'f10073c4-3292-4585-b165-23174b0656f6', 'lvm1')
-    # print_manageable_volumes("from", host='egle-aio-liberty-2@lvm#LVM_iSCSI')
-    manage_volume("to", 'volume-886398cf-c9c0-40cc-bfd4-f5cf7a56d1ab', 'egle-pike-dns-1@lvm#LVM_iSCSI', 'foo', bootable=True)
+    # print_manageable_volumes("to", host='egle-pike-dns-1@lvm#LVM_iSCSI')
+    # manage_volume("to", 'volume-886398cf-c9c0-40cc-bfd4-f5cf7a56d1ab', 'egle-pike-dns-1@lvm#LVM_iSCSI', 'foo', bootable=True)
+    # get_volume_by_id('from', '15b70ee6-a4fe-4733-ba81-49bbd8abeced')
+    retype_volumes_by_volume_ids('to', 'volume_ids', 'lvm1')
+
 
 if __name__ == "__main__":
         main()

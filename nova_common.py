@@ -781,6 +781,13 @@ def manage_volumes_based_on_vms(id_file, host):
     volumes = get_volume_id_list_for_vm_ids("from", id_file)
     cinder_common.manage_volumes_by_vm_id(host, volumes)
 
+
+def retype_volumes_based_on_vms(id_file, type):
+    volumes = get_volume_id_list_for_vm_ids("from", id_file)
+    for volume in volumes:
+        cinder_common.change_volume_type("to", volume, type)
+
+
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
@@ -807,9 +814,10 @@ def main():
     # print_keys("to")
     # prepare_migrate_vms_from_image_snapshot("./id_file")
     # make_images_of_volumes_based_on_vms("from", "./id_file")
-    boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
+    # boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
     # make_images_of_volumes_based_on_vms("from", './id_file')
     # make_volumes_from_snapshots("from", './id_file')
+    manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
 
 if __name__ == "__main__":
         main()

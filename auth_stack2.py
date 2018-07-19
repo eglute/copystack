@@ -166,14 +166,14 @@ class AuthStack(object):
 
     def get_from_neutron_client(self):
         auth_ref = self.get_from_auth_ref()
-        endpoint_url = '{ip}:{port}'.format(ip=self.from_auth_ip)
-        neutron = neutron_client.Client('2.0', port=self.from_neutron_port, session=auth_ref.session, endpoint_override=endpoint_url)
+        endpoint_url = '{ip}:{port}'.format(ip=self.from_auth_ip, port=self.from_neutron_port)
+        neutron = neutron_client.Client('2.0', session=auth_ref.session, endpoint_override=endpoint_url)
         return neutron
 
     def get_to_neutron_client(self):
         auth_ref = self.get_to_auth_ref()
-        endpoint_url = '{ip}:{port}'.format(ip=self.to_auth_ip)
-        neutron = neutron_client.Client('2.0', port=self.to_neutron_port, session=auth_ref.session, endpoint_override=endpoint_url)
+        endpoint_url = '{ip}:{port}'.format(ip=self.to_auth_ip, port=self.to_neutron_port)
+        neutron = neutron_client.Client('2.0', session=auth_ref.session, endpoint_override=endpoint_url)
         return neutron
 
     def get_neutron_client(self, destination):

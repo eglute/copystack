@@ -19,8 +19,8 @@ from auth_stack2 import AuthStack
 def add_cinder_command_options(subparsers):
     cinder_parser = subparsers.add_parser('cinder', help='Run cinder reports.')
 
-    cinder_parser.add_argument("-r", "--report", action='store_true', dest='report', help='Print FROM volumes with details')
-    cinder_parser.add_argument("-R", "--Report", action='store_true', dest='Report', help='Print TO volumes with details')
+    cinder_parser.add_argument("-s", "--report", action='store_true', dest='report', help='Print FROM volumes with details')
+    cinder_parser.add_argument("-S", "--Report", action='store_true', dest='Report', help='Print TO volumes with details')
     cinder_parser.add_argument("-t", "--types", action='store_true', dest='types', help='Print available volume types')
     cinder_parser.add_argument("-b", "--backups", action='store_true', dest='backups', help='Print volume backups')
     cinder_parser.add_argument("-p", "--pools", action='store_true', dest='pools', help='Print volume pools')
@@ -28,7 +28,11 @@ def add_cinder_command_options(subparsers):
                                                                                  'Please provide host name, similar to sample-aio-liberty-2@lvm#LVM_iSCSI')
     cinder_parser.add_argument("-M", "--Manage", nargs=1, metavar='host name', dest='Manage', help='Print TO manageable volumes. '
                                                                                  'Please provide host name, similar to sample-aio-liberty-2@lvm#LVM_iSCSI')
-
+    cinder_parser.add_argument("-r", "--retype", dest='retypevolumes', nargs=2, metavar=('UUID_file', 'volume_type'),
+                               help='Retype volumes on the "TO" destination. '
+                                'Input: file with volume UUIDs and new volume type that will apply to all provided volumes'
+                               'For example, ./volume_ids lvm'
+                               )
 
 def cinder_actions(args):
     if args.report:
@@ -66,6 +70,9 @@ def cinder_actions(args):
             cinder_common.print_manageable_volumes('from', host=args.manage[0])
         else:
             print "Please provide host name, similar to sample-aio-liberty-2@lvm#LVM_iSCSI"
+    if args.retypevolumes:
+        if len(args.retypevolumes) == 2:
+            cinder_common.retype_volumes_by_volume_ids('to', args.retypevolumes[0], args.retypevolumes[1])
 
 
 def add_keystone_command_options(subparsers):
@@ -147,7 +154,7 @@ def neutron_actions(args):
 
 
 def add_migrate_command_options(subparsers):
-    migrate_parser = subparsers.add_parser('migrate', help='Migration actions')
+    migrate_parser = subparsers.add_parser('migrate', help='Migration using glance images')
     migrate_parser.add_argument("-0", "--shutdown", dest='shutdown', nargs=1, metavar='UUID_file',
                       help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
     migrate_parser.add_argument("-1", "--createsnapshotvm", dest='createsnapshotvm', nargs=1, metavar='UUID_file',
@@ -231,6 +238,79 @@ def migrate_actions(args):
             print "Please provide file with VM ids, for example, ./id_file"
 
 
+def add_move_command_options(subparsers):
+    migrate_parser = subparsers.add_parser('move', help='Migrate using volume move')
+    migrate_parser.add_argument("-0", "--shutdown", dest='shutdown', nargs=1, metavar='UUID_file',
+                      help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
+    migrate_parser.add_argument("-1", "--createsnapshotvm", dest='createsnapshotvm', nargs=1, metavar='UUID_file',
+                      help='Create snapshots from VMs Cinder volumes for each UUID provided in a file, '
+                           'for example, ./id_file. ')
+    migrate_parser.add_argument("-2", "--createsvolumefromsnapshot", dest='createsvolumefromsnapshot', nargs=1, metavar='UUID_file',
+                      help='Create volumes from snapshots based on associated VM for each VM UUID provided in a file, '
+                           'for example, ./id_file. ')
+    # migrate_parser.add_argument("-3", "--createsimagesfromvolumesnapshots", nargs=1, metavar='UUID_file',
+    #                   dest='createsimagesfromvolumesnapshots',
+    #                   help='Create images from volumes based on snapshots based on associated VM for each VM UUID provided in a file, '
+    #                        'for example, ./id_file. ')
+    migrate_parser.add_argument("-3", "--managevolumes", dest='managevolumes',
+                      nargs=2, metavar=('UUID_file', 'host'),
+                      help='Manage all volumes by VM UUID ' 
+                           'for each UUID provided in a file, for example, ./id_file.'
+                           'Please provide host to be used for cinder volumes. '
+                           'This host will be used for all VMs in the id_file. For example, '
+                           ' ./id_file sample-aio-liberty-2@lvm#LVM_iSCSI')
+    migrate_parser.add_argument("-4", "--retypevolumes", nargs=2, metavar=('UUID_file', 'type'),
+                                help='Retype all volumes to a give type by associated VM UUID for each UUID provided in '
+                                     'a file, for example, ./id_file lvm')
+    migrate_parser.add_argument("-5", "--boot",
+                      nargs='+',
+                      dest='boot',
+                      help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
+                           'on a custom network. Floating IPs will not be created. Provide network name or ID,'
+                           'for example, "demo-net and optional public key name "key-name" '
+                           ' Sample: -5 ./id_file demo-net key-name')
+    migrate_parser.add_argument("-6", "--adddvolumestovms",  dest='adddvolumestovms',
+                      nargs=1, metavar='UUID_file',
+                      help='Attach additional volumes to migrated VMs for each UUID provided in the original '
+                           'migration file, for example, ./id_file.')
+
+
+def move_actions(args):
+    if args.shutdown:
+        if len(args.shutdown) == 1:
+            nova_common.power_off_vms('from', id_file=args.shutdown[0])
+        else:
+            print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+    if args.createsnapshotvm:
+        if args.createsnapshotvm:
+            nova_common.prepare_migrate_vms_from_image_snapshot(id_file=args.createsnapshotvm[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if args.createsvolumefromsnapshot:
+        if len(args.createsvolumefromsnapshot) == 1:
+            nova_common.make_volumes_from_snapshots("from", id_file=args.createsvolumefromsnapshot[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if args.managevolumes:
+        if len(args.managevolumes) == 2:
+            nova_common.manage_volumes_based_on_vms(args.managevolumes[0], args.managevolumes[1])
+    if args.retypevolumes:
+        if len(args.retypevolumes) == 2:
+            nova_common.retype_volumes_based_on_vms(args.retypevolumes[0], args.retypevolumes[1])
+    if args.boot:
+        if len(args.boot) >=2:
+
+            key = "default"
+            if len(args.boot) == 3:
+                key = args.boot[2]
+            nova_common.boot_from_volume_vms_from_image_with_network_mapping(id_file=args.boot[0], custom_network=args.boot[1], key=key)
+    if args.adddvolumestovms:
+        if len(args.adddvolumestovms) == 1:
+            nova_common.attach_volumes(id_file=args.adddvolumestovms[0])
+        else:
+            print "Please provide file with VM ids, for example, ./id_file"
+
+
 def main():
     auth = AuthStack()
     print "From:", auth.from_auth_ip, " Username:", auth.from_username, " Project:", auth.from_tenant_name
@@ -242,12 +322,14 @@ def main():
     subparsers.add_parser('keystone')
     subparsers.add_parser('nova')
     subparsers.add_parser('migrate')
+    subparsers.add_parser('move')
 
     add_cinder_command_options(subparsers)
     add_keystone_command_options(subparsers)
     add_nova_command_options(subparsers)
     add_neutron_command_options(subparsers)
     add_migrate_command_options(subparsers)
+    add_move_command_options(subparsers)
 
     args = parser.parse_args()
     # print args
@@ -261,6 +343,8 @@ def main():
         neutron_actions(args)
     elif args.mode == 'migrate':
         migrate_actions(args)
+    elif args.mode == 'move':
+        move_actions(args)
     else:
         parser.print_usage()
 
