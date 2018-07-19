@@ -467,7 +467,7 @@ def create_flavor(destination, flavor):
     new_flavor = nova.flavors.create(name=flavor.name,
                                      ram=flavor.ram,
                                      vcpus=flavor.vcpus,
-                                     disk=flavor.disk,
+                                     disk=0,
                                      flavorid=flavor.id,
                                      ephemeral=flavor.ephemeral,
                                      swap=swap,
