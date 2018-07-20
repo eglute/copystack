@@ -548,6 +548,9 @@ def retype_volumes_by_volume_ids(destination, volume_id_file, type):
 #cinder manage --name vol3 --volume-type lvm1 egle-pike-dns-1@lvm#LVM_iSCSI volume-e7c4df78-4dc4-4c62-ad88-3c846b901e78
 def manage_volume(destination, reference, host, name, volume_type=None, bootable=False, metadata=None):
     cinder = get_cinder(destination)
+    print "Will try to manage volume name " + name
+    print "with reference "
+    print reference
     cinder.volumes.manage(host, reference, name=name, volume_type=volume_type, bootable=bootable, metadata=metadata)
     print "Managed volume " + name
 
@@ -585,7 +588,8 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
     source = {}
     if volume_type == 'SSD':
         ref = region + '-' + volume.id
-        source = {'source-id': ref}
+        # source = {'source-id': ref}
+        source = {'source-name': ref}
         host = ssd_host
     else:
         ref = 'volume-' + volume.id
