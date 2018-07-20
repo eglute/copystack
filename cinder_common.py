@@ -43,7 +43,6 @@ def get_volume_list_by_vm_id(destination, vm_uuid):
 
 
 def get_volume_by_id(destination, uuid):
-    print uuid
     cinder = get_cinder(destination)
     volume = cinder.volumes.get(uuid)
     return volume
@@ -120,8 +119,16 @@ def compare_and_create_volumes():
 def create_volume_snapshot(destination, volume, original_vm_id="none"):
     cinder = get_cinder(destination)
 
+    orig_name = ''
+    if hasattr(volume, 'name'):
+        orig_name = volume.name
+    if hasattr(volume, 'display_name'):
+        orig_name = volume.display_name
+
     name = "volume_snap_" + volume.id
-    meta = {'original_vm_id': original_vm_id, 'original_volume_id': volume.id, 'bootable': volume.bootable}
+    meta = {'original_vm_id': original_vm_id, 'original_volume_id': volume.id,
+            'original_volume_name': orig_name,
+            'bootable': volume.bootable}
 
     # Cinder version 1 has different parameter names from 2 and up.
     version = float(cinder.version)
@@ -412,6 +419,10 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
     tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
 
     version = float(cinder.version)
+    bootable = False
+    if volume.bootable == 'true':
+        bootable = True  # for some reason api returns a string and the next call expects a boolean.
+
     if version >= 2.0:
 
         if hasattr(snapshot, 'metadata'):
@@ -432,7 +443,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           # user_id=volume.user_id, todo:fixthis
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
-                                          metadata=meta
+                                          metadata=meta,
                                           # source_volid=volume_id
                                           )
         else:
@@ -444,7 +455,8 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           # user_id=volume.user_id, todo:fixthis
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
-                                          metadata=meta
+                                          metadata=meta,
+
                                           # source_volid=volume_id
                                           )
     # cinder v1:
@@ -469,7 +481,8 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           availability_zone=volume.availability_zone,
                                           metadata=meta,
                                           # imageRef=volume.imageRef,
-                                          source_volid=volume_id
+                                          # source_volid=volume_id
+
                                           )
         else:
             myvol = cinder.volumes.create(size=volume.size,
@@ -481,10 +494,10 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
                                           metadata=meta,
-                                          source_volid=volume_id
+                                          # source_volid=volume_id
                                           )
     print "Volume", myvol.id, "created"
-
+    cinder.volumes.set_bootable(myvol, bootable)
     return myvol
 
 
@@ -552,17 +565,18 @@ def manage_volume(destination, reference, host, name, volume_type=None, bootable
     print "with reference "
     print reference
     cinder.volumes.manage(host, reference, name=name, volume_type=volume_type, bootable=bootable, metadata=metadata)
-    print "Managed volume " + name
+    print "Managed volume's name " + name
 
 
-def manage_volumes_by_vm_id(ssd_host, hdd_host, region, volumes):
-    for volume in volumes:
-        vol = get_volume_by_id('from', volume)
-        manage_volume_from_id('to', region, ssd_host, hdd_host, vol)
+def manage_volumes_by_vm_id(ssd_host, hdd_host, region, volume):
+    # for volume in volumes:
+    # vol = get_volume_by_id('from', volume)
+    # vol = get_clone_volume_by_id('from', volume)
+    manage_volume_from_id('to', region, ssd_host, hdd_host, volume)
 
 
 def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
-    cinder = get_cinder(destination)
+    # cinder = get_cinder(destination)
     #todo: verify tenant/user info
     # try:
     #     from_tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
@@ -574,8 +588,10 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
     # manage_volume("to", )
     #reference, host, type, name, bootable=False, metadata=None
     meta = volume.metadata
-    meta.update({'original_volume_id': volume.id})
-    meta.update({'original_boot_status': volume.bootable})
+    meta.update({'clone_volume_id': volume.id})
+    meta.update({'clone_volume_name': volume.name})
+    meta.update({'clone_boot_status': volume.bootable})
+    print meta
     if volume.attachments:
         for att in volume.attachments:
             meta.update({'original_vm_id': att['server_id']})
@@ -584,12 +600,15 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
     bootable = False
     if volume.bootable == 'true':
         bootable = True  # for some reason api returns a string and the next call expects a boolean.
-    name = volume.name
+
+    #name = volume.name
+    name = meta['original_volume_name']
+    print "original name: " + name
     source = {}
     if volume_type == 'SSD':
         ref = region + '-' + volume.id
         # source = {'source-id': ref}
-        source = {'source-name': ref}
+        source = {'source-id': ref}
         host = ssd_host
     else:
         ref = 'volume-' + volume.id
@@ -598,7 +617,7 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
     print "reference: "
     print source
     manage_volume(destination, source, host, name, volume_type=volume_type, bootable=bootable, metadata=meta)
-
+    print "Volume id: " + volume.id + " managed!"
 
 def print_manageable_volumes(destination, host):
     cinder = get_cinder(destination)
