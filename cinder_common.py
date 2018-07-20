@@ -70,7 +70,7 @@ def update_boot_status(destination, volumes):
     cinder = get_cinder(destination)
     for vol in volumes:
         bootable = False
-        if vol.metadata['original_boot_status'] == 'true':
+        if vol.metadata['clone_boot_status'] == 'true':
             bootable = True
         cinder.volumes.set_bootable(vol, bootable)
 
@@ -429,6 +429,12 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
             meta = snapshot.metadata
         else:
             meta = {}
+
+        attachments = volume.attachments[0]
+        if attachments:
+            if attachments['device']:
+                meta.update({'original_device': attachments['device']})
+
         if hasattr(snapshot, 'name'):
             snapshot_name = snapshot.name
         else:
@@ -443,7 +449,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           # user_id=volume.user_id, todo:fixthis
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
-                                          metadata=meta,
+                                          metadata=meta
                                           # source_volid=volume_id
                                           )
         else:
@@ -455,7 +461,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           # user_id=volume.user_id, todo:fixthis
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
-                                          metadata=meta,
+                                          metadata=meta
 
                                           # source_volid=volume_id
                                           )
@@ -465,6 +471,10 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
             meta = snapshot.metadata
         else:
             meta = {}
+        attachments = volume.attachments[0]
+        if attachments:
+            if attachments['device']:
+                meta.update({'original_device': attachments['device']})
         if hasattr(snapshot, 'display_name'):
             snapshot_name = snapshot.display_name
         else:

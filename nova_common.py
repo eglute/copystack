@@ -235,13 +235,13 @@ def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='no
     #include original image info as metadata:
     metadata = from_vm.metadata
     metadata.update({'original_vm_id':from_vm.id})
-    metadata.update({'original_volume_id': volume.id})
+    # metadata.update({'original_volume_id': volume.id})
     # metadata.update({'original_image_name': img.name})
 
     #attaching security groups during server creation does not seem to work, so moved to a separate task
 
     # block_device_mapping = {'vda':'uuid of the volume you want to use'}
-    block_device_mapping = {volume.metadata['original_vm_device']: volume.id}
+    block_device_mapping = {volume.metadata['original_device']: volume.id}
 
     print block_device_mapping
     if key == 'default':
@@ -287,7 +287,7 @@ def attach_volumes(id_file):
                 to_volumes = cinder_common.get_volume_list_by_vm_id("to", uuid)
                 for to_v in to_volumes:
                     if not to_v.attachments:
-                        nova.volumes.create_server_volume(vm.id, to_v.id, to_v.metadata['original_vm_device'])
+                        nova.volumes.create_server_volume(vm.id, to_v.id, to_v.metadata['original_device'])
                         print "Volume id: " + to_v.id + " attached to VM id: " + vm.id
 
             except Exception, e:
@@ -826,8 +826,8 @@ def main():
     # make_images_of_volumes_based_on_vms("from", "./id_file")
     # boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
     # make_images_of_volumes_based_on_vms("from", './id_file')
-    # make_volumes_from_snapshots("from", './id_file')
-    manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
+    make_volumes_from_snapshots("from", './id_file')
+    # manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
 
 if __name__ == "__main__":
         main()
