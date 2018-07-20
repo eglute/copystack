@@ -253,12 +253,13 @@ def add_move_command_options(subparsers):
     #                   help='Create images from volumes based on snapshots based on associated VM for each VM UUID provided in a file, '
     #                        'for example, ./id_file. ')
     migrate_parser.add_argument("-3", "--managevolumes", dest='managevolumes',
-                      nargs=2, metavar=('UUID_file', 'host'),
+                      nargs=4, metavar=('UUID_file', 'region', 'SSD_host', 'HDD_host'),
                       help='Manage all volumes by VM UUID ' 
                            'for each UUID provided in a file, for example, ./id_file.'
-                           'Please provide host to be used for cinder volumes. '
-                           'This host will be used for all VMs in the id_file. For example, '
-                           ' ./id_file sample-aio-liberty-2@lvm#LVM_iSCSI')
+                           'Please provide region and 2 hosts (SSD and HDD based) to be used for cinder volumes. '
+                           'These hosts will be used for all VMs in the id_file. For example, '
+                           ' ./id_file <region> <SDD host> <HDD host> '
+                           ' ./id_file rack3 sample-aio-liberty-2@lvm#SolidFire_iSCSI sample-aio-liberty-2@Ceph#LVM_iSCSI')
     migrate_parser.add_argument("-4", "--retypevolumes", nargs=2, metavar=('UUID_file', 'type'),
                                 help='Retype all volumes to a give type by associated VM UUID for each UUID provided in '
                                      'a file, for example, ./id_file lvm')
@@ -292,8 +293,8 @@ def move_actions(args):
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
     if args.managevolumes:
-        if len(args.managevolumes) == 2:
-            nova_common.manage_volumes_based_on_vms(args.managevolumes[0], args.managevolumes[1])
+        if len(args.managevolumes) == 4:
+            nova_common.manage_volumes_based_on_vms(args.managevolumes[0], args.managevolumes[1], args.managevolumes[2], args.managevolumes[3])
     if args.retypevolumes:
         if len(args.retypevolumes) == 2:
             nova_common.retype_volumes_based_on_vms(args.retypevolumes[0], args.retypevolumes[1])

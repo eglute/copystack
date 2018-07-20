@@ -43,6 +43,7 @@ def get_volume_list_by_vm_id(destination, vm_uuid):
 
 
 def get_volume_by_id(destination, uuid):
+    print uuid
     cinder = get_cinder(destination)
     volume = cinder.volumes.get(uuid)
     return volume
@@ -526,15 +527,15 @@ def print_cinder_pools(destination):
         print pool.name
 
 
-def change_volume_type(destination, volume_id, vtype):
+def change_volume_type(destination, volume, vtype):
     cinder = get_cinder(destination)
-    volume = get_volume_by_id(destination, volume_id)
+    # volume = get_volume_by_id(destination, volume_id)
     if hasattr(volume, 'volume_type'):
         if volume.volume_type == vtype:
-            print "Volume " + volume_id + " already type " + vtype
+            print "Volume " + volume.id + " already type " + vtype
             return
     cinder.volumes.retype(volume, vtype, "on-demand")
-    print "Volume " + volume_id + " retyped to " + vtype
+    print "Volume " + volume.id + " retyped to " + vtype
 
 
 def retype_volumes_by_volume_ids(destination, volume_id_file, type):
@@ -545,20 +546,19 @@ def retype_volumes_by_volume_ids(destination, volume_id_file, type):
 
 
 #cinder manage --name vol3 --volume-type lvm1 egle-pike-dns-1@lvm#LVM_iSCSI volume-e7c4df78-4dc4-4c62-ad88-3c846b901e78
-def manage_volume(destination, reference, host, name, type=None, bootable=False, metadata=None):
-    print "foo"
+def manage_volume(destination, reference, host, name, volume_type=None, bootable=False, metadata=None):
     cinder = get_cinder(destination)
-    ref = {'source-name': reference}
-    cinder.volumes.manage(host, ref, name=name, volume_type=type, bootable=bootable, metadata=metadata)
+    cinder.volumes.manage(host, reference, name=name, volume_type=volume_type, bootable=bootable, metadata=metadata)
+    print "Managed volume " + name
 
 
-def manage_volumes_by_vm_id(host, volumes):
+def manage_volumes_by_vm_id(ssd_host, hdd_host, region, volumes):
     for volume in volumes:
         vol = get_volume_by_id('from', volume)
-        manage_volume_from_id('to', host, vol)
+        manage_volume_from_id('to', region, ssd_host, hdd_host, vol)
 
 
-def manage_volume_from_id(destination, host, volume):
+def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
     cinder = get_cinder(destination)
     #todo: verify tenant/user info
     # try:
@@ -577,14 +577,23 @@ def manage_volume_from_id(destination, host, volume):
         for att in volume.attachments:
             meta.update({'original_vm_id': att['server_id']})
             meta.update({'original_vm_device': att['device']})
-    type = volume.volume_type
+    volume_type = volume.volume_type
     bootable = False
     if volume.bootable == 'true':
         bootable = True  # for some reason api returns a string and the next call expects a boolean.
     name = volume.name
-    #TODO: check what the reference most likely will be...
-    reference = 'volume-' + volume.id
-    manage_volume(destination, reference, host, name, type=type, bootable=bootable, metadata=meta)
+    source = {}
+    if volume_type == 'SSD':
+        ref = region + '-' + volume.id
+        source = {'source-id': ref}
+        host = ssd_host
+    else:
+        ref = 'volume-' + volume.id
+        source = {'source-name': ref}
+        host = hdd_host
+    print "reference: "
+    print source
+    manage_volume(destination, source, host, name, volume_type=volume_type, bootable=bootable, metadata=meta)
 
 
 def print_manageable_volumes(destination, host):

@@ -782,15 +782,17 @@ def create_volumes_from_images_based_on_vms(id_file):
     cinder_common.create_volumes_from_images_by_vm_id(volumes)
 
 
-def manage_volumes_based_on_vms(id_file, host):
+def manage_volumes_based_on_vms(id_file, region, ssd_host, hdd_host):
     volumes = get_volume_id_list_for_vm_ids("from", id_file)
-    cinder_common.manage_volumes_by_vm_id(host, volumes)
+    cinder_common.manage_volumes_by_vm_id(ssd_host, hdd_host, region, volumes)
 
 
 def retype_volumes_based_on_vms(id_file, type):
-    volumes = get_volume_id_list_for_vm_ids("from", id_file)
-    for volume in volumes:
-        cinder_common.change_volume_type("to", volume, type)
+    vms = utils.read_ids_from_file(id_file)
+    for vm in vms:
+        volumes = cinder_common.get_volume_list_by_vm_id('to', vm)
+        for volume in volumes:
+            cinder_common.change_volume_type("to", volume, type)
 
 
 def main():
