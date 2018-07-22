@@ -17,8 +17,10 @@
 import glance_common
 import keystone_common
 import nova_common
+import solidfire_common
 import utils
 from auth_stack2 import AuthStack
+
 import time
 
 
@@ -616,7 +618,8 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
     print "original name: " + name
     source = {}
     if volume_type == 'SSD':
-        ref = region + '-' + volume.id
+        sfid = solidfire_common.get_volume_by_volume_name(volume.id)
+        ref = "/volume_id/%(id)s" % {"id": sfid}
         # source = {'source-id': ref}
         source = {'source-id': ref}
         host = ssd_host
