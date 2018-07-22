@@ -8,7 +8,7 @@ from solidfire.factory import ElementFactory
 
 def get_solid_fire():
     auth = AuthStack()
-    sf = ElementFactory.create(auth.solid_fire_ip, auth.solid_fire_user, auth.solid_fire_password)
+    sf = ElementFactory.create(auth.solid_fire_ip, auth.solid_fire_user, auth.solid_fire_password, print_ascii_art=False)
     return sf
 
 
