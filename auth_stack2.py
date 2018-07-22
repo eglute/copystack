@@ -273,7 +273,10 @@ class AuthStack(object):
                     'NOVA_PORT': None,
                     'CINDER_PORT': None,
                     'GLANCE_PORT': None,
-                    'NEUTRON_PORT': None
+                    'NEUTRON_PORT': None,
+                    'SOLID_FIRE_IP': None,
+                    'SOLID_FIRE_USER': None,
+                    'SOLID_FIRE_PASSWORD': None
                         }
 
         auth_details = AUTH_DETAILS
