@@ -23,15 +23,15 @@ def get_volume_by_volume_name(name):
     for vl in vls.volumes:
         if vl.name.endswith(name):
             print "Found SolidFire volume for Cinder ID " + name
-            print "SolidFire volume name " + vl.name + " SolidFire volume ID: " + vl.volume_id
+            print "SolidFire volume name  %(name)s SolidFire volume ID: %(id)s" % {"name": vl.name, "id": vl.volume_id}
             return vl.volume_id
     print "No SolidFire volume found for Cinder ID " + name
     return None
 
 
 def main():
-    get_volume_by_volume_name('81f16643-a50c-43bf-84e3-d67ba35cd222')
-    
+    get_volume_by_volume_name('xxx81f16643-a50c-43bf-84e3-d67ba35cd222')
 
-if __name__== "__main__":
-  main()
+
+if __name__ == "__main__":
+    main()
