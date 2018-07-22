@@ -449,8 +449,8 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           # user_id=volume.user_id, todo:fixthis
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
-                                          metadata=meta
-                                          # source_volid=volume_id
+                                          metadata=meta,
+                                          source_volid=volume_id
                                           )
         else:
             myvol = cinder.volumes.create(size=volume.size,
@@ -461,9 +461,9 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           # user_id=volume.user_id, todo:fixthis
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
-                                          metadata=meta
+                                          metadata=meta,
 
-                                          # source_volid=volume_id
+                                          source_volid=volume_id
                                           )
     # cinder v1:
     else:
@@ -491,7 +491,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           availability_zone=volume.availability_zone,
                                           metadata=meta,
                                           # imageRef=volume.imageRef,
-                                          # source_volid=volume_id
+                                          source_volid=volume_id
 
                                           )
         else:
@@ -504,7 +504,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
                                           metadata=meta,
-                                          # source_volid=volume_id
+                                          source_volid=volume_id
                                           )
     print "Volume", myvol.id, "created"
     cinder.volumes.set_bootable(myvol, bootable)
@@ -652,7 +652,7 @@ def main():
     # download_single_volumes('from', './downloads/')
     # create_volume_from_image_by_vm_ids('./id_file')
     # print_volumes('from')
-    # snaps = get_snapshot_by_volume_id("from", "15b70ee6-a4fe-4733-ba81-49bbd8abeced")
+    snaps = get_snapshot_by_volume_id("from", "15b70ee6-a4fe-4733-ba81-49bbd8abeced")
     # get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
     # get_cinder("from")
     # print_cinder_pools("to")
@@ -661,7 +661,7 @@ def main():
     # print_manageable_volumes("to", host='egle-pike-dns-1@lvm#LVM_iSCSI')
     # manage_volume("to", 'volume-886398cf-c9c0-40cc-bfd4-f5cf7a56d1ab', 'egle-pike-dns-1@lvm#LVM_iSCSI', 'foo', bootable=True)
     # get_volume_by_id('from', '15b70ee6-a4fe-4733-ba81-49bbd8abeced')
-    retype_volumes_by_volume_ids('to', 'volume_ids', 'lvm1')
+    # retype_volumes_by_volume_ids('to', 'volume_ids', 'lvm1')
 
 
 if __name__ == "__main__":

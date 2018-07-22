@@ -57,6 +57,9 @@ class AuthStack(object):
         self.from_cinder_version = from_auth['CINDER_VERSION']
         self.from_keystone_version = from_auth['KEYSTONE_VERSION']
         self.from_nova_version = from_auth['NOVA_VERSION']
+        self.solid_fire_ip = from_auth['SOLID_FIRE_IP']
+        self.solid_fire_user = from_auth['SOLID_FIRE_USER']
+        self.solid_fire_password = from_auth['SOLID_FIRE_PASSWORD']
 
         self.from_nova_port = from_auth['NOVA_PORT']
         self.from_cinder_port = from_auth['CINDER_PORT']
