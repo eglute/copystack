@@ -274,7 +274,9 @@ def add_move_command_options(subparsers):
                       nargs=1, metavar='UUID_file',
                       help='Attach additional volumes to migrated VMs for each UUID provided in the original '
                            'migration file, for example, ./id_file.')
-
+    migrate_parser.add_argument("-7", "--securitygroups", dest='securitygroups', nargs=1, metavar='UUID_file',
+                      help='Attach security groups to migrated VMs for each UUID provided in the original '
+                           'migration file, for example, ./id_file. ')
 
 def move_actions(args):
     if args.shutdown:
@@ -310,6 +312,11 @@ def move_actions(args):
             nova_common.attach_volumes(id_file=args.adddvolumestovms[0])
         else:
             print "Please provide file with VM ids, for example, ./id_file"
+    if args.securitygroups:
+        if len(args.securitygroups) == 1:
+            nova_common.attach_security_groups(id_file=args.securitygroups[0])
+        else:
+            print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
 
 
 def main():

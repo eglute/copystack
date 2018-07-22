@@ -639,8 +639,8 @@ def check_vm_are_on(destination, id_file):
             if server.status != 'ACTIVE':
                 print "Server", server.name, "is not ACTIVE."
                 ready = False
-        except nova_exc.NotFound:
-            print "5 Server with UUID", uuid, "not found"
+        except Exception, e:
+                print "Server with UUID", uuid, "not found when trying to check that it is powered on"
     return ready
 
 
