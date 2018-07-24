@@ -276,24 +276,24 @@ def attach_security_groups(id_file):
 
 
 def attach_volumes(id_file):
-    ready = check_vm_are_on('to', id_file)
+    # ready = check_vm_are_on('to', id_file)
     nova = get_nova("to")
 
-    if ready:
-        ids = utils.read_ids_from_file(id_file)
-        for uuid in ids:
-            try:
-                vm = get_vm_by_original_id('to', uuid)
-                to_volumes = cinder_common.get_volume_list_by_vm_id("to", uuid)
-                for to_v in to_volumes:
-                    if not to_v.attachments:
-                        nova.volumes.create_server_volume(vm.id, to_v.id, to_v.metadata['original_device'])
-                        print "Volume id: " + to_v.id + " attached to VM id: " + vm.id
+    # if ready:
+    ids = utils.read_ids_from_file(id_file)
+    for uuid in ids:
+        try:
+            vm = get_vm_by_original_id('to', uuid)
+            to_volumes = cinder_common.get_volume_list_by_vm_id("to", uuid)
+            for to_v in to_volumes:
+                if not to_v.attachments:
+                    nova.volumes.create_server_volume(vm.id, to_v.id, to_v.metadata['original_device'])
+                    print "Volume id: " + to_v.id + " attached to VM id: " + vm.id
 
-            except Exception, e:
-                print str(e)
-    else:
-        print "All VMs must be powered on for this action to proceed"
+        except Exception, e:
+            print str(e)
+    # else:
+    #     print "All VMs must be powered on for this action to proceed"
 
 
 def migrate_vms_from_image(id_file):
