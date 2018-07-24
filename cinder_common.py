@@ -426,7 +426,8 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
         bootable = True  # for some reason api returns a string and the next call expects a boolean.
 
     if version >= 2.0:
-
+        print "Make volume from snapshot: snapshot id "
+        print snapshot
         if hasattr(snapshot, 'metadata'):
             meta = snapshot.metadata
         else:
