@@ -368,31 +368,31 @@ def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network
     for uuid in ids:
         try:
             server = nova_from.servers.get(uuid)
-            if server.status == 'SHUTOFF':
-                if server.__dict__['os-extended-volumes:volumes_attached']:
-                    print "Verifying Volumes for VM ID: " + uuid
-                    from_vols = server.__dict__['os-extended-volumes:volumes_attached']
-                    # for vol in from_volumes:
-                    #     print vol['id']
-                    #     from_vols = "foo"
-                    from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
-                    #these need to be in place!
-                    to_volumes = cinder_common.verify_to_vm_volumes(uuid, from_volumes)
-                    boot_volume = cinder_common.find_bootable_volume(to_volumes)
-                    if boot_volume:
-                        #     # need to check for VMs that were already re-created on the TO side:
-                        dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
-                        duplicate = False
-                        for dup in dup_vms:
-                            if dup.metadata['original_vm_id'] == server.id:
-                                print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
-                                duplicate = True
-                        if duplicate is False:
-                            create_vm_from_volume_with_network_mapping(server, volume=boot_volume, network_name=custom_network, key=key)
-                else:
-                    print "Original VM doesn't have volumes attached, cannot proceed to launch new VM from volume"
+            # if server.status == 'SHUTOFF':
+            if server.__dict__['os-extended-volumes:volumes_attached']:
+                print "Verifying Volumes for VM ID: " + uuid
+                from_vols = server.__dict__['os-extended-volumes:volumes_attached']
+                # for vol in from_volumes:
+                #     print vol['id']
+                #     from_vols = "foo"
+                from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
+                #these need to be in place!
+                to_volumes = cinder_common.verify_to_vm_volumes(uuid, from_volumes)
+                boot_volume = cinder_common.find_bootable_volume(to_volumes)
+                if boot_volume:
+                    #     # need to check for VMs that were already re-created on the TO side:
+                    dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
+                    duplicate = False
+                    for dup in dup_vms:
+                        if dup.metadata['original_vm_id'] == server.id:
+                            print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
+                            duplicate = True
+                    if duplicate is False:
+                        create_vm_from_volume_with_network_mapping(server, volume=boot_volume, network_name=custom_network, key=key)
             else:
-                print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+                print "Original VM doesn't have volumes attached, cannot proceed to launch new VM from volume"
+            # else:
+            #     print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
         except nova_exc.NotFound:
             print "2 Server with UUID", uuid, "not found"
 
@@ -424,6 +424,7 @@ def get_flavor_by_name(destination, flavor_id):
         print str(e)
         print "Error: Flavor with name:", name, "could not be found"
         return None
+
 
 # nova flavor-list --all for checking all flavors for admin, private and public
 def get_flavor_list(destination):
@@ -623,9 +624,24 @@ def power_off_vms(destination, id_file):
                 print "Shutting down server with UUID:", uuid
                 server.stop()
             else:
-                print "3 Server with UUID:", uuid, "is not running. It must be in ACTIVE status for this action."
+                print "Server with UUID:", uuid, "is not running. It must be in ACTIVE status for this action."
         except nova_exc.NotFound:
             print "4 Server with UUID", uuid, "not found"
+
+
+def power_on_vms(destination, id_file):
+    ids = utils.read_ids_from_file(id_file)
+    nova = get_nova(destination)
+    for uuid in ids:
+        try:
+            server = nova.servers.get(uuid)
+            if server.status == 'SHUTOFF':
+                print "Powering on server with UUID:", uuid
+                server.start()
+            else:
+                print "Server with UUID:", uuid, "is running. It must be in SHUTOFF status for this action."
+        except nova_exc.NotFound:
+            print "14 Server with UUID", uuid, "not found"
 
 
 def check_vm_are_on(destination, id_file):
@@ -826,8 +842,9 @@ def main():
     # make_images_of_volumes_based_on_vms("from", "./id_file")
     # boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
     # make_images_of_volumes_based_on_vms("from", './id_file')
-    make_volumes_from_snapshots("from", './id_file')
+    # make_volumes_from_snapshots("from", './id_file')
     # manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
+    power_on_vms('from', './id_file')
 
 if __name__ == "__main__":
         main()

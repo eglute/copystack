@@ -34,6 +34,7 @@ def add_cinder_command_options(subparsers):
                                'For example, ./volume_ids lvm'
                                )
 
+
 def cinder_actions(args):
     if args.report:
         print "\n--------------- From Volumes: ------------------------"
@@ -107,6 +108,8 @@ def add_nova_command_options(subparsers):
     nova_parser.add_argument("-F", "--to_flavor", action='store_true', dest='to_flavor', help='Print TO flavors')
     nova_parser.add_argument("-v", "--from_vms", action='store_true', dest='from_vms', help='Print FROM vms')
     nova_parser.add_argument("-V", "--to_vms", action='store_true', dest='to_vms', help='Print TO vms')
+    nova_parser.add_argument("-p", "--power_on", dest='power_on', nargs=1, metavar='UUID_file',
+                                help='Power On VMs for each UUID provided in a file, for example, ./id_file')
 
 
 def nova_actions(args):
@@ -128,6 +131,10 @@ def nova_actions(args):
     if args.to_vms:
         print "\n--------------- To VMs: ------------------------"
         vms = nova_common.print_vm_list_ids('to')
+    if args.power_on:
+        if len(args.power_on) == 1:
+            print "\n--------------- Powering On From VMs: ------------------------"
+            nova_common.power_on_vms('from', id_file=args.power_on[0])
 
 
 def add_neutron_command_options(subparsers):
@@ -277,6 +284,7 @@ def add_move_command_options(subparsers):
     migrate_parser.add_argument("-7", "--securitygroups", dest='securitygroups', nargs=1, metavar='UUID_file',
                       help='Attach security groups to migrated VMs for each UUID provided in the original '
                            'migration file, for example, ./id_file. ')
+
 
 def move_actions(args):
     if args.shutdown:

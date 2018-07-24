@@ -445,7 +445,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
         if volume.volume_type == 'None':
             myvol = cinder.volumes.create(
                                           # size=volume.size,
-                                          snapshot_id=volume.snapshot_id,
+                                          # snapshot_id=volume.snapshot_id,
                                           name=snapshot_name,
                                           description="Migration Volume",
                                           # volume_type=volume.volume_type,
@@ -457,7 +457,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           )
         else:
             myvol = cinder.volumes.create(size=volume.size,
-                                          snapshot_id=volume.snapshot_id,
+                                          # snapshot_id=volume.snapshot_id,
                                           name=snapshot_name,
                                           description="Migration Volume",
                                           volume_type=volume.volume_type,
@@ -485,7 +485,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
         if volume.volume_type == 'None':
             myvol = cinder.volumes.create(
                                           # size=volume.size,
-                                          snapshot_id=volume.snapshot_id,
+                                          #snapshot_id=volume.snapshot_id,
                                           display_name=snapshot_name,
                                           display_description="Migration Volume",
                                           # volume_type=volume.volume_type,
@@ -499,7 +499,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           )
         else:
             myvol = cinder.volumes.create(size=volume.size,
-                                          snapshot_id=volume.snapshot_id,
+                                          #snapshot_id=volume.snapshot_id,
                                           display_name=snapshot_name,
                                           display_description="Migration Volume",
                                           volume_type=volume.volume_type,
@@ -656,7 +656,7 @@ def main():
     # download_single_volumes('from', './downloads/')
     # create_volume_from_image_by_vm_ids('./id_file')
     # print_volumes('from')
-    snaps = get_snapshot_by_volume_id("from", "15b70ee6-a4fe-4733-ba81-49bbd8abeced")
+    # snaps = get_snapshot_by_volume_id("from", "15b70ee6-a4fe-4733-ba81-49bbd8abeced")
     # get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
     # get_cinder("from")
     # print_cinder_pools("to")
@@ -665,7 +665,7 @@ def main():
     # print_manageable_volumes("to", host='egle-pike-dns-1@lvm#LVM_iSCSI')
     # manage_volume("to", 'volume-886398cf-c9c0-40cc-bfd4-f5cf7a56d1ab', 'egle-pike-dns-1@lvm#LVM_iSCSI', 'foo', bootable=True)
     # get_volume_by_id('from', '15b70ee6-a4fe-4733-ba81-49bbd8abeced')
-    # retype_volumes_by_volume_ids('to', 'volume_ids', 'lvm1')
+    retype_volumes_by_volume_ids('to', 'volume_ids', 'lvm1')
 
 
 if __name__ == "__main__":
