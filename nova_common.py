@@ -253,26 +253,26 @@ def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='no
 
 
 def attach_security_groups(id_file):
-    ready = check_vm_are_on('to', id_file)
-    if ready:
-        ids = utils.read_ids_from_file(id_file)
-        nova = get_nova('from')
-        for uuid in ids:
-            try:
-                old_server = nova.servers.get(uuid)
-                new_server = get_vm_by_original_id('to', uuid)
-                groups = old_server.security_groups
-                print "Attaching security groups to:", new_server.name
-                for g in groups:
-                    print "Group:", g['name']
-                    try:
-                        new_server.add_security_group(g['name'])
-                    except Exception, e:
-                        print "Something happened while trying to attach security group. Moving to the next group. " + str(e)
-            except Exception, e:
-                print str(e)
-    else:
-        print "All VMs must be powered on for this action to proceed"
+    # ready = check_vm_are_on('to', id_file)
+    # if ready:
+    ids = utils.read_ids_from_file(id_file)
+    nova = get_nova('from')
+    for uuid in ids:
+        try:
+            old_server = nova.servers.get(uuid)
+            new_server = get_vm_by_original_id('to', uuid)
+            groups = old_server.security_groups
+            print "Attaching security groups to:", new_server.name
+            for g in groups:
+                print "Group:", g['name']
+                try:
+                    new_server.add_security_group(g['name'])
+                except Exception, e:
+                    print "Something happened while trying to attach security group. Moving to the next group. " + str(e)
+        except Exception, e:
+            print str(e)
+    # else:
+    #     print "All VMs must be powered on for this action to proceed"
 
 
 def attach_volumes(id_file):
