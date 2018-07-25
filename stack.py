@@ -108,8 +108,8 @@ def main(opts, args):
     if opts.quota:
         nova_common.compare_and_report_quotas()
     if opts.projects:
-        print keystone_common.get_from_tenant_names()
-        print keystone_common.get_to_project_names()
+        print keystone_common.print_projects('from')
+        print keystone_common.print_projects('to')
     if opts.createprojects:
         keystone_common.compare_and_create_projects()
     if opts.publickeys:
