@@ -399,40 +399,25 @@ def create_user(destination, user, password, from_matrix):
     auth = AuthStack()
     keystone = get_keystone(destination)
     u_id = None
-    tenant = None
     if hasattr(user, 'default_project_id'):
         u_id = user.default_project_id
     else:
         #todo: not all v3 have defaults, so need to check for v2/v3 and then might not have project associated
         if auth.from_keystone_version == '2':
             u_id = user.tenantId
-    if u_id:
-        tenant = find_opposite_project_id(u_id)
     try:
-        if tenant:
-            if hasattr(user, 'email'):
-                new_user = keystone.users.create(name=user.name, default_project=tenant['to_id'], password=password, email=user.email, enabled=user.enabled)
-            else:
-                new_user = keystone.users.create(name=user.name, default_project=tenant['to_id'], password=password, enabled=user.enabled)
-            if password:
-                print "Created new user:", new_user.name, ". This user has default password set. Change password manually."
-            else:
-                print "Created new user:", new_user.name, ". This user has no password. Set password manually."
-            update_roles(user, new_user, tenant, from_matrix)
-            return new_user
+        if hasattr(user, 'email'):
+            new_user = keystone.users.create(name=user.name, password=password, email=user.email,
+                                             enabled=user.enabled)
         else:
-            if hasattr(user, 'email'):
-                new_user = keystone.users.create(name=user.name, password=password, email=user.email,
-                                                 enabled=user.enabled)
-            else:
-                new_user = keystone.users.create(name=user.name, password=password, enabled=user.enabled)
-            if password:
-                print "Created new user:", new_user.name, ". This user has default password set. Change password manually."
-            else:
-                print "Created new user:", new_user.name, ". This user has no password. Set password manually."
+            new_user = keystone.users.create(name=user.name, password=password, enabled=user.enabled)
+        if password:
+            print "Created new user:", new_user.name, ". This user has default password set. Change password manually."
+        else:
+            print "Created new user:", new_user.name, ". This user has no password. Set password manually."
 
-            update_roles(user, new_user, tenant, from_matrix)
-            return new_user
+        update_roles(user, new_user, from_matrix)
+        return new_user
     except keystone_exceptions.http.Conflict:
         print "WARNING: Duplicate user creation attempted, skipping user:", user.name
 
@@ -491,38 +476,13 @@ def list_roles(destination, user_id, tenant_id):
     return roles
 
 
-def update_roles(old_user, new_user, tenant, from_matrix):
+def update_roles(old_user, new_user, from_matrix):
     try:
         keystone = get_keystone('to')
-        # to_tenants = keystone.projects.list()
-        to_tenants = get_to_project_list()
-        to_tenant = filter(lambda to_tenants: to_tenants.id == tenant['to_id'], to_tenants)
-        # from_roles = list_roles('from', old_user.id, tenant['from_id'])
-        # from_projects = get_from_project_list()
-        # print "old roles"
-        # print from_roles
-
-        # to_roles = get_roles('to')
         for matrix in from_matrix:
             if matrix['from_user_id'] == old_user.id:
-                print "bingo"
-                # rol = filter(lambda to_roles: to_roles.name == matrix['name'], to_roles)
                 keystone.roles.grant(project=matrix['to_project_id'], user=new_user.id, role=matrix['to_role_id'])
                 print "Role added: ", matrix['role_name'], " to user:", new_user.name, " in project: ", matrix['project_name']
-        # for role in from_roles:
-        #     rol = filter(lambda to_roles: to_roles.name == role.name, to_roles)
-        #     try:
-        #         print "project: "
-        #         print to_tenant[0]
-        #         print new_user.name
-        #
-        #         print rol
-        #         keystone.roles.grant(project=to_tenant[0], user=new_user, role=rol[0], os_inherit_extension_inherited=True)
-        #         # keystone.projects.update
-        #         print "Role added:", rol[0].name, " to user:", new_user.name
-        #     except Exception, e:
-        #         print "No new roles added for user:", new_user.name
-        #         print e
     except Exception, e:
         print "Exception when updating roles for the user " + new_user.name
         print e
