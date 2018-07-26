@@ -213,7 +213,9 @@ def compare_and_create_tenants():
             from_tenant = filter(lambda from_tenants: from_tenants.name == name, from_tenants)
             new_tenant = create_tenant('to', from_tenant[0])
 
+
 def compare_and_create_projects():
+    print "Compare and create projects between two environments"
     from_tenants = get_from_project_list()
     to_tenants = get_to_project_list()
 
@@ -307,6 +309,44 @@ def print_users_per_project(destination):
             print "     " + user.name
 
 
+def build_matrix():
+    keystone = get_keystone("from")
+    asl = keystone.role_assignments.list()
+    matrix = list()
+    projects = list()
+    project = ''
+    print "Building user project role matrix between the two environments. This will take a bit."
+    for a in asl:
+        project = ''
+        if hasattr(a, 'scope'):
+            # if hasattr(a.scope, 'project'):
+                # project = filter(lambda to_vms: to_vms['from_id'] == pro, projects)
+                # print "here"
+                # print project
+                #
+                # if not project:
+            if a.scope.has_key('project'):
+                pro = a.scope['project']['id']
+                p = filter(lambda to_vms: to_vms['from_id'] == pro, projects)
+                if p:
+                    project = p[0]
+                if not project:
+                    project = find_opposite_project_id(a.scope['project']['id'])
+                    if not project:
+                        print "Project not found" +  a.scope['project']['id']
+                    else:
+                        print "Adding project to list: " + a.scope['project']['id']
+                        projects.append(project)
+                if project:
+                    role = find_opposite_role(a.role['id'])
+                    # print "Updating matrix with role: " + role['name'] + " Project: " + project['name']
+                    mat = {'from_role_id:': a.role['id'], 'role_name':role['name'], 'from_project_id': a.scope['project']['id'], 'from_user_id': a.user['id'],
+                           'to_project_id': project['to_id'], 'to_role_id': role['to_id'], 'project_name': project['name']}
+                    matrix.append(mat)
+    print matrix
+    return matrix
+
+
 def print_users_per_domain(destination):
     users = get_users_based_on_domain(destination)
     for user in users:
@@ -316,6 +356,7 @@ def print_users_per_domain(destination):
 def compare_and_create_users():
     from_users = get_users('from')
     to_users = get_users('to')
+    from_matrix = build_matrix()
 
     from_names = map(lambda from_users: from_users.name, from_users)
     to_names = map(lambda to_users: to_users.name, to_users)
@@ -323,11 +364,12 @@ def compare_and_create_users():
     for name in from_names:
         if name not in to_names:
             from_user = filter(lambda from_users: from_users.name == name, from_users)
-            new_user = create_user('to', from_user[0])
+            new_user = create_user('to', from_user[0], from_matrix)
 
 
 def compare_and_create_users_by_project(password=None):
     auth = AuthStack()
+    from_matrix = build_matrix()
     from_users = get_users_based_on_project('from', auth.from_tenant_name)
     to_users = get_users_based_on_project('to', auth.to_tenant_name)
     from_names = map(lambda from_users: from_users.name, from_users)
@@ -335,7 +377,7 @@ def compare_and_create_users_by_project(password=None):
     for name in from_names:
         if name not in to_names:
             from_user = filter(lambda from_users: from_users.name == name, from_users)
-            new_user = create_user('to', from_user[0], password)
+            new_user = create_user('to', from_user[0], password, from_matrix)
 
 
 def compare_and_create_users_by_domain(password=None):
@@ -344,16 +386,16 @@ def compare_and_create_users_by_domain(password=None):
     to_users = get_users_based_on_domain('to')
     from_names = map(lambda from_users: from_users.name, from_users)
     to_names = map(lambda to_users: to_users.name, to_users)
+    from_matrix = build_matrix()
     for name in from_names:
         if name not in to_names:
             from_user = filter(lambda from_users: from_users.name == name, from_users)
-            new_user = create_user('to', from_user[0], password)
+            new_user = create_user('to', from_user[0], password, from_matrix)
 
 
 
 # at this point don't have the tenant info for the user, so not attaching tenant info.
-# #todo: lookup tenant and add on creation
-def create_user(destination, user, password):
+def create_user(destination, user, password, from_matrix):
     auth = AuthStack()
     keystone = get_keystone(destination)
     u_id = None
@@ -376,7 +418,7 @@ def create_user(destination, user, password):
                 print "Created new user:", new_user.name, ". This user has default password set. Change password manually."
             else:
                 print "Created new user:", new_user.name, ". This user has no password. Set password manually."
-            update_roles(user, new_user, tenant)
+            update_roles(user, new_user, tenant, from_matrix)
             return new_user
         else:
             if hasattr(user, 'email'):
@@ -389,7 +431,7 @@ def create_user(destination, user, password):
             else:
                 print "Created new user:", new_user.name, ". This user has no password. Set password manually."
 
-            update_roles(user, new_user, tenant)
+            update_roles(user, new_user, tenant, from_matrix)
             return new_user
     except keystone_exceptions.http.Conflict:
         print "WARNING: Duplicate user creation attempted, skipping user:", user.name
@@ -449,22 +491,38 @@ def list_roles(destination, user_id, tenant_id):
     return roles
 
 
-def update_roles(old_user, new_user, tenant):
+def update_roles(old_user, new_user, tenant, from_matrix):
     try:
         keystone = get_keystone('to')
         # to_tenants = keystone.projects.list()
         to_tenants = get_to_project_list()
         to_tenant = filter(lambda to_tenants: to_tenants.id == tenant['to_id'], to_tenants)
-        from_roles = list_roles('from', old_user.id, tenant['from_id'])
-        to_roles = get_roles('to')
+        # from_roles = list_roles('from', old_user.id, tenant['from_id'])
+        # from_projects = get_from_project_list()
+        # print "old roles"
+        # print from_roles
 
-        for role in from_roles:
-            rol = filter(lambda to_roles: to_roles.name == role.name, to_roles)
-            try:
-                keystone.roles.grant(project=to_tenant[0], user=new_user, role=rol[0])
-                print "Role added:", rol[0].name, " to user:", new_user.name
-            except Exception, e:
-                print "No new roles added for user:", new_user.name
+        # to_roles = get_roles('to')
+        for matrix in from_matrix:
+            if matrix['from_user_id'] == old_user.id:
+                print "bingo"
+                # rol = filter(lambda to_roles: to_roles.name == matrix['name'], to_roles)
+                keystone.roles.grant(project=matrix['to_project_id'], user=new_user.id, role=matrix['to_role_id'])
+                print "Role added: ", matrix['role_name'], " to user:", new_user.name, " in project: ", matrix['project_name']
+        # for role in from_roles:
+        #     rol = filter(lambda to_roles: to_roles.name == role.name, to_roles)
+        #     try:
+        #         print "project: "
+        #         print to_tenant[0]
+        #         print new_user.name
+        #
+        #         print rol
+        #         keystone.roles.grant(project=to_tenant[0], user=new_user, role=rol[0], os_inherit_extension_inherited=True)
+        #         # keystone.projects.update
+        #         print "Role added:", rol[0].name, " to user:", new_user.name
+        #     except Exception, e:
+        #         print "No new roles added for user:", new_user.name
+        #         print e
     except Exception, e:
         print "Exception when updating roles for the user " + new_user.name
         print e
@@ -554,7 +612,10 @@ def main():
     # compare_and_create_users_by_project()
     # print_users_per_project("from")
     # print get_users_based_on_domain('from')
-    compare_and_create_users_by_domain()
+    # compare_and_create_users_by_domain()
+    # get_matrix()
+    # compare_and_create_users_by_domain("password")
+    build_matrix()
 
 if __name__ == "__main__":
         main()

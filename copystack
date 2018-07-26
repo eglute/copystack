@@ -94,6 +94,10 @@ def add_keystone_command_options(subparsers):
                                  help='Print FROM users in current domain')
     keystone_parser.add_argument("-D", "--to_domainusers", action='store_true', dest='to_domainusers',
                                  help='Print TO users in current domain')
+    keystone_parser.add_argument("-m", "--showmatrix", action='store_true', dest='showmatrix',
+                                 help='Print roles users project matrix.')
+    keystone_parser.add_argument("-j", "--createprojects", action='store_true', dest='createprojects',
+                                 help='Copy projects FROM to TO for current domains.')
     keystone_parser.add_argument("-c", "--createusers", dest='createusers', nargs='*', metavar='password',
                                  help='Copy users FROM to TO for current domains. Password is optional parameter. '
                                'If password is not included, users created without a password.')
@@ -122,6 +126,10 @@ def keystone_actions(args):
     if args.to_domainusers:
         print "\n--------------- To Domain Users: ------------------------"
         keystone_common.print_users_per_domain('to')
+    if args.showmatrix:
+        keystone_common.build_matrix()
+    if args.createprojects:
+        keystone_common.compare_and_create_projects()
     if args.createusers:
         if len(args.createusers) == 1:
             keystone_common.compare_and_create_users_by_domain(password=args.createusers[0])
