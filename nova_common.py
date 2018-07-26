@@ -218,7 +218,7 @@ def create_vm_with_network_mapping(from_vm, image='default', network_name='none'
     return server
 
 
-def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='none', key='default'):
+def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='none', key='default', user_data='default'):
     nova = get_nova('to')
 
     flavor = get_flavor_by_name('to', from_vm.flavor['id'])
@@ -246,8 +246,12 @@ def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='no
     print block_device_mapping
     if key == 'default':
         key = from_vm.key_name
-    server = nova.servers.create(name=from_vm.name, image="", flavor=flavor.id, block_device_mapping=block_device_mapping, nics=nics,
-                                 meta=metadata, key_name=key)
+        server = nova.servers.create(name=from_vm.name, image="", flavor=flavor.id, block_device_mapping=block_device_mapping, nics=nics,
+                                     meta=metadata, key_name=key, userdata=user_data)
+    else:
+        server = nova.servers.create(name=from_vm.name, image="", flavor=flavor.id,
+                                     block_device_mapping=block_device_mapping, nics=nics,
+                                     meta=metadata, key_name=key, userdata=user_data)
     print "Server created:", server.name
     return server
 
@@ -360,7 +364,7 @@ def migrate_vms_from_image_with_network_mapping(id_file, custom_network='none'):
             print "2 Server with UUID", uuid, "not found"
 
 
-def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network='none', key='default'):
+def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network='none', key='default', user_data='default'):
     ids = utils.read_ids_from_file(id_file)
     nova_from = get_nova("from")
     to_vms = get_vm_list('to')
@@ -388,7 +392,7 @@ def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network
                             print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
                             duplicate = True
                     if duplicate is False:
-                        create_vm_from_volume_with_network_mapping(server, volume=boot_volume, network_name=custom_network, key=key)
+                        create_vm_from_volume_with_network_mapping(server, volume=boot_volume, network_name=custom_network, key=key, user_data=user_data)
             else:
                 print "Original VM doesn't have volumes attached, cannot proceed to launch new VM from volume"
             # else:

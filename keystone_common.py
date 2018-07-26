@@ -54,7 +54,7 @@ def get_from_project_list():
     if auth.from_keystone_version == '2':
         projects = keystone.tenants.list()
     else:
-        projects = keystone.projects.list()
+        projects = keystone.projects.list(domain=auth.from_domain_id)
     #print projects
     return projects
 
@@ -99,7 +99,7 @@ def get_to_project_list():
     if auth.to_keystone_version == '2':
         projects = keystone.tenants.list()
     else:
-        projects = keystone.projects.list()
+        projects = keystone.projects.list(domain=auth.to_domain_id)
     #print tenants
     return projects
 
@@ -248,19 +248,36 @@ def get_users(destination):
     return users
 
 
+def get_users_based_on_domain(destination):
+    auth = AuthStack()
+    keystone = get_keystone(destination)
+    domain = None
+    if destination == 'from':
+        domain = auth.from_domain_id
+    else:
+        domain = auth.to_domain_id
+    users = keystone.users.list(domain=domain)
+    #print users
+    return users
+
+
 def get_users_based_on_project(destination, name):
     keystone = get_keystone(destination)
     auth = AuthStack()
     version = '3'
+    domain_id = 'default'
     if destination == 'from':
+        domain_id = auth.from_domain_id
         if auth.from_keystone_version == '2':
             version = '2'
     if destination == 'to':
+        domain_id = auth.to_domain_id
         if auth.to_keystone_version == '2':
             version = '2'
     if version == '2':
         projects = keystone.tenants.list()
     else:
+        # projects = keystone.projects.list(domain=domain_id, name=name)
         projects = keystone.projects.list(name=name)
     # print projects
     users = []
@@ -268,12 +285,32 @@ def get_users_based_on_project(destination, name):
         users = get_users(destination)
     else:
         for project in projects:
+            # roles = keystone.role_assignments.list(project=project.id)
             roles = keystone.role_assignments.list(project=project.id)
             for role in roles:
                 # print role.user['id']
                 user = keystone.users.get(role.user['id'])
-                users.append(user)
+                if user not in users:
+                    users.append(user)
     return users
+
+
+def print_users_per_project(destination):
+    if destination == "from":
+        projects = get_from_project_list()
+    else:
+        projects = get_to_project_list()
+    for project in projects:
+        users = get_users_based_on_project('from', project.name)
+        print "Users in Project: " + project.name
+        for user in users:
+            print "     " + user.name
+
+
+def print_users_per_domain(destination):
+    users = get_users_based_on_domain(destination)
+    for user in users:
+        print user.name
 
 
 def compare_and_create_users():
@@ -289,7 +326,7 @@ def compare_and_create_users():
             new_user = create_user('to', from_user[0])
 
 
-def compare_and_create_users_by_project():
+def compare_and_create_users_by_project(password=None):
     auth = AuthStack()
     from_users = get_users_based_on_project('from', auth.from_tenant_name)
     to_users = get_users_based_on_project('to', auth.to_tenant_name)
@@ -298,27 +335,62 @@ def compare_and_create_users_by_project():
     for name in from_names:
         if name not in to_names:
             from_user = filter(lambda from_users: from_users.name == name, from_users)
-            new_user = create_user('to', from_user[0])
+            new_user = create_user('to', from_user[0], password)
+
+
+def compare_and_create_users_by_domain(password=None):
+    auth = AuthStack()
+    from_users = get_users_based_on_domain('from')
+    to_users = get_users_based_on_domain('to')
+    from_names = map(lambda from_users: from_users.name, from_users)
+    to_names = map(lambda to_users: to_users.name, to_users)
+    for name in from_names:
+        if name not in to_names:
+            from_user = filter(lambda from_users: from_users.name == name, from_users)
+            new_user = create_user('to', from_user[0], password)
+
 
 
 # at this point don't have the tenant info for the user, so not attaching tenant info.
 # #todo: lookup tenant and add on creation
-def create_user(destination, user):
+def create_user(destination, user, password):
+    auth = AuthStack()
     keystone = get_keystone(destination)
     u_id = None
+    tenant = None
     if hasattr(user, 'default_project_id'):
         u_id = user.default_project_id
     else:
-        u_id = user.tenantId
-    tenant = find_opposite_project_id(u_id)
+        #todo: not all v3 have defaults, so need to check for v2/v3 and then might not have project associated
+        if auth.from_keystone_version == '2':
+            u_id = user.tenantId
+    if u_id:
+        tenant = find_opposite_project_id(u_id)
     try:
-        if hasattr(user, 'email'):
-            new_user = keystone.users.create(name=user.name, default_project=tenant['to_id'], email=user.email, enabled=user.enabled)
+        if tenant:
+            if hasattr(user, 'email'):
+                new_user = keystone.users.create(name=user.name, default_project=tenant['to_id'], password=password, email=user.email, enabled=user.enabled)
+            else:
+                new_user = keystone.users.create(name=user.name, default_project=tenant['to_id'], password=password, enabled=user.enabled)
+            if password:
+                print "Created new user:", new_user.name, ". This user has default password set. Change password manually."
+            else:
+                print "Created new user:", new_user.name, ". This user has no password. Set password manually."
+            update_roles(user, new_user, tenant)
+            return new_user
         else:
-            new_user = keystone.users.create(name=user.name, default_project=tenant['to_id'], enabled=user.enabled)
-        print "Created new user:", new_user.name, ". This user has no password. Set password manually."
-        update_roles(user, new_user, tenant)
-        return new_user
+            if hasattr(user, 'email'):
+                new_user = keystone.users.create(name=user.name, password=password, email=user.email,
+                                                 enabled=user.enabled)
+            else:
+                new_user = keystone.users.create(name=user.name, password=password, enabled=user.enabled)
+            if password:
+                print "Created new user:", new_user.name, ". This user has default password set. Change password manually."
+            else:
+                print "Created new user:", new_user.name, ". This user has no password. Set password manually."
+
+            update_roles(user, new_user, tenant)
+            return new_user
     except keystone_exceptions.http.Conflict:
         print "WARNING: Duplicate user creation attempted, skipping user:", user.name
 
@@ -378,19 +450,24 @@ def list_roles(destination, user_id, tenant_id):
 
 
 def update_roles(old_user, new_user, tenant):
-    keystone = get_keystone('to')
-    to_tenants = keystone.projects.list()
-    to_tenant = filter(lambda to_tenants: to_tenants.id == tenant['to_id'], to_tenants)
-    from_roles = list_roles('from', old_user.id, tenant['from_id'])
-    to_roles = get_roles('to')
+    try:
+        keystone = get_keystone('to')
+        # to_tenants = keystone.projects.list()
+        to_tenants = get_to_project_list()
+        to_tenant = filter(lambda to_tenants: to_tenants.id == tenant['to_id'], to_tenants)
+        from_roles = list_roles('from', old_user.id, tenant['from_id'])
+        to_roles = get_roles('to')
 
-    for role in from_roles:
-        rol = filter(lambda to_roles: to_roles.name == role.name, to_roles)
-        try:
-            keystone.roles.grant(project=to_tenant[0], user=new_user, role=rol[0])
-            print "Role added:", rol[0].name, " to user:", new_user.name
-        except Exception, e:
-            print "No new roles added for user:", new_user.name
+        for role in from_roles:
+            rol = filter(lambda to_roles: to_roles.name == role.name, to_roles)
+            try:
+                keystone.roles.grant(project=to_tenant[0], user=new_user, role=rol[0])
+                print "Role added:", rol[0].name, " to user:", new_user.name
+            except Exception, e:
+                print "No new roles added for user:", new_user.name
+    except Exception, e:
+        print "Exception when updating roles for the user " + new_user.name
+        print e
 
 
 def get_roles(destination):
@@ -474,6 +551,10 @@ def main():
     # print_projects("to")
     # print get_users_based_on_project("from", "admin")
     # print get_from_project_list()
-    compare_and_create_users_by_project()
+    # compare_and_create_users_by_project()
+    # print_users_per_project("from")
+    # print get_users_based_on_domain('from')
+    compare_and_create_users_by_domain()
+
 if __name__ == "__main__":
         main()

@@ -115,7 +115,10 @@ def main(opts, args):
     if opts.publickeys:
         nova_common.compare_and_create_keypairs()
     if opts.users:
-        keystone_common.compare_and_create_users_by_project()
+        if args:
+            keystone_common.compare_and_create_users_by_project(password = args[0])
+        else:
+            keystone_common.compare_and_create_users_by_project()
     if opts.shutdown:
         if args:
             # print args[0]
@@ -275,7 +278,8 @@ if __name__ == "__main__":
                           help='Run this command as Admin. Create projects from->to.'
                                'Project names must match before running the rest of copystack')
         parser.add_option("-u", "--users", action='store_true', dest='users',
-                          help='Run this command as Admin. Create users from->to. Users created without passwords')
+                          help='Run this command as Admin. Create users from->to. Password is optional parameter. '
+                               'If password is not included, users created without a password.')
         parser.add_option("-q", "--quota", action='store_true', dest='quota',
                           help='Run this command as Admin. Print differences in individual quotas for each project')
         parser.add_option("-f", "--flavors", action='store_true', dest='flavors',

@@ -66,6 +66,7 @@ class AuthStack(object):
         # self.from_keystone_port = from_auth['KEYSTONE_PORT']
         self.from_neutron_port = from_auth['NEUTRON_PORT']
         self.from_glance_port = from_auth['GLANCE_PORT']
+        self.from_domain_id = from_auth['DOMAIN_ID']
 
         self.to_auth_url = to_auth['OS_AUTH_URL']
         self.to_auth_ip = to_auth['OS_AUTH_IP']
@@ -84,6 +85,7 @@ class AuthStack(object):
         # self.to_keystone_port = to_auth['KEYSTONE_PORT']
         self.to_neutron_port = to_auth['NEUTRON_PORT']
         self.to_glance_port = to_auth['GLANCE_PORT']
+        self.to_domain_id = to_auth['DOMAIN_ID']
 
         #to disable warnings on certs missing subjectAltName
         #https://github.com/shazow/urllib3/issues/497#issuecomment-66942891
@@ -274,6 +276,7 @@ class AuthStack(object):
                     'CINDER_PORT': None,
                     'GLANCE_PORT': None,
                     'NEUTRON_PORT': None,
+                    'DOMAIN_ID': None,
                     'SOLID_FIRE_IP': None,
                     'SOLID_FIRE_USER': None,
                     'SOLID_FIRE_PASSWORD': None
