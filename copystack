@@ -141,7 +141,8 @@ def add_nova_command_options(subparsers):
     nova_parser = subparsers.add_parser('nova', help='Run nova reports')
     nova_parser.add_argument("-s", "--from_sec", action='store_true', dest='from_sec', help='Print FROM security groups')
     nova_parser.add_argument("-S", "--to_sec", action='store_true', dest='to_sec', help='Print TO security groups')
-    nova_parser.add_argument("-x", "--copysec", action='store_true', dest='copysec', help='Copy security groups FROM->TO')
+    nova_parser.add_argument("-x", "--copysec", action='store_true', dest='copysec', help='Copy security groups FROM->TO. '
+                                    'Will also update DEFAULT group rules. Other duplucate groups will be ignored.')
     nova_parser.add_argument("-f", "--from_flavor", action='store_true', dest='from_flavor', help='Print FROM flavors')
     nova_parser.add_argument("-F", "--to_flavor", action='store_true', dest='to_flavor', help='Print TO flavors')
     nova_parser.add_argument("-v", "--from_vms", action='store_true', dest='from_vms', help='Print FROM vms')
@@ -158,7 +159,10 @@ def nova_actions(args):
         print "\n--------------- To Security Groups: ------------------------"
         nova_common.print_security_groups('to')
     if args.copysec:
+        print "**** Create new groups ****"
         nova_common.compare_and_create_security_groups()
+        print "**** Updating DEFAULT group rules: ****"
+        nova_common.update_default_group_rules()
     if args.from_flavor:
         print "\n--------------- From Flavors: ------------------------"
         nova_common.print_flavor_list('from')

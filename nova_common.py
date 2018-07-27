@@ -77,23 +77,83 @@ def create_security_group(destination, from_group):
     return to_group
 
 
+#{u'from_port': None, u'group': {u'tenant_id': u'19fb979c91c54817a6c76c9e74e23cdd', u'name': u'default'}, u'ip_protocol': None, u'to_port': None, u'parent_group_id': u'e0bf1497-3bbc-4ad5-bed7-de25cc4f4eab', u'ip_range': {}, u'id': u'6c31bbf0-ef53-4091-933a-357fc7625212'}
 def create_security_rules(destination, from_group, to_group, new_groups):
     nova = get_nova(destination)
 
     if from_group.rules:
         for rule in from_group.rules:
-            if 'ip_range' in rule:
-                if 'cidr' in rule['ip_range']:
-                    cidras = rule['ip_range']['cidr']
-                    rule = nova.security_group_rules.create(to_group.id, ip_protocol = rule['ip_protocol'],
-                                                    from_port = rule['from_port'], to_port=rule['to_port'], cidr=cidras)#,
-                                                    # group_id = to_group.id)
+            try:
+                if 'name' in rule['group']:
+                    named_group = find_group_by_name('to', rule['group']['name'])
+                    if 'ip_range' in rule:
+                        if 'cidr' in rule['ip_range']:
+                            cidras = rule['ip_range']['cidr']
+                            rule = nova.security_group_rules.create(parent_group_id=to_group.id, ip_protocol=rule['ip_protocol'],
+                                                                    from_port=rule['from_port'], to_port=rule['to_port'],
+                                                                    cidr=cidras, group=named_group.id)
+                            # print rule
+                        else:
+                            group_id = find_new_group_id_by_group_name(new_groups, rule['group']['name'])
+                            rule = nova.security_group_rules.create(parent_group_id=to_group.id, ip_protocol=rule['ip_protocol'],
+                                                                    from_port=rule['from_port'], to_port=rule['to_port'],
+                                                                    group_id=named_group.id)
+                            # print rule
                 else:
-                    group_id = find_new_group_id_by_group_name(new_groups, rule['group']['name'])
-                    rule = nova.security_group_rules.create(to_group.id, ip_protocol=rule['ip_protocol'],
-                                                            from_port=rule['from_port'], to_port=rule['to_port'],
-                                                            group_id=group_id)
-                    print rule
+                    if 'ip_range' in rule:
+                        if 'cidr' in rule['ip_range']:
+                            cidras = rule['ip_range']['cidr']
+                            rule = nova.security_group_rules.create(parent_group_id=to_group.id, ip_protocol = rule['ip_protocol'],
+                                                            from_port = rule['from_port'], to_port=rule['to_port'], cidr=cidras)#,
+                            # print rule
+                        else:
+                            group_id = find_new_group_id_by_group_name(new_groups, rule['group']['name'])
+                            rule = nova.security_group_rules.create(parent_group_id=to_group.id, ip_protocol=rule['ip_protocol'],
+                                                                    from_port=rule['from_port'], to_port=rule['to_port'])
+                            # print rule
+            except Exception, e:
+                print "Trying to create rule ", e
+
+
+def update_default_group_rules():
+    from_groups = get_security_groups('from')
+    to_groups = get_security_groups('to')
+    from_default = get_default_group(from_groups)
+    to_default = get_default_group(to_groups)
+    new_groups = []
+    group_pair = {'old': from_default, 'new': to_default}
+    new_groups.append(group_pair)
+    create_security_rules('to', from_default, to_default, new_groups)
+
+
+def get_default_group(groups):
+    for group in groups:
+        if group.name == 'default':
+            return group
+
+
+def find_oppposite_group_name_by_id(from_group_id):
+    from_nova = get_nova('from')
+    from_group = from_nova.security_groups.get(from_group_id)
+    to_groups = get_security_groups('to')
+    for to_g in to_groups:
+        if to_g.name == from_group.name:
+            return to_g
+
+    return None
+
+
+def get_group_by_name(groups, name):
+    for group in groups:
+        if group.name == name:
+            return group
+    return None
+
+
+def find_group_by_name(destination, name):
+    groups = get_security_groups(destination)
+    group = get_group_by_name(groups, name)
+    return group
 
 
 # Rules that include other groups do not have group id, only name. So, we must find
@@ -848,7 +908,10 @@ def main():
     # make_images_of_volumes_based_on_vms("from", './id_file')
     # make_volumes_from_snapshots("from", './id_file')
     # manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
-    power_on_vms('from', './id_file')
+    # power_on_vms('from', './id_file')
+    update_default_group_rules()
+    # compare_and_create_security_groups()
+
 
 if __name__ == "__main__":
         main()
