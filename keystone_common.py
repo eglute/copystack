@@ -309,6 +309,7 @@ def print_users_per_project(destination):
             print "     " + user.name
 
 
+# Build a matrix of users/projects/roles. Takes a long time to build but speeds up adding users to proper tenants.
 def build_matrix():
     keystone = get_keystone("from")
     asl = keystone.role_assignments.list()
@@ -319,12 +320,6 @@ def build_matrix():
     for a in asl:
         project = ''
         if hasattr(a, 'scope'):
-            # if hasattr(a.scope, 'project'):
-                # project = filter(lambda to_vms: to_vms['from_id'] == pro, projects)
-                # print "here"
-                # print project
-                #
-                # if not project:
             if a.scope.has_key('project'):
                 pro = a.scope['project']['id']
                 p = filter(lambda to_vms: to_vms['from_id'] == pro, projects)
@@ -333,17 +328,15 @@ def build_matrix():
                 if not project:
                     project = find_opposite_project_id(a.scope['project']['id'])
                     if not project:
-                        print "Project not found" +  a.scope['project']['id']
+                        print "WARNING: Project not found" +  a.scope['project']['id']
                     else:
-                        print "Adding project to list: " + a.scope['project']['id']
                         projects.append(project)
                 if project:
                     role = find_opposite_role(a.role['id'])
-                    # print "Updating matrix with role: " + role['name'] + " Project: " + project['name']
                     mat = {'from_role_id:': a.role['id'], 'role_name':role['name'], 'from_project_id': a.scope['project']['id'], 'from_user_id': a.user['id'],
                            'to_project_id': project['to_id'], 'to_role_id': role['to_id'], 'project_name': project['name']}
+                    print mat
                     matrix.append(mat)
-    print matrix
     return matrix
 
 
@@ -391,7 +384,6 @@ def compare_and_create_users_by_domain(password=None):
         if name not in to_names:
             from_user = filter(lambda from_users: from_users.name == name, from_users)
             new_user = create_user('to', from_user[0], password, from_matrix)
-
 
 
 # at this point don't have the tenant info for the user, so not attaching tenant info.
