@@ -442,7 +442,7 @@ def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network
                 from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
                 #these need to be in place!
                 to_volumes = cinder_common.verify_to_vm_volumes(uuid, from_volumes)
-                boot_volume = cinder_common.find_bootable_volume(to_volumes, from_volumes)
+                boot_volume = cinder_common.find_bootable_volume(to_volumes)
                 if boot_volume:
                     #     # need to check for VMs that were already re-created on the TO side:
                     dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)

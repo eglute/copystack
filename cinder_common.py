@@ -19,6 +19,7 @@ import keystone_common
 import nova_common
 import solidfire_common
 import utils
+import re
 from auth_stack2 import AuthStack
 
 import time
@@ -101,14 +102,13 @@ def find_root_volume(volumes):
         print vol
     return find_bootable_volume(volumes)
 
-def find_bootable_volume(to_volumes, from_volumes):
+def find_bootable_volume(to_volumes):
     boots = ''
     for vol in to_volumes:
-        if vol.bootable == 'true':
+        first_vol_found = re.search('/dev/.*da', vol.origal_device)
+        if vol.bootable == 'true' and first_vol_found:
             boots = vol
             return boots
-    for vol in from_volumes:
-        print dir(vol)
     return boots
 
 
