@@ -95,13 +95,20 @@ def verify_to_vm_volumes(uuid, from_volumes):
         print to_original_uuid
         return []
 
-
-def find_bootable_volume(volumes):
+def find_root_volume(volumes):
     boots = ''
     for vol in volumes:
+        print vol
+    return find_bootable_volume(volumes)
+
+def find_bootable_volume(to_volumes, from_volumes):
+    boots = ''
+    for vol in to_volumes:
         if vol.bootable == 'true':
             boots = vol
             return boots
+    for vol in from_volumes
+        print dir(vol)
     return boots
 
 
