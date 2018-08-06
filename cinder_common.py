@@ -96,20 +96,12 @@ def verify_to_vm_volumes(uuid, from_volumes):
         print to_original_uuid
         return []
 
-def find_root_volume(volumes):
-    boots = ''
-    for vol in volumes:
-        print vol
-    return find_bootable_volume(volumes)
-
 def find_bootable_volume(to_volumes):
-    boots = ''
     for vol in to_volumes:
         first_vol_found = re.search('/dev/.*da', vol.origal_device)
         if vol.bootable == 'true' and first_vol_found:
-            boots = vol
-            return boots
-    return boots
+            return vol
+    return None
 
 
 def compare_and_create_volumes():
