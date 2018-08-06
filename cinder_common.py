@@ -107,7 +107,7 @@ def find_bootable_volume(to_volumes, from_volumes):
         if vol.bootable == 'true':
             boots = vol
             return boots
-    for vol in from_volumes
+    for vol in from_volumes:
         print dir(vol)
     return boots
 
