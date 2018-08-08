@@ -19,6 +19,7 @@ import keystone_common
 import nova_common
 import solidfire_common
 import utils
+import re
 from auth_stack2 import AuthStack
 
 import time
@@ -95,14 +96,14 @@ def verify_to_vm_volumes(uuid, from_volumes):
         print to_original_uuid
         return []
 
-
-def find_bootable_volume(volumes):
-    boots = ''
-    for vol in volumes:
-        if vol.bootable == 'true':
-            boots = vol
-            return boots
-    return boots
+def find_bootable_volume(to_volumes):
+    for vol in to_volumes:
+        og_device = vol.metadata['original_device']
+        root_disk_pattern = '/dev/.*da'
+        first_vol_found = re.search(root_disk_pattern, og_device)
+        if vol.bootable == 'true' and first_vol_found:
+            return vol
+    return None
 
 
 def compare_and_create_volumes():
