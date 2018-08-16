@@ -96,6 +96,7 @@ def verify_to_vm_volumes(uuid, from_volumes):
         print to_original_uuid
         return []
 
+
 def find_bootable_volume(to_volumes):
     for vol in to_volumes:
         og_device = vol.metadata['original_device']
@@ -645,6 +646,11 @@ def print_manageable_volumes(destination, host):
         print  '{:38}'.format(mv._info['cinder_id']), '{:45}'.format(mv._info['reference']['source-name']), \
             mv._info['safe_to_manage'], "          ", \
             '{:17}'.format(mv._info['reason_not_safe']), '{:5}'.format(mv._info['size']), "    ", mv._info['extra_info']
+
+
+def print_solid_fire_id(cinder_uuid):
+    sfid = solidfire_common.get_volume_by_volume_name(cinder_uuid)
+    print sfid
 
 
 def main():
