@@ -583,6 +583,11 @@ def manage_volume(destination, reference, host, name, volume_type=None, bootable
     print "Managed volume's name " + name
 
 
+def manage_ssd(host, volume_name, solidfire_id):
+    source = {'source-id': solidfire_id}
+    manage_volume('to', host=host, reference=source, name=volume_name, volume_type='SSD')
+
+
 def manage_volumes_by_vm_id(ssd_host, hdd_host, region, volume):
     # for volume in volumes:
     # vol = get_volume_by_id('from', volume)
