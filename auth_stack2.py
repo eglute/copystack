@@ -10,8 +10,10 @@ import traceback
 
 from log import logging
 from keystoneauth1.identity import v3
+from keystoneauth1.identity import v2
 from keystoneauth1 import session
 from keystoneclient.v3 import client
+from keystoneclient.v2_0 import client as client_v2
 from novaclient import client as nova_client
 from neutronclient.neutron import client as neutron_client
 from glanceclient import Client as glance_client
@@ -52,6 +54,19 @@ class AuthStack(object):
         self.from_cert = from_auth['OS_CACERT']
         self.from_user_domain_id = from_auth['USER_DOMAIN_ID']
         self.from_project_domain_id = from_auth['PROJECT_DOMAIN_ID']
+        self.from_cinder_version = from_auth['CINDER_VERSION']
+        self.from_keystone_version = from_auth['KEYSTONE_VERSION']
+        self.from_nova_version = from_auth['NOVA_VERSION']
+        self.solid_fire_ip = from_auth['SOLID_FIRE_IP']
+        self.solid_fire_user = from_auth['SOLID_FIRE_USER']
+        self.solid_fire_password = from_auth['SOLID_FIRE_PASSWORD']
+
+        self.from_nova_port = from_auth['NOVA_PORT']
+        self.from_cinder_port = from_auth['CINDER_PORT']
+        # self.from_keystone_port = from_auth['KEYSTONE_PORT']
+        self.from_neutron_port = from_auth['NEUTRON_PORT']
+        self.from_glance_port = from_auth['GLANCE_PORT']
+        self.from_domain_id = from_auth['DOMAIN_ID']
 
         self.to_auth_url = to_auth['OS_AUTH_URL']
         self.to_auth_ip = to_auth['OS_AUTH_IP']
@@ -61,23 +76,38 @@ class AuthStack(object):
         self.to_cert = to_auth['OS_CACERT']
         self.to_user_domain_id = to_auth['USER_DOMAIN_ID']
         self.to_project_domain_id = to_auth['PROJECT_DOMAIN_ID']
+        self.to_cinder_version = to_auth['CINDER_VERSION']
+        self.to_keystone_version = to_auth['KEYSTONE_VERSION']
+        self.to_nova_version = to_auth['NOVA_VERSION']
+
+        self.to_nova_port = to_auth['NOVA_PORT']
+        self.to_cinder_port = to_auth['CINDER_PORT']
+        # self.to_keystone_port = to_auth['KEYSTONE_PORT']
+        self.to_neutron_port = to_auth['NEUTRON_PORT']
+        self.to_glance_port = to_auth['GLANCE_PORT']
+        self.to_domain_id = to_auth['DOMAIN_ID']
 
         #to disable warnings on certs missing subjectAltName
         #https://github.com/shazow/urllib3/issues/497#issuecomment-66942891
         requests.packages.urllib3.disable_warnings()
 
     def get_from_auth_ref(self):
-        # keystone = client.Client(username=self.from_username, password=self.from_password,
-        #                     tenant_name=self.from_tenant_name, auth_url=self.from_auth_url)
-        # return keystone.auth_ref
+        if self.from_keystone_version == '2':
+            keystone = client_v2.Client(certificates=self.from_cert, username=self.from_username, password=self.from_password,
+                                tenant_name=self.from_tenant_name, auth_url=self.from_auth_url)
+            # keystone.management_url = self.from_auth_url
+            # keystone.auth_url = self.from_auth_url
+            # print keystone.auth_ref
+            # print keystone
+        else:
+            auth = v3.Password(auth_url=self.from_auth_url, username=self.from_username, password=self.from_password,
+                               project_name=self.from_tenant_name, user_domain_id=self.from_user_domain_id,
+                               project_domain_id=self.from_project_domain_id)
+            sess = session.Session(auth=auth,
+                                   verify=self.from_cert)
 
-        auth = v3.Password(auth_url=self.from_auth_url, username=self.from_username, password=self.from_password,
-                           project_name=self.from_tenant_name, user_domain_id=self.from_user_domain_id,
-                           project_domain_id=self.from_project_domain_id)
-        sess = session.Session(auth=auth,
-                               verify=self.from_cert)
+            keystone = client.Client(session=sess, endpoint_override=self.from_auth_url)
 
-        keystone = client.Client(session=sess, endpoint_override=self.from_auth_url)
         return keystone
 
     def get_to_auth_ref(self):
@@ -90,11 +120,6 @@ class AuthStack(object):
         return keystone
 
     def get_from_keystone_client(self):
-
-        # auth_ref = self.get_from_auth_ref()
-        # keystone = client.Client(auth_ref=auth_ref, endpoint=self.from_auth_url)
-        #
-        # return keystone
         return self.get_from_auth_ref()
 
     def get_to_keystone_client(self):
@@ -107,15 +132,24 @@ class AuthStack(object):
             return self.get_from_keystone_client()
 
     def get_from_nova_client(self):
+        if self.from_nova_version == '2':
+            auth_ref = self.get_from_auth_ref().auth_ref
+            auth_token = auth_ref['token']['id']
+            tenant_id = auth_ref['token']['tenant']['id']
 
-        auth_ref = self.get_from_auth_ref()
+            bypass_url = '{ip}:{port}/v2/{tenant_id}' \
+                         .format(ip=self.from_auth_ip, port=self.from_nova_port, tenant_id=tenant_id)
 
-        #todo: check this works for before newton. might have to change it to tenant_id
-        project_id = auth_ref.session.get_project_id()
-        bypass_url = '{ip}:8774/v2.1/{tenant_id}' \
-            .format(ip=self.from_auth_ip, tenant_id=project_id)
+            nova = nova_client.Client('2', auth_token=auth_token, bypass_url=bypass_url, cacert=self.from_cert)
+        else:
+            auth_ref = self.get_from_auth_ref()
 
-        nova = nova_client.Client('2.1', session=auth_ref.session, endpoint_override=bypass_url)
+            # todo: check this works for before newton. might have to change it to tenant_id
+            project_id = auth_ref.session.get_project_id()
+            bypass_url = '{ip}:{port}/v2.1/{tenant_id}' \
+                .format(ip=self.from_auth_ip, port=self.from_nova_port, tenant_id=project_id)
+
+            nova = nova_client.Client('2.1', session=auth_ref.session, endpoint_override=bypass_url)
         return nova
 
     def get_to_nova_client(self):
@@ -123,8 +157,8 @@ class AuthStack(object):
 
         # todo: check this works for before newton. might have to change it to tenant_id
         project_id = auth_ref.session.get_project_id()
-        bypass_url = '{ip}:8774/v2.1/{tenant_id}' \
-            .format(ip=self.to_auth_ip, tenant_id=project_id)
+        bypass_url = '{ip}:{port}/v2.1/{tenant_id}' \
+            .format(ip=self.to_auth_ip, port=self.to_nova_port, tenant_id=project_id)
 
         nova = nova_client.Client('2.1', session=auth_ref.session, endpoint_override=bypass_url)
         return nova
@@ -137,13 +171,13 @@ class AuthStack(object):
 
     def get_from_neutron_client(self):
         auth_ref = self.get_from_auth_ref()
-        endpoint_url = '{ip}:9696'.format(ip=self.from_auth_ip)
+        endpoint_url = '{ip}:{port}'.format(ip=self.from_auth_ip, port=self.from_neutron_port)
         neutron = neutron_client.Client('2.0', session=auth_ref.session, endpoint_override=endpoint_url)
         return neutron
 
     def get_to_neutron_client(self):
         auth_ref = self.get_to_auth_ref()
-        endpoint_url = '{ip}:9696'.format(ip=self.to_auth_ip)
+        endpoint_url = '{ip}:{port}'.format(ip=self.to_auth_ip, port=self.to_neutron_port)
         neutron = neutron_client.Client('2.0', session=auth_ref.session, endpoint_override=endpoint_url)
         return neutron
 
@@ -156,14 +190,14 @@ class AuthStack(object):
     def get_from_glance_client(self):
 
         auth_ref = self.get_from_auth_ref()
-        endpoint_url = '{ip}:9292'.format(ip=self.from_auth_ip)
+        endpoint_url = '{ip}:{port}'.format(ip=self.from_auth_ip, port=self.from_glance_port)
         glance = glance_client('2', session=auth_ref.session, endpoint=endpoint_url)
         return glance
 
     def get_to_glance_client(self):
 
         auth_ref = self.get_to_auth_ref()
-        endpoint_url = '{ip}:9292'.format(ip=self.to_auth_ip)
+        endpoint_url = '{ip}:{port}'.format(ip=self.to_auth_ip, port=self.to_glance_port,)
         glance = glance_client('2', endpoint=endpoint_url, session=auth_ref.session)
         return glance
 
@@ -174,12 +208,37 @@ class AuthStack(object):
             return self.get_from_glance_client()
 
     def get_from_cinder_client(self):
+        if self.from_keystone_version == '2':
+            return self.get_from_cinder_client_keystone2()
+        else:
+            return self.get_from_cinder_client_keystone3()
+
+    # this is really more about which keystone version is running... if keystone 2, use this call
+    # if keystone 3, the other
+    def get_from_cinder_client_keystone2(self):
+        auth_ref = self.get_from_auth_ref().auth_ref
+        # auth_ref = self.get_from_auth_ref()
+        token = auth_ref['token']['id']
+        tenant_id = auth_ref['token']['tenant']['id']
+        endpoint_url = ('{ip}:{port}/v1/{tenant}'.format
+                        (ip=self.from_auth_ip, port=self.from_cinder_port, tenant=tenant_id))
+
+        print endpoint_url
+        cinder = cinder_client('1', self.from_username, token,
+                               project_id=self.from_tenant_name,
+                               auth_url=self.from_auth_url, cacert=self.from_cert)
+        cinder.client.auth_token = token
+        cinder.client.management_url = endpoint_url
+
+        return cinder
+
+    def get_from_cinder_client_keystone3(self):
         auth_ref = self.get_from_auth_ref()
         project_id = auth_ref.session.get_project_id()
-        endpoint_url = ('{ip}:8776/v2/{project_id}'.format
-                       (ip=self.from_auth_ip, project_id=project_id))
+        endpoint_url = ('{ip}:{port}/v{version}/{project_id}'.format
+                        (ip=self.from_auth_ip, port=self.from_cinder_port, version=self.from_cinder_version, project_id=project_id))
 
-        cinder = cinder_client('2', session=auth_ref.session, bypass_url=endpoint_url)
+        cinder = cinder_client(self.from_cinder_version, session=auth_ref.session, bypass_url=endpoint_url)
         cinder.client.management_url = endpoint_url
 
         return cinder
@@ -188,8 +247,8 @@ class AuthStack(object):
 
         auth_ref = self.get_to_auth_ref()
         project_id = auth_ref.session.get_project_id()
-        endpoint_url = ('{ip}:8776/v2/{project_id}'.format
-                       (ip=self.to_auth_ip, project_id=project_id))
+        endpoint_url = ('{ip}:{port}/v2/{project_id}'.format
+                       (ip=self.to_auth_ip, port=self.to_cinder_port, project_id=project_id))
 
         cinder = cinder_client('2', session=auth_ref.session, bypass_url=endpoint_url)
         cinder.client.management_url = endpoint_url
@@ -209,7 +268,19 @@ class AuthStack(object):
                     'OS_AUTH_IP': None,
                     'OS_CACERT': None,
                     'USER_DOMAIN_ID': None,
-                    'PROJECT_DOMAIN_ID': None }
+                    'PROJECT_DOMAIN_ID': None,
+                    'CINDER_VERSION': None,
+                    'KEYSTONE_VERSION': None,
+                    'NOVA_VERSION': None,
+                    'NOVA_PORT': None,
+                    'CINDER_PORT': None,
+                    'GLANCE_PORT': None,
+                    'NEUTRON_PORT': None,
+                    'DOMAIN_ID': None,
+                    'SOLID_FIRE_IP': None,
+                    'SOLID_FIRE_USER': None,
+                    'SOLID_FIRE_PASSWORD': None
+                        }
 
         auth_details = AUTH_DETAILS
         pattern = re.compile(

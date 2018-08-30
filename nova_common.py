@@ -77,23 +77,83 @@ def create_security_group(destination, from_group):
     return to_group
 
 
+#{u'from_port': None, u'group': {u'tenant_id': u'19fb979c91c54817a6c76c9e74e23cdd', u'name': u'default'}, u'ip_protocol': None, u'to_port': None, u'parent_group_id': u'e0bf1497-3bbc-4ad5-bed7-de25cc4f4eab', u'ip_range': {}, u'id': u'6c31bbf0-ef53-4091-933a-357fc7625212'}
 def create_security_rules(destination, from_group, to_group, new_groups):
     nova = get_nova(destination)
 
     if from_group.rules:
         for rule in from_group.rules:
-            if 'ip_range' in rule:
-                if 'cidr' in rule['ip_range']:
-                    cidras = rule['ip_range']['cidr']
-                    rule = nova.security_group_rules.create(to_group.id, ip_protocol = rule['ip_protocol'],
-                                                    from_port = rule['from_port'], to_port=rule['to_port'], cidr=cidras)#,
-                                                    # group_id = to_group.id)
+            try:
+                if 'name' in rule['group']:
+                    named_group = find_group_by_name('to', rule['group']['name'])
+                    if 'ip_range' in rule:
+                        if 'cidr' in rule['ip_range']:
+                            cidras = rule['ip_range']['cidr']
+                            rule = nova.security_group_rules.create(parent_group_id=to_group.id, ip_protocol=rule['ip_protocol'],
+                                                                    from_port=rule['from_port'], to_port=rule['to_port'],
+                                                                    cidr=cidras, group=named_group.id)
+                            # print rule
+                        else:
+                            group_id = find_new_group_id_by_group_name(new_groups, rule['group']['name'])
+                            rule = nova.security_group_rules.create(parent_group_id=to_group.id, ip_protocol=rule['ip_protocol'],
+                                                                    from_port=rule['from_port'], to_port=rule['to_port'],
+                                                                    group_id=named_group.id)
+                            # print rule
                 else:
-                    group_id = find_new_group_id_by_group_name(new_groups, rule['group']['name'])
-                    rule = nova.security_group_rules.create(to_group.id, ip_protocol=rule['ip_protocol'],
-                                                            from_port=rule['from_port'], to_port=rule['to_port'],
-                                                            group_id=group_id)
-                    print rule
+                    if 'ip_range' in rule:
+                        if 'cidr' in rule['ip_range']:
+                            cidras = rule['ip_range']['cidr']
+                            rule = nova.security_group_rules.create(parent_group_id=to_group.id, ip_protocol = rule['ip_protocol'],
+                                                            from_port = rule['from_port'], to_port=rule['to_port'], cidr=cidras)#,
+                            # print rule
+                        else:
+                            group_id = find_new_group_id_by_group_name(new_groups, rule['group']['name'])
+                            rule = nova.security_group_rules.create(parent_group_id=to_group.id, ip_protocol=rule['ip_protocol'],
+                                                                    from_port=rule['from_port'], to_port=rule['to_port'])
+                            # print rule
+            except Exception, e:
+                print "Trying to create rule ", e
+
+
+def update_default_group_rules():
+    from_groups = get_security_groups('from')
+    to_groups = get_security_groups('to')
+    from_default = get_default_group(from_groups)
+    to_default = get_default_group(to_groups)
+    new_groups = []
+    group_pair = {'old': from_default, 'new': to_default}
+    new_groups.append(group_pair)
+    create_security_rules('to', from_default, to_default, new_groups)
+
+
+def get_default_group(groups):
+    for group in groups:
+        if group.name == 'default':
+            return group
+
+
+def find_oppposite_group_name_by_id(from_group_id):
+    from_nova = get_nova('from')
+    from_group = from_nova.security_groups.get(from_group_id)
+    to_groups = get_security_groups('to')
+    for to_g in to_groups:
+        if to_g.name == from_group.name:
+            return to_g
+
+    return None
+
+
+def get_group_by_name(groups, name):
+    for group in groups:
+        if group.name == name:
+            return group
+    return None
+
+
+def find_group_by_name(destination, name):
+    groups = get_security_groups(destination)
+    group = get_group_by_name(groups, name)
+    return group
 
 
 # Rules that include other groups do not have group id, only name. So, we must find
@@ -110,8 +170,8 @@ def get_vm_list(destination):
     #print network[0]
     # servers = nova.servers.list(search_opts={'all_tenants':'1'})
     servers = nova.servers.list()
-    for s in servers:
-        server = nova.servers.get(s.id)
+    # for s in servers:
+        #server = nova.servers.get(s.id)
         #print server
         #print s
         #print s.networks
@@ -217,24 +277,87 @@ def create_vm_with_network_mapping(from_vm, image='default', network_name='none'
     print "Server created:", server.name
     return server
 
-def attach_security_groups(id_file):
-    ready = check_vm_are_on('to', id_file)
-    if ready:
-        ids = utils.read_ids_from_file(id_file)
-        nova = get_nova('from')
-        for uuid in ids:
-            try:
-                old_server = nova.servers.get(uuid)
-                new_server = get_vm_by_original_id('to', uuid)
-                groups = old_server.security_groups
-                print "Attaching security groups to:", new_server.name
-                for g in groups:
-                    print "Group:", g['name']
-                    new_server.add_security_group(g['name'])
-            except Exception, e:
-                print str(e)
+
+def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='none', key='default', user_data='default'):
+    nova = get_nova('to')
+
+    flavor = get_flavor_by_name('to', from_vm.flavor['id'])
+    if flavor is None:
+        print "Error: Cannot continue for this VM without proper flavor"
+        return None
+    # if image == 'default':
+    #     image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
+    # networks = from_vm.networks
+
+    net = neutron_common.get_network_by_name('to', network_name)
+    nics = [{'net-id': net['id'] }]
+
+    #include original image info as metadata:
+    metadata = from_vm.metadata
+    metadata.update({'original_vm_id':from_vm.id})
+    # metadata.update({'original_volume_id': volume.id})
+    # metadata.update({'original_image_name': img.name})
+
+    #attaching security groups during server creation does not seem to work, so moved to a separate task
+
+    # block_device_mapping = {'vda':'uuid of the volume you want to use'}
+    block_device_mapping = {volume.metadata['original_device']: volume.id}
+
+    print block_device_mapping
+    if key == 'default':
+        key = from_vm.key_name
+        server = nova.servers.create(name=from_vm.name, image="", flavor=flavor.id, block_device_mapping=block_device_mapping, nics=nics,
+                                     meta=metadata, key_name=key, userdata=user_data)
     else:
-        print "All VMs must be powered on for this action to proceed"
+        server = nova.servers.create(name=from_vm.name, image="", flavor=flavor.id,
+                                     block_device_mapping=block_device_mapping, nics=nics,
+                                     meta=metadata, key_name=key, userdata=user_data)
+    print "Server created:", server.name
+    return server
+
+
+def attach_security_groups(id_file):
+    # ready = check_vm_are_on('to', id_file)
+    # if ready:
+    ids = utils.read_ids_from_file(id_file)
+    nova = get_nova('from')
+    for uuid in ids:
+        try:
+            old_server = nova.servers.get(uuid)
+            new_server = get_vm_by_original_id('to', uuid)
+            groups = old_server.security_groups
+            print "Attaching security groups to:", new_server.name
+            for g in groups:
+                print "Group:", g['name']
+                try:
+                    new_server.add_security_group(g['name'])
+                except Exception, e:
+                    print "Something happened while trying to attach security group. Moving to the next group. " + str(e)
+        except Exception, e:
+            print str(e)
+    # else:
+    #     print "All VMs must be powered on for this action to proceed"
+
+
+def attach_volumes(id_file):
+    # ready = check_vm_are_on('to', id_file)
+    nova = get_nova("to")
+
+    # if ready:
+    ids = utils.read_ids_from_file(id_file)
+    for uuid in ids:
+        try:
+            vm = get_vm_by_original_id('to', uuid)
+            to_volumes = cinder_common.get_volume_list_by_vm_id("to", uuid)
+            for to_v in to_volumes:
+                if not to_v.attachments:
+                    nova.volumes.create_server_volume(vm.id, to_v.id, to_v.metadata['original_device'])
+                    print "Volume id: " + to_v.id + " attached to VM id: " + vm.id
+
+        except Exception, e:
+            print str(e)
+    # else:
+    #     print "All VMs must be powered on for this action to proceed"
 
 
 def migrate_vms_from_image(id_file):
@@ -301,6 +424,43 @@ def migrate_vms_from_image_with_network_mapping(id_file, custom_network='none'):
             print "2 Server with UUID", uuid, "not found"
 
 
+def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network='none', key='default', user_data='default'):
+    ids = utils.read_ids_from_file(id_file)
+    nova_from = get_nova("from")
+    to_vms = get_vm_list('to')
+
+    for uuid in ids:
+        try:
+            server = nova_from.servers.get(uuid)
+            # if server.status == 'SHUTOFF':
+            if server.__dict__['os-extended-volumes:volumes_attached']:
+                print "Verifying Volumes for VM ID: " + uuid
+                from_vols = server.__dict__['os-extended-volumes:volumes_attached']
+                # for vol in from_volumes:
+                #     print vol['id']
+                #     from_vols = "foo"
+                from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
+                #these need to be in place!
+                to_volumes = cinder_common.verify_to_vm_volumes(uuid, from_volumes)
+                boot_volume = cinder_common.find_bootable_volume(to_volumes)
+                if boot_volume:
+                    #     # need to check for VMs that were already re-created on the TO side:
+                    dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
+                    duplicate = False
+                    for dup in dup_vms:
+                        if dup.metadata['original_vm_id'] == server.id:
+                            print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
+                            duplicate = True
+                    if duplicate is False:
+                        create_vm_from_volume_with_network_mapping(server, volume=boot_volume, network_name=custom_network, key=key, user_data=user_data)
+            else:
+                print "Original VM doesn't have volumes attached, cannot proceed to launch new VM from volume"
+            # else:
+            #     print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+        except nova_exc.NotFound:
+            print "2 Server with UUID", uuid, "not found"
+
+
 def get_flavor_by_id(destination, flavor_id):
     try:
         nova = get_nova(destination)
@@ -311,6 +471,22 @@ def get_flavor_by_id(destination, flavor_id):
     except Exception, e:
         print str(e)
         print "Error: Flavor with ID:", flavor_id, "could not be found"
+        return None
+
+
+def get_flavor_by_name(destination, flavor_id):
+    try:
+        from_nova = get_nova("from")
+        nova = get_nova("to")
+        flavor = get_flavor_by_id("from", flavor_id)
+        name = flavor.name
+        flavors = nova.flavors.list()
+        for fl in flavors:
+            if fl.name == name:
+                return fl
+    except Exception, e:
+        print str(e)
+        print "Error: Flavor with name:", name, "could not be found"
         return None
 
 
@@ -334,12 +510,17 @@ def compare_and_create_flavors():
     to_flavors = get_flavor_list('to')
     from_names = map(lambda from_flavors: from_flavors.name, from_flavors)
     to_names = map(lambda to_flavors: to_flavors.name, to_flavors)
+    suffix = ".G"
     for name in from_names:
         if name not in to_names:
-            from_flavor = filter(lambda from_flavors: from_flavors.name == name, from_flavors)
-            new_flavor = create_flavor('to', from_flavor[0])
-            new_flavor.set_keys(from_flavor[0].get_keys())
-            print "New flavor created:", new_flavor.name
+            if name.endswith(suffix):
+                from_flavor = filter(lambda from_flavors: from_flavors.name == name, from_flavors)
+                new_flavor = create_flavor('to', from_flavor[0])
+                new_flavor.set_keys(from_flavor[0].get_keys())
+                print "New flavor created:", new_flavor.name
+
+            else:
+                print "Skipping flavor, needs to end with .G ", name
 
 
 def create_flavor(destination, flavor):
@@ -351,7 +532,7 @@ def create_flavor(destination, flavor):
     new_flavor = nova.flavors.create(name=flavor.name,
                                      ram=flavor.ram,
                                      vcpus=flavor.vcpus,
-                                     disk=flavor.disk,
+                                     disk=0,
                                      flavorid=flavor.id,
                                      ephemeral=flavor.ephemeral,
                                      swap=swap,
@@ -507,9 +688,24 @@ def power_off_vms(destination, id_file):
                 print "Shutting down server with UUID:", uuid
                 server.stop()
             else:
-                print "3 Server with UUID:", uuid, "is not running. It must be in ACTIVE status for this action."
+                print "Server with UUID:", uuid, "is not running. It must be in ACTIVE status for this action."
         except nova_exc.NotFound:
             print "4 Server with UUID", uuid, "not found"
+
+
+def power_on_vms(destination, id_file):
+    ids = utils.read_ids_from_file(id_file)
+    nova = get_nova(destination)
+    for uuid in ids:
+        try:
+            server = nova.servers.get(uuid)
+            if server.status == 'SHUTOFF':
+                print "Powering on server with UUID:", uuid
+                server.start()
+            else:
+                print "Server with UUID:", uuid, "is running. It must be in SHUTOFF status for this action."
+        except nova_exc.NotFound:
+            print "14 Server with UUID", uuid, "not found"
 
 
 def check_vm_are_on(destination, id_file):
@@ -523,8 +719,24 @@ def check_vm_are_on(destination, id_file):
             if server.status != 'ACTIVE':
                 print "Server", server.name, "is not ACTIVE."
                 ready = False
+        except Exception, e:
+                print "Server with UUID", uuid, "not found when trying to check that it is powered on"
+    return ready
+
+
+def check_vm_are_off(destination, id_file):
+    ids = utils.read_ids_from_file(id_file)
+    nova = get_nova(destination)
+    ready = True
+    for uuid in ids:
+        try:
+            server = nova.servers.get(uuid)
+            if server.status != 'SHUTOFF':
+                print "Server", server.name, "is not shut off."
+                print "All servers in the migration ID file must be turned off for image creation to start."
+                ready = False
         except nova_exc.NotFound:
-            print "5 Server with UUID", uuid, "not found"
+            print "15 Server with UUID", uuid, "not found"
     return ready
 
 
@@ -577,7 +789,7 @@ def get_volume_id_list_for_vm_ids(destination, id_file):
             if len(server.__dict__['os-extended-volumes:volumes_attached']) > 0:
                 volumes = server.__dict__['os-extended-volumes:volumes_attached']
                 for vol in volumes:
-                    print vol['id']
+                    # print vol['id']
                     volume_ids.append(vol['id'])
         except nova_exc.NotFound:
             print "9 Server with UUID", uuid, "not found"
@@ -585,9 +797,85 @@ def get_volume_id_list_for_vm_ids(destination, id_file):
 
 
 def print_keys(destination):
-    keys = keys = get_keypairs(destination)
+    keys = get_keypairs(destination)
     for key in keys:
         print key.name
+
+
+def get_volumes_for_vm(destination, vm_uuid):
+    nova = get_nova(destination)
+    volume_objects = []
+    try:
+        server = nova.servers.get(vm_uuid)
+        if len(server.__dict__['os-extended-volumes:volumes_attached']) > 0:
+            volumes = server.__dict__['os-extended-volumes:volumes_attached']
+            for vol in volumes:
+                vl = cinder_common.get_volume_by_id("from", vol['id'])
+                volume_objects.append(vl)
+
+    except nova_exc.NotFound:
+        print "10 Server ", vm_uuid, "not found"
+    return volume_objects
+
+
+# Find VMs with cinder volumes attached.
+# Create snapshot of those volumes
+# Create glance images of all volumes related to a VM
+def prepare_migrate_vms_from_image_snapshot(id_file):
+    ids = utils.read_ids_from_file(id_file)
+    ready = check_vm_are_off("from", id_file)
+    if ready:
+        for vm_uuid in ids:
+            volumes = get_volumes_for_vm("from", vm_uuid)
+            for v in volumes:
+                cinder_common.create_volume_snapshot("from", v, vm_uuid)
+    else:
+        print "Please make sure that all migration VMs are powered off."
+
+
+def make_volumes_from_snapshots(destination, id_file):
+    vms = utils.read_ids_from_file(id_file)
+    for vm in vms:
+        volumes = get_volumes_for_vm("from", vm)
+        for vol in volumes:
+            snap = cinder_common.get_snapshot_by_volume_id(destination, vol.id)
+            new_volume = cinder_common.make_volume_from_snapshot(destination, vol.id, snap)
+
+
+def make_images_of_volumes_based_on_vms(destination, id_file):
+    vms = utils.read_ids_from_file(id_file)
+    for vm in vms:
+        volumes = cinder_common.get_volume_list_by_vm_id(destination, vm)
+        for vol in volumes:
+            name = vol.metadata['original_volume_id']
+            print "original volume name "  + name + ", snapshot volume id: " + vol.id
+            cinder_common.upload_volume_to_image_by_volume_name(destination, vol, name)
+
+
+def download_images_of_volumes_based_on_vms(destination, path, id_file):
+    volumes = get_volume_id_list_for_vm_ids("from", id_file)
+    glance_common.download_images_by_volume_uuid(destination, path, volumes)
+
+
+def create_volumes_from_images_based_on_vms(id_file):
+    volumes = get_volume_id_list_for_vm_ids("from", id_file)
+    cinder_common.create_volumes_from_images_by_vm_id(volumes)
+
+
+def manage_volumes_based_on_vms(id_file, region, ssd_host, hdd_host):
+    vms = utils.read_ids_from_file(id_file)
+    for vm in vms:
+        volumes = cinder_common.get_volume_list_by_vm_id('from', vm)
+        for volume in volumes:
+            cinder_common.manage_volume_from_id('to', region, ssd_host, hdd_host, volume)
+
+
+def retype_volumes_based_on_vms(id_file, type):
+    vms = utils.read_ids_from_file(id_file)
+    for vm in vms:
+        volumes = cinder_common.get_volume_list_by_vm_id('to', vm)
+        for volume in volumes:
+            cinder_common.change_volume_type("to", volume, type)
 
 
 def main():
@@ -611,9 +899,19 @@ def main():
     # migrate_vms_from_image("./id_file")
     # print_security_groups('from')
     # get_flavor_by_id('from', 'a97d80f0-e309-436e-95cc-bb2a02139225')
-
     # vms = get_vm_list('from')
     # print vms
-    print_keys("to")
+    # print_keys("to")
+    # prepare_migrate_vms_from_image_snapshot("./id_file")
+    # make_images_of_volumes_based_on_vms("from", "./id_file")
+    # boot_from_volume_vms_from_image_with_network_mapping( './id_file', 'demo-net')
+    # make_images_of_volumes_based_on_vms("from", './id_file')
+    # make_volumes_from_snapshots("from", './id_file')
+    # manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
+    # power_on_vms('from', './id_file')
+    update_default_group_rules()
+    # compare_and_create_security_groups()
+
+
 if __name__ == "__main__":
         main()

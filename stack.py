@@ -17,12 +17,10 @@ def main(opts, args):
     print "To:  ", auth.to_auth_ip, " Username:", auth.to_username, " Project:", auth.to_tenant_name
 
     if opts.report:
-        print "--------------- From Projects: ---------------------"
         try:
             keystone_common.print_projects('from')
         except Exception, e:
             print "To print project info, switch to admin user"
-        print "\n--------------- To Projects: ------------------------"
         try:
             keystone_common.print_projects('to')
         except Exception, e:
@@ -47,14 +45,14 @@ def main(opts, args):
             nova_common.print_keys('to')
         except Exception, e:
             print "To print public keys, switch to admin user"
-        print "\n--------------- From Networks (with subnets): ---------------------"
-        neutron_common.print_network_list('from')
-        print "\n--------------- To Networks (with subnets): ------------------------"
-        neutron_common.print_network_list('to')
-        print "\n--------------- From Routers: ---------------------"
-        neutron_common.print_routers('from')
-        print "\n--------------- To Routers: ---------------------"
-        neutron_common.print_routers('to')
+        # print "\n--------------- From Networks (with subnets): ---------------------"
+        # neutron_common.print_network_list('from')
+        # print "\n--------------- To Networks (with subnets): ------------------------"
+        # neutron_common.print_network_list('to')
+        # print "\n--------------- From Routers: ---------------------"
+        # neutron_common.print_routers('from')
+        # print "\n--------------- To Routers: ---------------------"
+        # neutron_common.print_routers('to')
         print "\n--------------- From Security Groups: ------------------------"
         nova_common.print_security_groups('from')
         print "\n--------------- To Security Groups: ------------------------"
@@ -110,26 +108,31 @@ def main(opts, args):
     if opts.quota:
         nova_common.compare_and_report_quotas()
     if opts.projects:
-        print keystone_common.get_from_project_names()
-        print keystone_common.get_to_project_names()
+        print keystone_common.print_projects('from')
+        print keystone_common.print_projects('to')
     if opts.createprojects:
         keystone_common.compare_and_create_projects()
     if opts.publickeys:
         nova_common.compare_and_create_keypairs()
     if opts.users:
-        keystone_common.compare_and_create_users()
+        if args:
+            keystone_common.compare_and_create_users_by_project(password = args[0])
+        else:
+            keystone_common.compare_and_create_users_by_project()
     if opts.shutdown:
         if args:
             # print args[0]
             nova_common.power_off_vms('from', id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+    """
     if opts.createimages:
         if args:
             # print args[0]
             nova_common.create_image_from_vm('from', id_file=args[0])
         else:
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+    
     if opts.downloadbyvmid:
         if len(args) == 2:
             print args[0]
@@ -167,7 +170,21 @@ def main(opts, args):
             nova_common.migrate_vms_from_image_with_network_mapping(id_file=args[0], custom_network=args[1])
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    """
+    if opts.bootvmsfromvolumescustomnet:
+        if not args:
+            print "Please provide args, ./id_file demo-net"
+        elif len(args) >= 2:
+            print args[0]
+            print args[1]
+            key = "default"
+            if len(args) == 3:
+                key = args[2]
 
+            nova_common.boot_from_volume_vms_from_image_with_network_mapping(id_file=args[0], custom_network=args[1], key=key)
+        else:
+            print "Please provide file with VM UUIDs to be migrated, network to attach them to, and optional key, " \
+                  "for example, ./id_file demo-net public-key"
     if opts.securitygroups:
         if args:
             print args[0]
@@ -207,6 +224,48 @@ def main(opts, args):
             vms = nova_common.print_vm_list_ids('from')
             print "\n--------------- To VMs: ------------------------"
             vms = nova_common.print_vm_list_ids('to')
+    if opts.createsnapshotvm:
+        if args:
+            print args[0]
+            nova_common.prepare_migrate_vms_from_image_snapshot(id_file=args[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if opts.createsvolumefromsnapshot:
+        if args:
+            print args[0]
+            nova_common.make_volumes_from_snapshots("from", id_file=args[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if opts.createsimagesfromvolumesnapshots:
+        if args:
+            print args[0]
+            nova_common.make_images_of_volumes_based_on_vms("from", id_file=args[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if opts.downloadbyvmidsnapshot:
+        if len(args) == 2:
+            print args[0]
+            nova_common.download_images_of_volumes_based_on_vms("from", path=args[0], id_file=args[1])
+        else:
+            print "Please provide image directory and file with VM ids, for example, ./downloads/ ./id_file"
+    if opts.uploadimagebyvmidsnapshot:
+        if len(args) == 2:
+            print args[0]
+            glance_common.upload_volume_images_by_vm_uuid(path=args[0], id_file=args[1])
+        else:
+            print "Please provide image directory and file with VM ids, for example, ./downloads/ ./id_file"
+    if opts.volumefromimage:
+        if len(args) == 1:
+            print args[0]
+            nova_common.create_volumes_from_images_based_on_vms(id_file=args[0])
+        else:
+            print "Please provide file with VM ids, for example, ./id_file"
+    if opts.adddvolumestovms:
+        if len(args) == 1:
+            print args[0]
+            nova_common.attach_volumes(id_file=args[0])
+        else:
+            print "Please provide file with VM ids, for example, ./id_file"
 
 
 if __name__ == "__main__":
@@ -219,7 +278,8 @@ if __name__ == "__main__":
                           help='Run this command as Admin. Create projects from->to.'
                                'Project names must match before running the rest of copystack')
         parser.add_option("-u", "--users", action='store_true', dest='users',
-                          help='Run this command as Admin. Create users from->to. Users created without passwords')
+                          help='Run this command as Admin. Create users from->to. Password is optional parameter. '
+                               'If password is not included, users created without a password.')
         parser.add_option("-q", "--quota", action='store_true', dest='quota',
                           help='Run this command as Admin. Print differences in individual quotas for each project')
         parser.add_option("-f", "--flavors", action='store_true', dest='flavors',
@@ -251,8 +311,43 @@ if __name__ == "__main__":
                                'will not be moved. All others will be.')
 
         parser.add_option("-r", "--report", action='store_true', dest='report', help='Print Summary of Things')
-        parser.add_option("-m", "--shutdown", action="store_true", dest='shutdown',
+        parser.add_option("-0", "--shutdown", action="store_true", dest='shutdown',
                           help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
+        ####### VMs from volume snapshots
+        parser.add_option("-1", "--createsnapshotvm", action="store_true", dest='createsnapshotvm',
+                          help='Create snapshots from VMs Cinder volumes for each UUID provided in a file, '
+                               'for example, ./id_file. ')
+        parser.add_option("-2", "--createsvolumefromsnapshot", action="store_true", dest='createsvolumefromsnapshot',
+                          help='Create volumes from snapshots based on associated VM for each VM UUID provided in a file, '
+                               'for example, ./id_file. ')
+        parser.add_option("-3", "--createsimagesfromvolumesnapshots", action="store_true",
+                          dest='createsimagesfromvolumesnapshots',
+                          help='Create images from volumes based on snapshots based on associated VM for each VM UUID provided in a file, '
+                               'for example, ./id_file. ')
+        parser.add_option("-4", "--downloadbyvmidsnapshot", action="store_true", dest='downloadbyvmidsnapshot',
+                          help='First argument directory path, second path to a file. '
+                               'Download all images by VM UUID to a specified path, for example, ./downloads/ '
+                               'for each UUID provided in a file, for example, ./id_file.')
+        parser.add_option("-5", "--uploadimagebyvmidsnapshot", action="store_true", dest='uploadimagebyvmidsnapshot',
+                          help='First argument directory path, second path to a file. '
+                               'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
+                               'for each UUID provided in a file, for example, ./id_file. ')
+        parser.add_option("-6", "--volumefromimage", action="store_true", dest='volumefromimage',
+                          help='First argument path to a file with original VM IDs. '
+                               'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
+                               'for each UUID provided in a file, for example, ./id_file. ')
+        parser.add_option("-7", "--bootvmsfromvolumescustomnet", action="store_true",
+                          dest='bootvmsfromvolumescustomnet',
+                          help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
+                               'on a custom network. Floating IPs will not be created. Provide network name or ID,'
+                               'for example, "demo-net and optional public key name "key-name" '
+                               ' Sample: -7 ./id_file demo-net key-name')
+        parser.add_option("-8", "--adddvolumestovms", action="store_true", dest='adddvolumestovms',
+                          help='Attach additional volumes to migrated VMs for each UUID provided in the original '
+                               'migration file, for example, ./id_file.')
+
+        # standalone vms without volumes attached. commenting out for cleaner --help
+        """ 
         parser.add_option("-i", "--createimages", action="store_true", dest='createimages',
                           help='Create images from VMs for each UUID provided in a file, for example, ./id_file. '
                                'Volumes attached to VMs will also be their images created.')
@@ -273,7 +368,9 @@ if __name__ == "__main__":
                                'on a custom network. Floating IPs will not be created. Provide network name or ID,'
                                'for example, "demo-net. '
                                ' Sample: -G ./id_file demo-net')
-        parser.add_option("-S", "--securitygroups", action="store_true", dest='securitygroups',
+        """
+
+        parser.add_option("-9", "--securitygroups", action="store_true", dest='securitygroups',
                           help='Attach security groups to migrated VMs for each UUID provided in the original '
                                'migration file, for example, ./id_file. ')
         # parser.add_option("-z", "--createvmvolumes", action="store_true", dest='createvolumes',
