@@ -163,6 +163,12 @@ def add_nova_command_options(subparsers):
     nova_parser.add_argument("-V", "--to_vms", action='store_true', dest='to_vms', help='Print TO vms')
     nova_parser.add_argument("-p", "--power_on", dest='power_on', nargs=1, metavar='UUID_file',
                                 help='Power On VMs for each UUID provided in a file, for example, ./id_file')
+    nova_parser.add_argument("-u", "--from_vms_no_vol", action='store_true', dest='from_vms_no_vol', help='Print FROM vms that have NO volumes attached.')
+    nova_parser.add_argument("-U", "--to_vms_no_vol", action='store_true', dest='to_vms_no_vol', help='Print TO vms that have NO volumes attached.')
+    nova_parser.add_argument("-b", "--from_vms_no_boot_vol", action='store_true', dest='from_vms_no_boot_vol',
+                             help='Print FROM vms that have no BOOTABLE volumes attached.')
+    nova_parser.add_argument("-B", "--to_vms_no_boot_vol", action='store_true', dest='to_vms_no_boot_vol',
+                             help='Print TO vms that have no BOOTABLE volumes attached.')
 
 
 def nova_actions(args):
@@ -193,6 +199,18 @@ def nova_actions(args):
         if len(args.power_on) == 1:
             print "\n--------------- Powering On From VMs: ------------------------"
             nova_common.power_on_vms('from', id_file=args.power_on[0])
+    if args.from_vms_no_vol:
+        print "\n--------------- From VMs: ------------------------"
+        vms = nova_common.print_vm_list_ids_without_volumes('from')
+    if args.to_vms_no_vol:
+        print "\n--------------- To VMs: ------------------------"
+        vms = nova_common.print_vm_list_ids_without_volumes('to')
+    if args.from_vms_no_boot_vol:
+        print "\n--------------- From VMs: ------------------------"
+        vms = nova_common.print_vm_list_ids_without_bootable_volumes('from')
+    if args.to_vms_no_boot_vol:
+        print "\n--------------- To VMs: ------------------------"
+        vms = nova_common.print_vm_list_ids_without_bootable_volumes('to')
 
 
 def add_neutron_command_options(subparsers):
@@ -392,6 +410,95 @@ def move_actions(args):
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
 
 
+def add_copy_command_options(subparsers):
+    migrate_parser = subparsers.add_parser('copy', help='Migrate by converting VM snapshots to volumes and then using volume move')
+    migrate_parser.add_argument("-0", "--shutdown", dest='shutdown', nargs=1, metavar='UUID_file',
+                      help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
+    migrate_parser.add_argument("-1", "--createsnapshotvm", dest='createsnapshotvm', nargs=1, metavar='UUID_file',
+                      help='Create snapshots from VMs Cinder volumes for each UUID provided in a file, '
+                           'for example, ./id_file. ')
+    migrate_parser.add_argument("-2", "--createsvolumefromsnapshot", dest='createsvolumefromsnapshot', nargs=1, metavar='UUID_file',
+                      help='Create volumes from snapshots based on associated VM for each VM UUID provided in a file, '
+                           'for example, ./id_file. ')
+    # migrate_parser.add_argument("-3", "--createsimagesfromvolumesnapshots", nargs=1, metavar='UUID_file',
+    #                   dest='createsimagesfromvolumesnapshots',
+    #                   help='Create images from volumes based on snapshots based on associated VM for each VM UUID provided in a file, '
+    #                        'for example, ./id_file. ')
+    migrate_parser.add_argument("-3", "--managevolumes", dest='managevolumes',
+                      nargs=4, metavar=('UUID_file', 'region', 'SSD_host', 'HDD_host'),
+                      help='Manage all volumes by VM UUID ' 
+                           'for each UUID provided in a file, for example, ./id_file.'
+                           'Please provide region and 2 hosts (SSD and HDD based) to be used for cinder volumes. '
+                           'These hosts will be used for all VMs in the id_file. For example, '
+                           ' ./id_file <region> <SDD host> <HDD host> '
+                           ' ./id_file rack3 sample-aio-liberty-2@lvm#SolidFire_iSCSI sample-aio-liberty-2@Ceph#LVM_iSCSI')
+    migrate_parser.add_argument("-4", "--retypevolumes", nargs=2, metavar=('UUID_file', 'type'),
+                                help='Retype all volumes to a give type by associated VM UUID for each UUID provided in '
+                                     'a file, for example, ./id_file lvm')
+    migrate_parser.add_argument("-5", "--boot",
+                      nargs='+',
+                      dest='boot',
+                      help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
+                           'on a custom network. Floating IPs will not be created. Provide network name or ID,'
+                           ' key-name and optional user data file, for example: '
+                           ' Sample: -5 ./id_file demo-net key-name user-data.txt')
+    migrate_parser.add_argument("-6", "--adddvolumestovms",  dest='adddvolumestovms',
+                      nargs=1, metavar='UUID_file',
+                      help='Attach additional volumes to migrated VMs for each UUID provided in the original '
+                           'migration file, for example, ./id_file.')
+    migrate_parser.add_argument("-7", "--securitygroups", dest='securitygroups', nargs=1, metavar='UUID_file',
+                      help='Attach security groups to migrated VMs for each UUID provided in the original '
+                           'migration file, for example, ./id_file. ')
+
+
+def copy_actions(args):
+    if args.shutdown:
+        if len(args.shutdown) == 1:
+            nova_common.power_off_vms('from', id_file=args.shutdown[0])
+        else:
+            print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+    if args.createsnapshotvm:
+        if args.createsnapshotvm:
+            nova_common.prepare_migrate_vms_from_image_snapshot(id_file=args.createsnapshotvm[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if args.createsvolumefromsnapshot:
+        if len(args.createsvolumefromsnapshot) == 1:
+            nova_common.make_volumes_from_snapshots("from", id_file=args.createsvolumefromsnapshot[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if args.managevolumes:
+        if len(args.managevolumes) == 4:
+            nova_common.manage_volumes_based_on_vms(args.managevolumes[0], args.managevolumes[1], args.managevolumes[2], args.managevolumes[3])
+    if args.retypevolumes:
+        if len(args.retypevolumes) == 2:
+            nova_common.retype_volumes_based_on_vms(args.retypevolumes[0], args.retypevolumes[1])
+    if args.boot:
+        if len(args.boot) >=2:
+
+            user_data = "default"
+            if len(args.boot) == 4:
+                user_data = args.boot[3]
+                try:
+                    user_data = open(args.boot[3])
+                except IOError as e:
+                    raise exceptions.CommandError(_("Can't open '%(user_data)s': "
+                                                    "%(exc)s") %
+                                                  {'user_data': args.user_data,
+                                                   'exc': e})
+            nova_common.boot_from_volume_vms_from_image_with_network_mapping(id_file=args.boot[0], custom_network=args.boot[1], key=args.boot[2], user_data=user_data)
+    if args.adddvolumestovms:
+        if len(args.adddvolumestovms) == 1:
+            nova_common.attach_volumes(id_file=args.adddvolumestovms[0])
+        else:
+            print "Please provide file with VM ids, for example, ./id_file"
+    if args.securitygroups:
+        if len(args.securitygroups) == 1:
+            nova_common.attach_security_groups(id_file=args.securitygroups[0])
+        else:
+            print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+
+
 def main():
     auth = AuthStack()
     print "From:", auth.from_auth_ip, " Username:", auth.from_username, " Project:", auth.from_tenant_name
@@ -404,6 +511,7 @@ def main():
     subparsers.add_parser('nova')
     # subparsers.add_parser('migrate')
     subparsers.add_parser('move')
+    subparsers.add_parser('copy')
 
     add_cinder_command_options(subparsers)
     add_keystone_command_options(subparsers)
@@ -411,6 +519,7 @@ def main():
     add_neutron_command_options(subparsers)
     # add_migrate_command_options(subparsers)
     add_move_command_options(subparsers)
+    add_copy_command_options(subparsers)
 
     args = parser.parse_args()
     # print args
@@ -425,6 +534,8 @@ def main():
     elif args.mode == 'migrate':
         migrate_actions(args)
     elif args.mode == 'move':
+        move_actions(args)
+    elif args.mode == 'copy':
         move_actions(args)
     else:
         parser.print_usage()

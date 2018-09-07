@@ -104,7 +104,15 @@ def find_bootable_volume(to_volumes):
         first_vol_found = re.search(root_disk_pattern, og_device)
         if vol.bootable == 'true' and first_vol_found:
             return vol
+    print "No boot volume found."
     return None
+
+
+def is_bootable_volume(destination, volume_id):
+    vol = get_volume_by_id(destination, volume_id)
+    if vol.bootable == 'true':
+        return True
+    return False
 
 
 def compare_and_create_volumes():
@@ -144,7 +152,7 @@ def create_volume_snapshot(destination, volume, original_vm_id="none"):
         snap = cinder.volume_snapshots.create(volume_id=volume.id, force=True, display_name=name,
                                               display_description="Migration snapshot")
         cinder.volume_snapshots.set_metadata(snap, meta)
-        print "Volume snapshot created: " + snap.name
+        print "Volume snapshot created: " + snap.display_name
 
     return snap
 
@@ -609,7 +617,12 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
     #reference, host, type, name, bootable=False, metadata=None
     meta = volume.metadata
     meta.update({'clone_volume_id': volume.id})
-    meta.update({'clone_volume_name': volume.name})
+    original_cinder = get_cinder('from')
+    version = float(original_cinder.version)
+    if version >= 2.0:
+        meta.update({'clone_volume_name': volume.name})
+    else:
+        meta.update({'clone_volume_name': volume.display_name})
     meta.update({'clone_boot_status': volume.bootable})
     print meta
     if volume.attachments:

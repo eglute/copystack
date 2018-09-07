@@ -191,6 +191,26 @@ def print_vm_list_ids(destination):
         print vm.id, " ", vm. status, " ", vm.flavor['id'], vm.name
 
 
+def print_vm_list_ids_without_volumes(destination):
+    vms = get_vms_without_volumes(destination)
+    vms.sort(key=lambda x: x.status)
+    newlist = sorted(vms, key=lambda x: x.status)
+
+    print "VMs without volumes sorted by status (id status flavor_id name):"
+    for vm in newlist:
+        print vm.id, " ", vm.status, " ", vm.flavor['id'], vm.name
+
+
+def print_vm_list_ids_without_bootable_volumes(destination):
+    vms = get_vms_without_boot_volumes(destination)
+    vms.sort(key=lambda x: x.status)
+    newlist = sorted(vms, key=lambda x: x.status)
+
+    print "VMs without bootable volumes sorted by status (id status flavor_id name):"
+    for vm in newlist:
+        print vm.id, " ", vm.status, " ", vm.flavor['id'], vm.name
+
+
 def print_flavor_list(destination):
     to_flavors = get_flavor_list(destination)
     for f in to_flavors:
@@ -818,6 +838,35 @@ def get_volumes_for_vm(destination, vm_uuid):
     return volume_objects
 
 
+def get_vms_without_volumes(destination):
+    servers = []
+    vms = get_vm_list(destination)
+    for vm in vms:
+        if len(vm.__dict__['os-extended-volumes:volumes_attached']) == 0:
+            servers.append(vm)
+    return servers
+
+
+def get_vms_without_boot_volumes(destination):
+    servers = []
+    vms = get_vm_list(destination)
+    for vm in vms:
+        vm_has_boot = False
+        if len(vm.__dict__['os-extended-volumes:volumes_attached']) == 0:
+            servers.append(vm)
+        elif len(vm.__dict__['os-extended-volumes:volumes_attached']) > 0:
+            volumes = vm.__dict__['os-extended-volumes:volumes_attached']
+            for vol in volumes:
+                boot = cinder_common.is_bootable_volume(destination, vol['id'])
+                if boot is True:
+                    vm_has_boot = True
+                    break
+            if vm_has_boot is False:
+                servers.append(vm)
+
+    return servers
+
+
 # Find VMs with cinder volumes attached.
 # Create snapshot of those volumes
 # Create glance images of all volumes related to a VM
@@ -909,8 +958,10 @@ def main():
     # make_volumes_from_snapshots("from", './id_file')
     # manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
     # power_on_vms('from', './id_file')
-    update_default_group_rules()
+    # update_default_group_rules()
     # compare_and_create_security_groups()
+    # print get_vms_without_volumes('from')
+    print get_vms_without_boot_volumes('from')
 
 
 if __name__ == "__main__":
