@@ -100,7 +100,9 @@ def verify_to_vm_volumes(uuid, from_volumes):
 def find_bootable_volume(to_volumes):
     for vol in to_volumes:
         og_device = vol.metadata['original_device']
-        root_disk_pattern = '/dev/.*da'
+        # root_disk_pattern = '/dev/.*da'
+        #some volumes disk is only 'vda'
+        root_disk_pattern = '.*da'
         first_vol_found = re.search(root_disk_pattern, og_device)
         print "vol.bootable", vol.bootable
         if vol.bootable == 'true' and first_vol_found:
