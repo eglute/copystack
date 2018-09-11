@@ -478,6 +478,8 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
 
                                           source_volid=volume_id
                                           )
+        print "Volume", myvol.id, "created"
+        cinder.volumes.set_bootable(myvol, bootable)
     # cinder v1:
     else:
         if hasattr(snapshot, 'metadata'):
@@ -519,8 +521,13 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           metadata=meta,
                                           source_volid=volume_id
                                           )
-    print "Volume", myvol.id, "created"
-    cinder.volumes.set_bootable(myvol, bootable)
+        print "Volume", myvol.id, "created"
+        try:
+            print "Volume bootable status: ", bootable
+            cinder.volumes.set_bootable(myvol, bootable)
+        except Exception, e:
+            print "Old version of cinder is causing issues with setting volume bootable. "
+            print str(e)
     return myvol
 
 
