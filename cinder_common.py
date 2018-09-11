@@ -653,7 +653,7 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
     name = meta['original_volume_name']
     print "original name: " + name
     source = {}
-    if (volume_type is 'SSD') or (volume_type is 'SolidFire'):
+    if volume_type is 'SolidFire':
         sfid = solidfire_common.get_volume_by_volume_name(volume.id)
         ref = "%(id)s" % {"id": sfid}
         # source = {'source-id': ref}
