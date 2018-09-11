@@ -638,8 +638,12 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
             meta.update({'original_vm_device': att['device']})
     volume_type = volume.volume_type
     bootable = False
-    if volume.bootable == 'true':
-        bootable = True  # for some reason api returns a string and the next call expects a boolean.
+    # if volume.bootable == 'true':
+    #     bootable = True  # for some reason api returns a string and the next call expects a boolean.
+
+    # there is an issue with cinder v1 where volume set bootable didn't work, so using metadata instead.
+    if meta['bootable'] == 'true':
+        bootable = True
 
     #name = volume.name
     name = meta['original_volume_name']
