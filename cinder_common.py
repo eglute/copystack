@@ -102,6 +102,7 @@ def find_bootable_volume(to_volumes):
         og_device = vol.metadata['original_device']
         root_disk_pattern = '/dev/.*da'
         first_vol_found = re.search(root_disk_pattern, og_device)
+        print "vol.bootable", vol.bootable
         if vol.bootable == 'true' and first_vol_found:
             return vol
     print "No boot volume found."
@@ -526,8 +527,9 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
             print "Volume bootable status: ", bootable
             cinder.volumes.set_bootable(myvol, bootable)
         except Exception, e:
-            print "Old version of cinder is causing issues with setting volume bootable. "
             print str(e)
+            print "Old version of cinder is causing issues with setting volume bootable, boot status will be updated on the TO side."
+
     return myvol
 
 
