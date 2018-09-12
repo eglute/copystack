@@ -530,17 +530,12 @@ def compare_and_create_flavors():
     to_flavors = get_flavor_list('to')
     from_names = map(lambda from_flavors: from_flavors.name, from_flavors)
     to_names = map(lambda to_flavors: to_flavors.name, to_flavors)
-    suffix = ".G"
     for name in from_names:
         if name not in to_names:
-            if name.endswith(suffix):
-                from_flavor = filter(lambda from_flavors: from_flavors.name == name, from_flavors)
-                new_flavor = create_flavor('to', from_flavor[0])
-                new_flavor.set_keys(from_flavor[0].get_keys())
-                print "New flavor created:", new_flavor.name
-
-            else:
-                print "Skipping flavor, needs to end with .G ", name
+            from_flavor = filter(lambda from_flavors: from_flavors.name == name, from_flavors)
+            new_flavor = create_flavor('to', from_flavor[0])
+            new_flavor.set_keys(from_flavor[0].get_keys())
+            print "New flavor created:", new_flavor.name
 
 
 def create_flavor(destination, flavor):
