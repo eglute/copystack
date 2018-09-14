@@ -316,7 +316,7 @@ def convert_image_to_volume_by_vm_ids(destination, id_file):
         myvol = cinder.volumes.create(size=size,
                                       # snapshot_id=volume.snapshot_id,
                                       # display_name=volume.display_name,
-                                      name=image.name,
+                                      display_name=image.name,
                                       display_description="Migration volume of an image",
                                       # volume_type=volume.volume_type,
                                       # project_id=tenant,
