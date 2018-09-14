@@ -312,19 +312,21 @@ def convert_image_to_volume_by_vm_ids(destination, id_file):
         meta.update({'original_vm_name': image.original_vm_name})
         meta.update({'original_vm_id': image.original_vm_id})
         size = utils.convert_B_to_GB(image.size)
+        #todo: add display_name vs name for cinder v1
         myvol = cinder.volumes.create(size=size,
                                       # snapshot_id=volume.snapshot_id,
                                       # display_name=volume.display_name,
                                       name=image.name,
-                                      # display_description="migration volume of an image",
+                                      display_description="Migration volume of an image",
                                       # volume_type=volume.volume_type,
                                       # project_id=tenant,
                                       metadata=meta,
                                       imageRef=image.id,
                                       )
         print "Volume", myvol.id, "created"
+        #todo: fix for cinder v1, add exception catching for boot
         #bootable since based on image:
-        cinder.volumes.set_bootable(myvol, True)
+        # cinder.volumes.set_bootable(myvol, True)
 
 
 def convert_volumes_to_vm_images_by_vm_ids(destination, id_file):
