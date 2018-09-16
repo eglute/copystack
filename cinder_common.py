@@ -435,18 +435,18 @@ def print_detail_volumes(destination):
     vols = get_volume_list(destination)
     vols.sort(key=lambda x: x.status)
     newlist = sorted(vols, key=lambda x: x.status)
-    print "Volumes sorted by status (id status type size name host availability zone):"
+    print "Volumes sorted by status (id status type size name host availability zone bootable):"
     # print newlist
     for volume in vols:
         if hasattr(volume, "os-vol-host-attr:host"):
             host = getattr(volume, "os-vol-host-attr:host")
             if hasattr(volume, 'display_name'):
-                print volume.id, volume.status, volume.volume_type, volume.size, volume.display_name, host, volume.availability_zone
+                print volume.id, volume.status, volume.volume_type, volume.size, volume.display_name, host, volume.availability_zone, volume.bootable
             else:
-                print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone
+                print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone, volume.bootable
         else:
             host = 'no_host_info'
-            print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone
+            print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone, volume.bootable
 
 
 def get_snapshot_by_volume_id(destination, volume_id):
