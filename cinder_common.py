@@ -559,7 +559,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           display_description="Migration Volume",
                                           volume_type="Ceph",
                                           # project_id=tenant,
-                                          availability_zone=volume.availability_zone,
+                                          # availability_zone=volume.availability_zone,
                                           metadata=meta,
                                           # imageRef=""
                                           )
