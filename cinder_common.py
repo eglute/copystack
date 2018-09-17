@@ -570,7 +570,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           display_description="Migration Volume",
                                           volume_type=volume.volume_type,
                                           # user_id=volume.user_id, todo:fixthis
-                                          project_id=tenant,
+                                          # project_id=tenant,
                                           availability_zone=volume.availability_zone,
                                           metadata=meta,
                                           source_volid=volume_id
