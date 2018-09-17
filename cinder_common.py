@@ -556,15 +556,12 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           #snapshot_id=volume.snapshot_id,
                                           source_volid=volume_id,
                                           display_name=snapshot_name,
-
                                           display_description="Migration Volume",
-                                          # volume_type=volume.volume_type,
                                           volume_type="Ceph",
-                                          # user_id=volume.user_id, todo:fixthis
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
-                                          metadata=meta
-                                          # imageRef=volume.imageRef,
+                                          metadata=meta,
+                                          imageRef=""
                                           )
         else:
             myvol = cinder.volumes.create(size=volume.size,
