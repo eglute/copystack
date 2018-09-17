@@ -546,12 +546,18 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
         else:
             snapshot_name = ""
         if volume.volume_type == 'None':
+            print "tenant", tenant
+            print "name", snapshot_name
+            print "zone", volume.availability_zone
+            print "meta", meta
+            print "volume_id", volume_id
             myvol = cinder.volumes.create(
                                           # size=volume.size,
                                           #snapshot_id=volume.snapshot_id,
                                           display_name=snapshot_name,
                                           display_description="Migration Volume",
                                           # volume_type=volume.volume_type,
+                                          volume_type="Ceph",
                                           # user_id=volume.user_id, todo:fixthis
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
