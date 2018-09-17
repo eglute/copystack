@@ -253,12 +253,18 @@ def get_users(destination):
 def get_users_based_on_domain(destination):
     auth = AuthStack()
     keystone = get_keystone(destination)
-    domain = None
+    version = '3'
+    if auth.from_keystone_version == '2':
+        version = '2'
+    domain = 'default'
     if destination == 'from':
         domain = auth.from_domain_id
     else:
         domain = auth.to_domain_id
-    users = keystone.users.list(domain=domain)
+    if version == '2':
+        users = keystone.users.list()
+    else:
+        users = keystone.users.list(domain=domain)
     #print users
     return users
 
