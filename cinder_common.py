@@ -651,6 +651,8 @@ def manage_volume(destination, reference, host, name, volume_type=None, bootable
     print "Will try to manage volume name " + name
     print "with reference "
     print reference
+    if volume_type == None:
+        volume_type = "Ceph"
     cinder.volumes.manage(host, reference, name=name, volume_type=volume_type, bootable=bootable, metadata=metadata)
     print "Managed volume's name " + name
 

@@ -338,7 +338,7 @@ def add_move_command_options(subparsers):
                            'Please provide 2 hosts (SSD and HDD based) to be used for cinder volumes. '
                            'These hosts will be used for all VMs in the id_file. For example, '
                            ' ./id_file <SDD host> <HDD host> '
-                           ' ./id_file rack3 sample-aio-liberty-2@lvm#SolidFire_iSCSI sample-aio-liberty-2@Ceph#LVM_iSCSI')
+                           ' ./id_file sample-aio-liberty-2@lvm#SolidFire_iSCSI sample-aio-liberty-2@Ceph#LVM_iSCSI')
     migrate_parser.add_argument("-4", "--retypevolumes", nargs=2, metavar=('UUID_file', 'type'),
                                 help='Retype all volumes to a give type by associated VM UUID for each UUID provided in '
                                      'a file, for example, ./id_file lvm')
