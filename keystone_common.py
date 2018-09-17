@@ -390,6 +390,11 @@ def compare_and_create_users_by_domain(password=None):
         if name not in to_names:
             from_user = filter(lambda from_users: from_users.name == name, from_users)
             new_user = create_user('to', from_user[0], password, from_matrix)
+        elif name in to_names:
+            print "user already exists, update roles"
+            from_user = filter(lambda from_users: from_users.name == name, from_users)
+            to_user = filter(lambda to_users: to_users.name == name, to_users)
+            update_roles(from_user[0], to_user[0], from_matrix)
 
 
 # at this point don't have the tenant info for the user, so not attaching tenant info.
@@ -537,6 +542,21 @@ def print_user_names(destination):
                 print '{:25}'.format(u.name), u.domain_id
 
 
+def get_user_by_name(destination, name):
+    keystone = get_keystone(destination)
+    users = keystone.users.list()
+    for user in users:
+        if user.name == name:
+            return user
+
+
+def get_user_roles(destination, name):
+    user = get_user_by_name(destination, name)
+    keystone = get_keystone(destination)
+    roles = keystone.users.list_roles(user=user)
+    return roles
+
+
 def main():
     #compare_and_create_tenants()
     #get_from_to_name_tenant_ids()
@@ -573,7 +593,8 @@ def main():
     # compare_and_create_users_by_domain()
     # get_matrix()
     # compare_and_create_users_by_domain("password")
-    build_matrix()
+    # build_matrix()
+    print get_user_roles('from', 'egle1')
 
 if __name__ == "__main__":
         main()
