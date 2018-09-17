@@ -552,7 +552,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
             print "meta", meta
             print "volume_id", volume_id
             myvol = cinder.volumes.create(
-                                          # size=volume.size,
+                                          size=volume.size,
                                           #snapshot_id=volume.snapshot_id,
                                           source_volid=volume_id,
                                           display_name=snapshot_name,
