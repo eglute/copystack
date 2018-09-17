@@ -505,7 +505,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
             snapshot_name = ""
         if volume.volume_type == 'None':
             myvol = cinder.volumes.create(
-                                          # size=volume.size,
+                                          size=volume.size,
                                           # snapshot_id=volume.snapshot_id,
                                           name=snapshot_name,
                                           description="Migration Volume",
@@ -517,7 +517,8 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           source_volid=volume_id
                                           )
         else:
-            myvol = cinder.volumes.create(size=volume.size,
+            myvol = cinder.volumes.create(
+                                          size=volume.size,
                                           # snapshot_id=volume.snapshot_id,
                                           name=snapshot_name,
                                           description="Migration Volume",
@@ -557,14 +558,15 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           source_volid=volume_id,
                                           display_name=snapshot_name,
                                           display_description="Migration Volume",
-                                          # volume_type="Ceph",
-                                          # project_id=tenant,
-                                          # availability_zone=volume.availability_zone,
+                                          volume_type="Ceph",
+                                          project_id=tenant,
+                                          availability_zone=volume.availability_zone,
                                           metadata=meta,
                                           # imageRef=""
                                           )
         else:
-            myvol = cinder.volumes.create(size=volume.size,
+            myvol = cinder.volumes.create(
+                                          size=volume.size,
                                           #snapshot_id=volume.snapshot_id,
                                           display_name=snapshot_name,
                                           display_description="Migration Volume",
