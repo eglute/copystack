@@ -544,9 +544,12 @@ def find_opposite_role(role_id):
 
     from_role = filter(lambda from_roles: from_roles.id == role_id, from_roles)
     if from_role:
-        to_role = filter(lambda to_roles: to_roles.name == from_role[0].name, to_roles)
+        if from_role[0].name == 'member':
+            to_role = filter(lambda to_roles: to_roles.name == '_member_', to_roles)
+        else:
+            to_role = filter(lambda to_roles: to_roles.name == from_role[0].name, to_roles)
         if to_role:
-            return {'from_id': from_role[0].id, 'name': from_role[0].name, 'to_id': to_role[0].id}
+            return {'from_id': from_role[0].id, 'name': to_role[0].name, 'to_id': to_role[0].id}
         else:
             print "to_role named", from_role[0].name, "not found"
             return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
