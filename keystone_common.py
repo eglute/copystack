@@ -369,16 +369,19 @@ def get_user_roles(destination, matrix, user):
             for rol in roles:
                 # print user.name, tenant.name, rol.name
                 role = find_opposite_role(rol.id)
-                #  role:  return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
-                mat = {'from_role_id:': rol.id, 'role_name': rol.name,
-                       'from_project_id': tenant.id, 'from_user_id': user.id,
-                       'to_project_id': project['to_id'], 'to_role_id': role['to_id'], 'project_name': tenant.name}
-                print mat
-                matrix.append(mat)
+                if role['to_id'] == 'None':
+                    continue
+                else:
+                    #  role:  return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
+                    mat = {'from_role_id:': rol.id, 'role_name': rol.name,
+                           'from_project_id': tenant.id, 'from_user_id': user.id,
+                           'to_project_id': project['to_id'], 'to_role_id': role['to_id'], 'project_name': tenant.name}
+                    print mat
+                    matrix.append(mat)
         except keystone_exceptions.http.NotFound as e:
             #print e
             #ok if not found, not every user is in every project
-            continue;
+            continue
 
         # print roles
     return matrix
