@@ -94,6 +94,8 @@ def cinder_actions(args):
 def add_keystone_command_options(subparsers):
     keystone_parser = subparsers.add_parser('keystone', help='Run keystone reports.')
 
+    keystone_parser.add_argument("-r", "--fromroles", action='store_true', dest='fromroles', help='Print FROM roles')
+    keystone_parser.add_argument("-R", "--toroles", action='store_true', dest='toroles', help='Print TO roles')
     keystone_parser.add_argument("-u", "--fromusers", action='store_true', dest='fromusers', help='Print FROM users')
     keystone_parser.add_argument("-U", "--tousers", action='store_true', dest='tousers', help='Print TO users')
     keystone_parser.add_argument("-p", "--fromprojects", action='store_true', dest='fromprojects',
@@ -118,6 +120,12 @@ def add_keystone_command_options(subparsers):
 
 
 def keystone_actions(args):
+    if args.fromroles:
+        print "\n--------------- From Roles: ------------------------"
+        keystone_common.print_roles('from')
+    if args.toroles:
+        print "\n--------------- To Roles: ------------------------"
+        keystone_common.print_roles('to')
     if args.fromusers:
         print "\n--------------- From Users: ------------------------"
         keystone_common.print_user_names('from')

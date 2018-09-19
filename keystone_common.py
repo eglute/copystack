@@ -597,6 +597,13 @@ def get_from_tenant_by_name(name):
             return tenant
 
 
+def print_roles(destination):
+    roles = get_roles(destination)
+    print "       Roles: ID,  name"
+    for role in roles:
+        print role.id, "   ", role.name
+
+
 def main():
     #compare_and_create_tenants()
     #get_from_to_name_tenant_ids()
@@ -633,8 +640,9 @@ def main():
     # compare_and_create_users_by_domain()
     # get_matrix()
     # compare_and_create_users_by_domain("password")
-    build_matrix()
+    # build_matrix()
     # get_user_roles('from', 'myuser')
+    print_roles('to')
 
 if __name__ == "__main__":
         main()
