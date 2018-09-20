@@ -561,6 +561,8 @@ def find_opposite_role(role_id):
 
     from_role = filter(lambda from_roles: from_roles.id == role_id, from_roles)
     if from_role:
+        if from_role[0].name == '_identity_internal_role_':
+            return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
         if from_role[0].name == 'member':
             to_role = filter(lambda to_roles: to_roles.name == '_member_', to_roles)
         else:
