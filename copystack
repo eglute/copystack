@@ -161,7 +161,6 @@ def keystone_actions(args):
     if args.createprojects:
         keystone_common.compare_and_create_projects()
     if args.createusers:
-        print args
         if len(args.createusers) == 2:
             if args.createusers[0] == 'all':
                 keystone_common.compare_and_create_users_by_domain(password=args.createusers[0])

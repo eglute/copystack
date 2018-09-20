@@ -317,6 +317,15 @@ def print_users_per_project(destination):
             print "     " + user.name
 
 
+def get_users_from_name_list(destination, user_name_file):
+    names = utils.read_ids_from_file(user_name_file)
+    users = []
+    for name in names:
+        user = get_user_by_name(destination, name)
+        users.append(user)
+    return users
+
+
 # Build a matrix of users/projects/roles. Takes a long time to build but speeds up adding users to proper tenants.
 def build_matrix(user_name_file=None):
     keystone = get_keystone("from")
@@ -325,11 +334,7 @@ def build_matrix(user_name_file=None):
     projects = list()
     if auth.from_keystone_version == '2':
         if user_name_file:
-            names = utils.read_ids_from_file(user_name_file)
-            users = []
-            for name in names:
-                user = get_user_by_name('from', name)
-                users.append(user)
+            users = get_users_from_name_list('from', user_name_file)
         else:
             users = get_users('from')
         # print users
@@ -431,8 +436,12 @@ def compare_and_create_users_by_project(password=None):
 
 def compare_and_create_users_by_domain(password=None, user_name_file=None):
     auth = AuthStack()
-    from_users = get_users_based_on_domain('from')
-    to_users = get_users_based_on_domain('to')
+    if user_name_file:
+        from_users = get_users_from_name_list('from', user_name_file)
+        to_users = get_users_from_name_list('to', user_name_file)
+    else:
+        from_users = get_users_based_on_domain('from')
+        to_users = get_users_based_on_domain('to')
     from_names = map(lambda from_users: from_users.name, from_users)
     to_names = map(lambda to_users: to_users.name, to_users)
     from_matrix = build_matrix(user_name_file=user_name_file)
