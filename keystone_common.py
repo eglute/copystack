@@ -438,7 +438,7 @@ def compare_and_create_users_by_domain(password=None, user_name_file=None):
     auth = AuthStack()
     if user_name_file:
         from_users = get_users_from_name_list('from', user_name_file)
-        to_users = get_users_based_on_domain('to', user_name_file)
+        to_users = get_users_from_name_list('to', user_name_file)
 
     else:
         from_users = get_users_based_on_domain('from')
