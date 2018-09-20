@@ -18,6 +18,8 @@ from auth_stack2 import AuthStack
 import keystoneclient.v2_0.users
 from log import logging
 from keystoneauth1 import exceptions as keystone_exceptions
+import utils
+
 
 logger = logging.getLogger('copystack.keystone_common')
 ch = logging.StreamHandler()
@@ -316,13 +318,20 @@ def print_users_per_project(destination):
 
 
 # Build a matrix of users/projects/roles. Takes a long time to build but speeds up adding users to proper tenants.
-def build_matrix():
+def build_matrix(user_name_file=None):
     keystone = get_keystone("from")
     auth = AuthStack()
     matrix = list()
     projects = list()
     if auth.from_keystone_version == '2':
-        users = get_users('from')
+        if user_name_file:
+            names = utils.read_ids_from_file(user_name_file)
+            users = []
+            for name in names:
+                user = get_user_by_name('from', name)
+                users.append(user)
+        else:
+            users = get_users('from')
         # print users
         for user in users:
             # print user
@@ -420,13 +429,13 @@ def compare_and_create_users_by_project(password=None):
             new_user = create_user('to', from_user[0], password, from_matrix)
 
 
-def compare_and_create_users_by_domain(password=None):
+def compare_and_create_users_by_domain(password=None, user_name_file=None):
     auth = AuthStack()
     from_users = get_users_based_on_domain('from')
     to_users = get_users_based_on_domain('to')
     from_names = map(lambda from_users: from_users.name, from_users)
     to_names = map(lambda to_users: to_users.name, to_users)
-    from_matrix = build_matrix()
+    from_matrix = build_matrix(user_name_file=user_name_file)
     for name in from_names:
         if name not in to_names:
             from_user = filter(lambda from_users: from_users.name == name, from_users)
@@ -597,6 +606,12 @@ def get_user_by_name(destination, name):
         if user.name == name:
             return user
 
+
+def get_user_by_id(destination, id):
+    keystone = get_keystone(destination)
+    user = keystone.users.get(id)
+    print user
+    return user
 
 def get_from_tenant_by_name(name):
     keystone = get_keystone('from')

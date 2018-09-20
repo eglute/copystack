@@ -110,16 +110,18 @@ def add_keystone_command_options(subparsers):
                                  help='Print FROM users in current domain')
     keystone_parser.add_argument("-D", "--to_domainusers", action='store_true', dest='to_domainusers',
                                  help='Print TO users in current domain')
-    keystone_parser.add_argument("-m", "--showmatrix", action='store_true', dest='showmatrix',
-                                 help='Print roles users project matrix.')
+    keystone_parser.add_argument("-m", "--showmatrix", dest='showmatrix', nargs=1, metavar='users',
+                                 help='Print roles users project matrix. Pass either file or "all" as an argument')
     keystone_parser.add_argument("-j", "--createprojects", action='store_true', dest='createprojects',
                                  help='Copy projects FROM to TO for current domains.')
-    keystone_parser.add_argument("-c", "--createusers", dest='createusers', nargs='*', metavar='password',
-                                 help='Copy users FROM to TO for current domains. Password is optional parameter. '
+    keystone_parser.add_argument("-c", "--createusers", dest='createusers', nargs='+', metavar=('users'),
+                                 help='Copy users FROM to TO for current domains. Pass either file or "all" as an argument. '
+                                      'Password is optional second parameter. '
                                'If password is not included, users created without a password.')
 
 
 def keystone_actions(args):
+
     if args.fromroles:
         print "\n--------------- From Roles: ------------------------"
         keystone_common.print_roles('from')
@@ -149,14 +151,29 @@ def keystone_actions(args):
         print "\n--------------- To Domain Users: ------------------------"
         keystone_common.print_users_per_domain('to')
     if args.showmatrix:
-        keystone_common.build_matrix()
+        if len(args.showmatrix) == 1:
+            if args.showmatrix[0] == 'all':
+                keystone_common.build_matrix()
+            else:
+                keystone_common.build_matrix(args.showmatrix[0])
+        else:
+            print "Pass either file name or 'all' as an argument"
     if args.createprojects:
         keystone_common.compare_and_create_projects()
     if args.createusers:
-        if len(args.createusers) == 1:
-            keystone_common.compare_and_create_users_by_domain(password=args.createusers[0])
+        print args
+        if len(args.createusers) == 2:
+            if args.createusers[0] == 'all':
+                keystone_common.compare_and_create_users_by_domain(password=args.createusers[0])
+            else:
+                keystone_common.compare_and_create_users_by_domain(password=args.createusers[1], user_name_file=args.createusers[0])
+        elif len(args.createusers) == 1:
+            if args.createusers[0] == 'all':
+                keystone_common.compare_and_create_users_by_domain()
+            else:
+                keystone_common.compare_and_create_users_by_domain(password=args.createusers[0])
         else:
-            keystone_common.compare_and_create_users_by_domain()
+            print "bad argument list for user create."
 
 
 def add_nova_command_options(subparsers):
