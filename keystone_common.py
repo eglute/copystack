@@ -438,16 +438,11 @@ def compare_and_create_users_by_domain(password=None, user_name_file=None):
     auth = AuthStack()
     if user_name_file:
         from_users = get_users_from_name_list('from', user_name_file)
-        to_users = get_users_from_name_list('to', user_name_file)
-
     else:
         from_users = get_users_based_on_domain('from')
-        to_users = get_users_based_on_domain('to')
+    to_users = get_users_based_on_domain('to')
     from_names = map(lambda from_users: from_users.name, from_users)
-    if to_users:
-        to_names = map(lambda to_users: to_users.name, to_users)
-    else:
-        to_names = []
+    to_names = map(lambda to_users: to_users.name, to_users)
     from_matrix = build_matrix(user_name_file=user_name_file)
     for name in from_names:
         if name not in to_names:
