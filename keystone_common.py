@@ -203,6 +203,19 @@ def find_opposite_project_id(project_id):
     return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
 
 
+def build_project_from_to_id_list():
+    from_projects = get_from_project_list()
+    to_projects = get_to_project_list()
+    opposites = []
+    for from_project in from_projects:
+        to_project = filter(lambda to_tenants: to_tenants.name == from_project.name, to_projects)
+        if to_project:
+            oppo = {'from_id': from_project.id, 'name': from_project.name, 'to_id': to_project[0].id}
+            opposites.append(oppo)
+
+    return opposites
+
+
 def compare_and_create_tenants():
     from_tenants = get_from_tenant_list()
     to_tenants = get_to_tenant_list()
@@ -332,6 +345,8 @@ def build_matrix(user_name_file=None):
     auth = AuthStack()
     matrix = list()
     projects = list()
+    project_list = build_project_from_to_id_list()
+    role_list = build_role_from_to_list()
     if auth.from_keystone_version == '2':
         if user_name_file:
             users = get_users_from_name_list('from', user_name_file)
@@ -340,7 +355,7 @@ def build_matrix(user_name_file=None):
         # print users
         for user in users:
             # print user
-            get_user_roles('from', matrix, user)
+            get_user_roles('from', matrix, user, project_list, role_list)
         # matrix.append(mat)
     else:
         asl = keystone.role_assignments.list()
@@ -369,7 +384,14 @@ def build_matrix(user_name_file=None):
     return matrix
 
 
-def get_user_roles(destination, matrix, user):
+def find_in_list_by_id(list_of_things, id):
+    for thing in list_of_things:
+        if thing['from_id'] == id:
+            return thing
+
+
+def get_user_roles(destination, matrix, user, project_list, role_list):
+
     # user = get_user_by_name(destination, name)
     keystone = get_keystone(destination)
     tenants = get_from_tenant_list()
@@ -378,16 +400,18 @@ def get_user_roles(destination, matrix, user):
         try:
             # print user, tenant.id
             roles = keystone.users.list_roles(user=user, tenant=tenant.id)
-            project = find_opposite_project_id(tenant.id)
+            # project = find_opposite_project_id(tenant.id)
+            project = find_in_list_by_id(project_list, tenant.id)
             # return {'from_id': from_project[0].id, 'name': to_project[0].name, 'to_id': to_project[0].id}
             for rol in roles:
                 # print user.name, tenant.name, rol.name
-                role = find_opposite_role(rol.id)
+                # role = find_opposite_role(rol.id)
+                role = find_in_list_by_id(role_list, rol.id)
                 if role['to_id'] == 'None':
                     continue
                 else:
                     #  role:  return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
-                    mat = {'from_role_id:': rol.id, 'role_name': rol.name,
+                    mat = {'from_role_id:': role['from_id'], 'role_name': role['name'],
                            'from_project_id': tenant.id, 'from_user_id': user.id,
                            'to_project_id': project['to_id'], 'to_role_id': role['to_id'], 'project_name': tenant.name}
                     print mat
@@ -580,6 +604,24 @@ def find_opposite_role(role_id):
 
     # if didn't find anything, return a lot of nones.
     return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
+
+
+def build_role_from_to_list():
+    from_roles = get_roles('from')
+    to_roles = get_roles('to')
+    roles = []
+    for from_role in from_roles:
+        if from_role.name == '_identity_internal_role_':
+            rol = {'from_id': from_role.id, 'name': '_identity_internal_role_', 'to_id': 'None'}
+            roles.append(rol)
+        if from_role.name == 'member':
+            to_role = filter(lambda to_roles: to_roles.name == '_member_', to_roles)
+        else:
+            to_role = filter(lambda to_roles: to_roles.name == from_role.name, to_roles)
+        if to_role:
+            rol = {'from_id': from_role.id, 'name': to_role[0].name, 'to_id': to_role[0].id}
+            roles.append(rol)
+    return roles
 
 
 def print_user_names(destination):
