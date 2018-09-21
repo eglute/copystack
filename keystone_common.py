@@ -483,13 +483,13 @@ def compare_and_create_users_by_domain(password=None, user_name_file=None):
 def create_user(destination, user, password, from_matrix):
     auth = AuthStack()
     keystone = get_keystone(destination)
-    u_id = None
-    if hasattr(user, 'default_project_id'):
-        u_id = user.default_project_id
-    else:
-        #todo: not all v3 have defaults, so need to check for v2/v3 and then might not have project associated
-        if auth.from_keystone_version == '2':
-            u_id = user.tenantId
+    # u_id = None
+    # if hasattr(user, 'default_project_id'):
+    #     u_id = user.default_project_id
+    # else:
+    #     #todo: not all v3 have defaults, so need to check for v2/v3 and then might not have project associated
+    #     if auth.from_keystone_version == '2':
+    #         u_id = user.tenantId
     try:
         if hasattr(user, 'email'):
             new_user = keystone.users.create(name=user.name, password=password, email=user.email,
