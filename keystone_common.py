@@ -484,19 +484,33 @@ def create_user(destination, user, password, from_matrix):
     auth = AuthStack()
     keystone = get_keystone(destination)
     u_id = None
+    project = None
+
     if hasattr(user, 'default_project_id'):
         u_id = user.default_project_id
+        project = find_opposite_project_id(u_id)
     else:
     #     #todo: not all v3 have defaults, so need to check for v2/v3 and then might not have project associated
         if auth.from_keystone_version == '2':
             if hasattr(user, 'tenantId'):
                 u_id = user.tenantId
+                project = find_opposite_project_id(u_id)
+        #else:
+            #v3 and no default
+
     try:
-        if hasattr(user, 'email'):
-            new_user = keystone.users.create(name=user.name, password=password, email=user.email,
-                                             enabled=user.enabled)
+        if project:
+            if hasattr(user, 'email'):
+                new_user = keystone.users.create(name=user.name, password=password, default_project=project['to_id'], email=user.email,
+                                                 enabled=user.enabled)
+            else:
+                new_user = keystone.users.create(name=user.name, password=password, default_project=project['to_id'], enabled=user.enabled)
         else:
-            new_user = keystone.users.create(name=user.name, password=password, tenantId=u_id, enabled=user.enabled)
+            if hasattr(user, 'email'):
+                new_user = keystone.users.create(name=user.name, password=password, email=user.email,
+                                                 enabled=user.enabled)
+            else:
+                new_user = keystone.users.create(name=user.name, password=password, enabled=user.enabled)
         if password:
             print "Created new user:", new_user.name, ". This user has default password set. Change password manually."
         else:
