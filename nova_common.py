@@ -23,6 +23,9 @@ import utils
 import time
 from auth_stack2 import AuthStack
 from novaclient.client import exceptions as nova_exc
+import traceback
+
+
 
 
 def get_nova(destination):
@@ -191,6 +194,26 @@ def print_vm_list_ids(destination):
         print vm.id, " ", vm. status, " ", vm.flavor['id'], vm.name
 
 
+def print_vm_list_ids_without_volumes(destination):
+    vms = get_vms_without_volumes(destination)
+    vms.sort(key=lambda x: x.status)
+    newlist = sorted(vms, key=lambda x: x.status)
+
+    print "VMs without volumes sorted by status (id status flavor_id name):"
+    for vm in newlist:
+        print vm.id, " ", vm.status, " ", vm.flavor['id'], vm.name
+
+
+def print_vm_list_ids_without_bootable_volumes(destination):
+    vms = get_vms_without_boot_volumes(destination)
+    vms.sort(key=lambda x: x.status)
+    newlist = sorted(vms, key=lambda x: x.status)
+
+    print "VMs without bootable volumes sorted by status (id status flavor_id name):"
+    for vm in newlist:
+        print vm.id, " ", vm.status, " ", vm.flavor['id'], vm.name
+
+
 def print_flavor_list(destination):
     to_flavors = get_flavor_list(destination)
     for f in to_flavors:
@@ -316,6 +339,37 @@ def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='no
     return server
 
 
+def create_vm_from_image_with_network_mapping(from_vm, image, network_name='none', key='default', user_data='default'):
+    nova = get_nova('to')
+
+    flavor = get_flavor_by_name('to', from_vm.flavor['id'])
+    if flavor is None:
+        print "Error: Cannot continue for this VM without proper flavor"
+        return None
+    # if image == 'default':
+    #     image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
+    # networks = from_vm.networks
+
+    net = neutron_common.get_network_by_name('to', network_name)
+    nics = [{'net-id': net['id'] }]
+
+    #include original image info as metadata:
+    metadata = from_vm.metadata
+    metadata.update({'original_vm_id':from_vm.id})
+    # metadata.update({'original_volume_id': volume.id})
+    # metadata.update({'original_image_name': img.name})
+
+    if key == 'default':
+        key = from_vm.key_name
+        server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
+                                     meta=metadata, key_name=key, userdata=user_data)
+    else:
+        server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
+                                     meta=metadata, key_name=key, userdata=user_data)
+    print "Server created:", server.name
+    return server
+
+
 def attach_security_groups(id_file):
     # ready = check_vm_are_on('to', id_file)
     # if ready:
@@ -350,12 +404,16 @@ def attach_volumes(id_file):
             vm = get_vm_by_original_id('to', uuid)
             to_volumes = cinder_common.get_volume_list_by_vm_id("to", uuid)
             for to_v in to_volumes:
-                if not to_v.attachments:
-                    nova.volumes.create_server_volume(vm.id, to_v.id, to_v.metadata['original_device'])
-                    print "Volume id: " + to_v.id + " attached to VM id: " + vm.id
+                if 'image_name' in to_v.metadata:
+                    print "this volume was a vm image, do not attach", to_v.metadata['image_name']
+                else:
+                    if not to_v.attachments:
+                        nova.volumes.create_server_volume(vm.id, to_v.id, to_v.metadata['original_device'])
+                        print "Volume id: " + to_v.id + " attached to VM id: " + vm.id
 
         except Exception, e:
             print str(e)
+            traceback.print_exc()
     # else:
     #     print "All VMs must be powered on for this action to proceed"
 
@@ -379,9 +437,10 @@ def migrate_vms_from_image(id_file):
                     dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
                     duplicate = False
                     for dup in dup_vms:
-                        if dup.metadata['original_vm_id'] == server.id:
-                            print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
-                            duplicate = True
+                        if 'original_vm_id' in dup.metadata:
+                            if dup.metadata['original_vm_id'] == server.id:
+                                print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
+                                duplicate = True
                     if duplicate is False:
                         create_vm(server, image=image)
                 else:
@@ -411,9 +470,10 @@ def migrate_vms_from_image_with_network_mapping(id_file, custom_network='none'):
                     dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
                     duplicate = False
                     for dup in dup_vms:
-                        if dup.metadata['original_vm_id'] == server.id:
-                            print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
-                            duplicate = True
+                        if 'original_vm_id' in dup.metadata:
+                            if dup.metadata['original_vm_id'] == server.id:
+                                print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
+                                duplicate = True
                     if duplicate is False:
                         create_vm_with_network_mapping(server, image=image, network_name=custom_network)
                 else:
@@ -448,15 +508,44 @@ def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network
                     dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
                     duplicate = False
                     for dup in dup_vms:
-                        if dup.metadata['original_vm_id'] == server.id:
-                            print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
-                            duplicate = True
+                        if 'original_vm_id' in dup.metadata:
+                            if dup.metadata['original_vm_id'] == server.id:
+                                print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
+                                duplicate = True
                     if duplicate is False:
                         create_vm_from_volume_with_network_mapping(server, volume=boot_volume, network_name=custom_network, key=key, user_data=user_data)
             else:
                 print "Original VM doesn't have volumes attached, cannot proceed to launch new VM from volume"
             # else:
             #     print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+        except nova_exc.NotFound:
+            print "2 Server with UUID", uuid, "not found"
+
+
+def boot_from_vms_from_image_with_network_mapping(id_file, custom_network='none', key='default', user_data='default'):
+    ids = utils.read_ids_from_file(id_file)
+    nova_from = get_nova("from")
+    to_vms = get_vm_list('to')
+
+    for uuid in ids:
+        try:
+            server = nova_from.servers.get(uuid)
+            if server.status == 'SHUTOFF':
+                image_name = "migration_vm_image_" + server.id
+                image = glance_common.get_image_by_name('to', image_name)
+                #     # need to check for VMs that were already re-created on the TO side:
+                dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
+                duplicate = False
+                for dup in dup_vms:
+                    if 'original_vm_id' in dup.metadata:
+                        if dup.metadata['original_vm_id'] == server.id:
+                            print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
+                            duplicate = True
+                if duplicate is False:
+                    create_vm_from_image_with_network_mapping(server, image, network_name=custom_network, key=key, user_data=user_data)
+
+            else:
+                print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
         except nova_exc.NotFound:
             print "2 Server with UUID", uuid, "not found"
 
@@ -510,17 +599,12 @@ def compare_and_create_flavors():
     to_flavors = get_flavor_list('to')
     from_names = map(lambda from_flavors: from_flavors.name, from_flavors)
     to_names = map(lambda to_flavors: to_flavors.name, to_flavors)
-    suffix = ".G"
     for name in from_names:
         if name not in to_names:
-            if name.endswith(suffix):
-                from_flavor = filter(lambda from_flavors: from_flavors.name == name, from_flavors)
-                new_flavor = create_flavor('to', from_flavor[0])
-                new_flavor.set_keys(from_flavor[0].get_keys())
-                print "New flavor created:", new_flavor.name
-
-            else:
-                print "Skipping flavor, needs to end with .G ", name
+            from_flavor = filter(lambda from_flavors: from_flavors.name == name, from_flavors)
+            new_flavor = create_flavor('to', from_flavor[0])
+            new_flavor.set_keys(from_flavor[0].get_keys())
+            print "New flavor created:", new_flavor.name
 
 
 def create_flavor(destination, flavor):
@@ -818,6 +902,35 @@ def get_volumes_for_vm(destination, vm_uuid):
     return volume_objects
 
 
+def get_vms_without_volumes(destination):
+    servers = []
+    vms = get_vm_list(destination)
+    for vm in vms:
+        if len(vm.__dict__['os-extended-volumes:volumes_attached']) == 0:
+            servers.append(vm)
+    return servers
+
+
+def get_vms_without_boot_volumes(destination):
+    servers = []
+    vms = get_vm_list(destination)
+    for vm in vms:
+        vm_has_boot = False
+        if len(vm.__dict__['os-extended-volumes:volumes_attached']) == 0:
+            servers.append(vm)
+        elif len(vm.__dict__['os-extended-volumes:volumes_attached']) > 0:
+            volumes = vm.__dict__['os-extended-volumes:volumes_attached']
+            for vol in volumes:
+                boot = cinder_common.is_bootable_volume(destination, vol['id'])
+                if boot is True:
+                    vm_has_boot = True
+                    break
+            if vm_has_boot is False:
+                servers.append(vm)
+
+    return servers
+
+
 # Find VMs with cinder volumes attached.
 # Create snapshot of those volumes
 # Create glance images of all volumes related to a VM
@@ -862,12 +975,12 @@ def create_volumes_from_images_based_on_vms(id_file):
     cinder_common.create_volumes_from_images_by_vm_id(volumes)
 
 
-def manage_volumes_based_on_vms(id_file, region, ssd_host, hdd_host):
+def manage_volumes_based_on_vms(id_file, ssd_host, hdd_host):
     vms = utils.read_ids_from_file(id_file)
     for vm in vms:
         volumes = cinder_common.get_volume_list_by_vm_id('from', vm)
         for volume in volumes:
-            cinder_common.manage_volume_from_id('to', region, ssd_host, hdd_host, volume)
+            cinder_common.manage_volume_from_id('to', ssd_host, hdd_host, volume)
 
 
 def retype_volumes_based_on_vms(id_file, type):
@@ -909,8 +1022,11 @@ def main():
     # make_volumes_from_snapshots("from", './id_file')
     # manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
     # power_on_vms('from', './id_file')
-    update_default_group_rules()
+    # update_default_group_rules()
     # compare_and_create_security_groups()
+    # print get_vms_without_volumes('from')
+    # print get_vms_without_boot_volumes('from')
+    attach_volumes('./id_file')
 
 
 if __name__ == "__main__":

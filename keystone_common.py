@@ -18,6 +18,8 @@ from auth_stack2 import AuthStack
 import keystoneclient.v2_0.users
 from log import logging
 from keystoneauth1 import exceptions as keystone_exceptions
+import utils
+
 
 logger = logging.getLogger('copystack.keystone_common')
 ch = logging.StreamHandler()
@@ -201,6 +203,19 @@ def find_opposite_project_id(project_id):
     return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
 
 
+def build_project_from_to_id_list():
+    from_projects = get_from_project_list()
+    to_projects = get_to_project_list()
+    opposites = []
+    for from_project in from_projects:
+        to_project = filter(lambda to_tenants: to_tenants.name == from_project.name, to_projects)
+        if to_project:
+            oppo = {'from_id': from_project.id, 'name': from_project.name, 'to_id': to_project[0].id}
+            opposites.append(oppo)
+
+    return opposites
+
+
 def compare_and_create_tenants():
     from_tenants = get_from_tenant_list()
     to_tenants = get_to_tenant_list()
@@ -253,12 +268,18 @@ def get_users(destination):
 def get_users_based_on_domain(destination):
     auth = AuthStack()
     keystone = get_keystone(destination)
-    domain = None
+    version = '3'
+    if auth.from_keystone_version == '2':
+        version = '2'
+    domain = 'default'
     if destination == 'from':
         domain = auth.from_domain_id
     else:
         domain = auth.to_domain_id
-    users = keystone.users.list(domain=domain)
+    if version == '2':
+        users = keystone.users.list()
+    else:
+        users = keystone.users.list(domain=domain)
     #print users
     return users
 
@@ -309,34 +330,98 @@ def print_users_per_project(destination):
             print "     " + user.name
 
 
+def get_users_from_name_list(destination, user_name_file):
+    names = utils.read_ids_from_file(user_name_file)
+    users = []
+    for name in names:
+        user = get_user_by_name(destination, name)
+        users.append(user)
+    return users
+
+
 # Build a matrix of users/projects/roles. Takes a long time to build but speeds up adding users to proper tenants.
-def build_matrix():
+def build_matrix(user_name_file=None):
     keystone = get_keystone("from")
-    asl = keystone.role_assignments.list()
+    auth = AuthStack()
     matrix = list()
     projects = list()
-    project = ''
-    print "Building user project role matrix between the two environments. This will take a bit."
-    for a in asl:
+    project_list = build_project_from_to_id_list()
+    role_list = build_role_from_to_list()
+    if auth.from_keystone_version == '2':
+        if user_name_file:
+            users = get_users_from_name_list('from', user_name_file)
+        else:
+            users = get_users('from')
+        # print users
+        for user in users:
+            # print user
+            get_user_roles('from', matrix, user, project_list, role_list)
+        # matrix.append(mat)
+    else:
+        asl = keystone.role_assignments.list()
         project = ''
-        if hasattr(a, 'scope'):
-            if a.scope.has_key('project'):
-                pro = a.scope['project']['id']
-                p = filter(lambda to_vms: to_vms['from_id'] == pro, projects)
-                if p:
-                    project = p[0]
-                if not project:
-                    project = find_opposite_project_id(a.scope['project']['id'])
+        print "Building user project role matrix between the two environments. This will take a bit."
+        for a in asl:
+            project = ''
+            if hasattr(a, 'scope'):
+                if a.scope.has_key('project'):
+                    pro = a.scope['project']['id']
+                    p = filter(lambda to_vms: to_vms['from_id'] == pro, projects)
+                    if p:
+                        project = p[0]
                     if not project:
-                        print "WARNING: Project not found" +  a.scope['project']['id']
-                    else:
-                        projects.append(project)
-                if project:
-                    role = find_opposite_role(a.role['id'])
-                    mat = {'from_role_id:': a.role['id'], 'role_name':role['name'], 'from_project_id': a.scope['project']['id'], 'from_user_id': a.user['id'],
-                           'to_project_id': project['to_id'], 'to_role_id': role['to_id'], 'project_name': project['name']}
+                        project = find_opposite_project_id(a.scope['project']['id'])
+                        if not project:
+                            print "WARNING: Project not found" +  a.scope['project']['id']
+                        else:
+                            projects.append(project)
+                    if project:
+                        role = find_opposite_role(a.role['id'])
+                        mat = {'from_role_id:': a.role['id'], 'role_name':role['name'], 'from_project_id': a.scope['project']['id'], 'from_user_id': a.user['id'],
+                               'to_project_id': project['to_id'], 'to_role_id': role['to_id'], 'project_name': project['name']}
+                        print mat
+                        matrix.append(mat)
+    return matrix
+
+
+def find_in_list_by_id(list_of_things, id):
+    for thing in list_of_things:
+        if thing['from_id'] == id:
+            return thing
+
+
+def get_user_roles(destination, matrix, user, project_list, role_list):
+
+    # user = get_user_by_name(destination, name)
+    keystone = get_keystone(destination)
+    tenants = get_from_tenant_list()
+
+    for tenant in tenants:
+        try:
+            # print user, tenant.id
+            roles = keystone.users.list_roles(user=user, tenant=tenant.id)
+            # project = find_opposite_project_id(tenant.id)
+            project = find_in_list_by_id(project_list, tenant.id)
+            # return {'from_id': from_project[0].id, 'name': to_project[0].name, 'to_id': to_project[0].id}
+            for rol in roles:
+                # print user.name, tenant.name, rol.name
+                # role = find_opposite_role(rol.id)
+                role = find_in_list_by_id(role_list, rol.id)
+                if role['to_id'] == 'None':
+                    continue
+                else:
+                    #  role:  return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
+                    mat = {'from_role_id:': role['from_id'], 'role_name': role['name'],
+                           'from_project_id': tenant.id, 'from_user_id': user.id,
+                           'to_project_id': project['to_id'], 'to_role_id': role['to_id'], 'project_name': tenant.name}
                     print mat
                     matrix.append(mat)
+        except keystone_exceptions.http.NotFound as e:
+            #print e
+            #ok if not found, not every user is in every project
+            continue
+
+        # print roles
     return matrix
 
 
@@ -373,17 +458,25 @@ def compare_and_create_users_by_project(password=None):
             new_user = create_user('to', from_user[0], password, from_matrix)
 
 
-def compare_and_create_users_by_domain(password=None):
+def compare_and_create_users_by_domain(password=None, user_name_file=None):
     auth = AuthStack()
-    from_users = get_users_based_on_domain('from')
+    if user_name_file:
+        from_users = get_users_from_name_list('from', user_name_file)
+    else:
+        from_users = get_users_based_on_domain('from')
     to_users = get_users_based_on_domain('to')
     from_names = map(lambda from_users: from_users.name, from_users)
     to_names = map(lambda to_users: to_users.name, to_users)
-    from_matrix = build_matrix()
+    from_matrix = build_matrix(user_name_file=user_name_file)
     for name in from_names:
         if name not in to_names:
             from_user = filter(lambda from_users: from_users.name == name, from_users)
             new_user = create_user('to', from_user[0], password, from_matrix)
+        elif name in to_names:
+            print "user already exists, update roles"
+            from_user = filter(lambda from_users: from_users.name == name, from_users)
+            to_user = filter(lambda to_users: to_users.name == name, to_users)
+            update_roles(from_user[0], to_user[0], from_matrix)
 
 
 # at this point don't have the tenant info for the user, so not attaching tenant info.
@@ -391,18 +484,33 @@ def create_user(destination, user, password, from_matrix):
     auth = AuthStack()
     keystone = get_keystone(destination)
     u_id = None
+    project = None
+
     if hasattr(user, 'default_project_id'):
         u_id = user.default_project_id
+        project = find_opposite_project_id(u_id)
     else:
-        #todo: not all v3 have defaults, so need to check for v2/v3 and then might not have project associated
+    #     #todo: not all v3 have defaults, so need to check for v2/v3 and then might not have project associated
         if auth.from_keystone_version == '2':
-            u_id = user.tenantId
+            if hasattr(user, 'tenantId'):
+                u_id = user.tenantId
+                project = find_opposite_project_id(u_id)
+        #else:
+            #v3 and no default
+
     try:
-        if hasattr(user, 'email'):
-            new_user = keystone.users.create(name=user.name, password=password, email=user.email,
-                                             enabled=user.enabled)
+        if project:
+            if hasattr(user, 'email'):
+                new_user = keystone.users.create(name=user.name, password=password, default_project=project['to_id'], email=user.email,
+                                                 enabled=user.enabled)
+            else:
+                new_user = keystone.users.create(name=user.name, password=password, default_project=project['to_id'], enabled=user.enabled)
         else:
-            new_user = keystone.users.create(name=user.name, password=password, enabled=user.enabled)
+            if hasattr(user, 'email'):
+                new_user = keystone.users.create(name=user.name, password=password, email=user.email,
+                                                 enabled=user.enabled)
+            else:
+                new_user = keystone.users.create(name=user.name, password=password, enabled=user.enabled)
         if password:
             print "Created new user:", new_user.name, ". This user has default password set. Change password manually."
         else:
@@ -492,8 +600,17 @@ def find_opposite_role(role_id):
 
     from_role = filter(lambda from_roles: from_roles.id == role_id, from_roles)
     if from_role:
-        to_role = filter(lambda to_roles: to_roles.name == from_role[0].name, to_roles)
-        return {'from_id': from_role[0].id, 'name': from_role[0].name, 'to_id': to_role[0].id}
+        if from_role[0].name == '_identity_internal_role_':
+            return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
+        if from_role[0].name == 'member':
+            to_role = filter(lambda to_roles: to_roles.name == '_member_', to_roles)
+        else:
+            to_role = filter(lambda to_roles: to_roles.name == from_role[0].name, to_roles)
+        if to_role:
+            return {'from_id': from_role[0].id, 'name': to_role[0].name, 'to_id': to_role[0].id}
+        else:
+            print "to_role named", from_role[0].name, "not found"
+            return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
 
     to_role = filter(lambda to_roles: to_roles.id == role_id, to_roles)
     if to_role:
@@ -502,6 +619,24 @@ def find_opposite_role(role_id):
 
     # if didn't find anything, return a lot of nones.
     return {'from_id': 'None', 'name': 'None', 'to_id': 'None'}
+
+
+def build_role_from_to_list():
+    from_roles = get_roles('from')
+    to_roles = get_roles('to')
+    roles = []
+    for from_role in from_roles:
+        if from_role.name == '_identity_internal_role_':
+            rol = {'from_id': from_role.id, 'name': '_identity_internal_role_', 'to_id': 'None'}
+            roles.append(rol)
+        if from_role.name == 'member':
+            to_role = filter(lambda to_roles: to_roles.name == '_member_', to_roles)
+        else:
+            to_role = filter(lambda to_roles: to_roles.name == from_role.name, to_roles)
+        if to_role:
+            rol = {'from_id': from_role.id, 'name': to_role[0].name, 'to_id': to_role[0].id}
+            roles.append(rol)
+    return roles
 
 
 def print_user_names(destination):
@@ -529,6 +664,36 @@ def print_user_names(destination):
                 print '{:25}'.format(u.name), '{:35}'.format(u.domain_id), u.default_project_id
             else:
                 print '{:25}'.format(u.name), u.domain_id
+
+
+def get_user_by_name(destination, name):
+    keystone = get_keystone(destination)
+    users = keystone.users.list()
+    for user in users:
+        if user.name == name:
+            return user
+
+
+def get_user_by_id(destination, id):
+    keystone = get_keystone(destination)
+    user = keystone.users.get(id)
+    print user
+    return user
+
+def get_from_tenant_by_name(name):
+    keystone = get_keystone('from')
+    tenants = get_from_tenant_list()
+    auth = AuthStack()
+    for tenant in tenants:
+        if tenant.name == name:
+            return tenant
+
+
+def print_roles(destination):
+    roles = get_roles(destination)
+    print "       Roles: ID,  name"
+    for role in roles:
+        print role.id, "   ", role.name
 
 
 def main():
@@ -567,7 +732,9 @@ def main():
     # compare_and_create_users_by_domain()
     # get_matrix()
     # compare_and_create_users_by_domain("password")
-    build_matrix()
+    # build_matrix()
+    # get_user_roles('from', 'myuser')
+    print_roles('to')
 
 if __name__ == "__main__":
         main()

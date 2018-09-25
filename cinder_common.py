@@ -45,6 +45,13 @@ def get_volume_list_by_vm_id(destination, vm_uuid):
     return volumes
 
 
+def get_image_volume_by_vm_id(destination, vm_uuid):
+    cinder = get_cinder(destination)
+    name = 'migration_vm_image_' + vm_uuid
+    volumes = cinder.volumes.list(search_opts={'metadata': {'image_name': name}})
+    return volumes[0]
+
+
 def get_volume_by_id(destination, uuid):
     cinder = get_cinder(destination)
     volume = cinder.volumes.get(uuid)
@@ -100,11 +107,22 @@ def verify_to_vm_volumes(uuid, from_volumes):
 def find_bootable_volume(to_volumes):
     for vol in to_volumes:
         og_device = vol.metadata['original_device']
-        root_disk_pattern = '/dev/.*da'
+        # root_disk_pattern = '/dev/.*da'
+        #some volumes disk is only 'vda'
+        root_disk_pattern = '.*da'
         first_vol_found = re.search(root_disk_pattern, og_device)
+        print "vol.bootable", vol.bootable
         if vol.bootable == 'true' and first_vol_found:
             return vol
+    print "No boot volume found."
     return None
+
+
+def is_bootable_volume(destination, volume_id):
+    vol = get_volume_by_id(destination, volume_id)
+    if vol.bootable == 'true':
+        return True
+    return False
 
 
 def compare_and_create_volumes():
@@ -144,7 +162,7 @@ def create_volume_snapshot(destination, volume, original_vm_id="none"):
         snap = cinder.volume_snapshots.create(volume_id=volume.id, force=True, display_name=name,
                                               display_description="Migration snapshot")
         cinder.volume_snapshots.set_metadata(snap, meta)
-        print "Volume snapshot created: " + snap.name
+        print "Volume snapshot created: " + snap.display_name
 
     return snap
 
@@ -200,7 +218,7 @@ def create_volume(destination, volume):
                     "but this VM was not found in the current VM list"
     return myvol
 
-
+# on the "TO" side only
 def create_volume_from_image(destination, volume, single=False):
     cinder = get_cinder(destination)
     try:
@@ -282,16 +300,42 @@ def create_volume_from_image(destination, volume, single=False):
         print "Image", image_name, "for volume migration not found. Did you skip a step?"
 
 
-def create_volume_from_image_by_vm_ids(id_file):
-    ready = nova_common.check_vm_are_on('to', id_file)
-    if ready:
-        volume_ids = nova_common.get_volume_id_list_for_vm_ids('from', id_file)
-        from_volumes = get_volume_list('from')
-        for volume in from_volumes:
-            if volume.id in volume_ids:
-                create_volume_from_image('to', volume)
-    else:
-        print "All servers being migrated must be in ACTIVE status for this action to proceed."
+def convert_image_to_volume_by_vm_ids(destination, id_file):
+    cinder = get_cinder('from')
+    images = glance_common.get_images_by_vm_id(destination, id_file)
+    for image in images:
+        meta = {}
+        print image.size
+        meta.update({'image_size': str(image.size)})
+        meta.update({'bootable': 'true'})
+        meta.update({'image_name': image.name})
+        meta.update({'original_vm_name': image.original_vm_name})
+        meta.update({'original_vm_id': image.original_vm_id})
+        size = utils.convert_B_to_GB(image.size)
+        #todo: add display_name vs name for cinder v1
+        myvol = cinder.volumes.create(size=size,
+                                      # snapshot_id=volume.snapshot_id,
+                                      # display_name=volume.display_name,
+                                      display_name=image.name,
+                                      display_description="Migration volume of an image",
+                                      # volume_type=volume.volume_type,
+                                      # project_id=tenant,
+                                      metadata=meta,
+                                      imageRef=image.id,
+                                      )
+        print "Volume", myvol.id, "created"
+        #todo: fix for cinder v1, add exception catching for boot
+        #bootable since based on image:
+        # cinder.volumes.set_bootable(myvol, True)
+
+
+def convert_volumes_to_vm_images_by_vm_ids(destination, id_file):
+    uuids = utils.read_ids_from_file(id_file)
+    for uuid in uuids:
+        volume = get_image_volume_by_vm_id(destination, uuid)
+        print volume
+        upload_volume_to_image_by_vm(destination, volume)
+        print "converted volume to image"
 
 
 def upload_volume_to_image_by_volume_id(destination, vol_id, single=False):
@@ -320,6 +364,19 @@ def upload_volume_to_image_by_volume_name(destination, volume, name):
     cinder.volumes.upload_to_image(volume, force=True, image_name=image_name,
                                    container_format=container_format, disk_format=disk_format)
     print "Image " + image_name + " created from volume ID " + volume.id
+
+
+def upload_volume_to_image_by_vm(destination, volume):
+    cinder = get_cinder(destination)
+    old_image = glance_common.get_image_by_name('from', volume.name)
+    if old_image:
+        image_name = volume.name
+        container_format = old_image.container_format
+        disk_format = old_image.disk_format
+        cinder.volumes.upload_to_image(volume, force=True, image_name=image_name,
+                                       container_format=container_format, disk_format=disk_format)
+        print "Image " + image_name + " created from volume ID " + volume.id
+        update_volume_description(destination, volume, "Delete after migration.")
 
 
 def upload_single_volumes_to_image(destination, uuid_file):
@@ -378,18 +435,18 @@ def print_detail_volumes(destination):
     vols = get_volume_list(destination)
     vols.sort(key=lambda x: x.status)
     newlist = sorted(vols, key=lambda x: x.status)
-    print "Volumes sorted by status (id status type size name host availability zone):"
+    print "Volumes sorted by status (id status type size name host availability zone bootable):"
     # print newlist
     for volume in vols:
         if hasattr(volume, "os-vol-host-attr:host"):
             host = getattr(volume, "os-vol-host-attr:host")
             if hasattr(volume, 'display_name'):
-                print volume.id, volume.status, volume.volume_type, volume.size, volume.display_name, host, volume.availability_zone
+                print volume.id, volume.status, volume.volume_type, volume.size, volume.display_name, host, volume.availability_zone, volume.bootable
             else:
-                print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone
+                print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone, volume.bootable
         else:
             host = 'no_host_info'
-            print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone
+            print volume.id, volume.status, volume.volume_type, volume.size, volume.name, host, volume.availability_zone, volume.bootable
 
 
 def get_snapshot_by_volume_id(destination, volume_id):
@@ -399,19 +456,21 @@ def get_snapshot_by_volume_id(destination, volume_id):
     version = float(cinder.version)
     if version >= 2.0:
         snapshots = cinder.volume_snapshots.list(search_opts={'name': name})
+        if len(snapshots) > 1:
+            latest = None
+            datum = None
+            for snap in snapshots:
+                if datum < snap.updated_at:
+                    datum = snap.updated_at
+                    latest = snap
+                print snap.updated_at
+            print "Found latest snapshot for volume_id " + volume_id + " updated at " + latest.updated_at
+            return latest
+        elif len(snapshots) == 1:
+            return snapshots[0]
     else:
         snapshots = cinder.volume_snapshots.list(search_opts={'display_name': name})
-    if len(snapshots) > 1:
-        latest = None
-        datum = None
-        for snap in snapshots:
-            if datum < snap.updated_at:
-                datum = snap.updated_at
-                latest = snap
-            print snap.updated_at
-        print "Found latest snapshot for volume_id " + volume_id + " updated at " + latest.updated_at
-        return latest
-    elif len(snapshots) == 1:
+        print snapshots
         return snapshots[0]
     print "No matching snapshot found"
     return
@@ -446,7 +505,7 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
             snapshot_name = ""
         if volume.volume_type == 'None':
             myvol = cinder.volumes.create(
-                                          # size=volume.size,
+                                          size=volume.size,
                                           # snapshot_id=volume.snapshot_id,
                                           name=snapshot_name,
                                           description="Migration Volume",
@@ -458,7 +517,8 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
                                           source_volid=volume_id
                                           )
         else:
-            myvol = cinder.volumes.create(size=volume.size,
+            myvol = cinder.volumes.create(
+                                          size=volume.size,
                                           # snapshot_id=volume.snapshot_id,
                                           name=snapshot_name,
                                           description="Migration Volume",
@@ -470,6 +530,8 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
 
                                           source_volid=volume_id
                                           )
+        print "Volume", myvol.id, "created"
+        cinder.volumes.set_bootable(myvol, bootable)
     # cinder v1:
     else:
         if hasattr(snapshot, 'metadata'):
@@ -485,34 +547,44 @@ def make_volume_from_snapshot(destination, volume_id, snapshot):
         else:
             snapshot_name = ""
         if volume.volume_type == 'None':
+            print "tenant", tenant
+            print "name", snapshot_name
+            print "zone", volume.availability_zone
+            print "meta", meta
+            print "volume_id", volume_id
             myvol = cinder.volumes.create(
-                                          # size=volume.size,
+                                          size=volume.size,
                                           #snapshot_id=volume.snapshot_id,
+                                          source_volid=volume_id,
                                           display_name=snapshot_name,
                                           display_description="Migration Volume",
-                                          # volume_type=volume.volume_type,
-                                          # user_id=volume.user_id, todo:fixthis
+                                          # volume_type="Ceph",
                                           project_id=tenant,
                                           availability_zone=volume.availability_zone,
                                           metadata=meta,
-                                          # imageRef=volume.imageRef,
-                                          source_volid=volume_id
-
+                                          # imageRef=""
                                           )
         else:
-            myvol = cinder.volumes.create(size=volume.size,
+            myvol = cinder.volumes.create(
+                                          size=volume.size,
                                           #snapshot_id=volume.snapshot_id,
                                           display_name=snapshot_name,
                                           display_description="Migration Volume",
                                           volume_type=volume.volume_type,
                                           # user_id=volume.user_id, todo:fixthis
-                                          project_id=tenant,
+                                          # project_id=tenant,
                                           availability_zone=volume.availability_zone,
                                           metadata=meta,
                                           source_volid=volume_id
                                           )
-    print "Volume", myvol.id, "created"
-    cinder.volumes.set_bootable(myvol, bootable)
+        print "Volume", myvol.id, "created"
+        try:
+            print "Volume bootable status: ", bootable
+            cinder.volumes.set_bootable(myvol, bootable)
+        except Exception, e:
+            print str(e)
+            print "Old version of cinder is causing issues with setting volume bootable, boot status will be updated on the TO side."
+
     return myvol
 
 
@@ -579,6 +651,8 @@ def manage_volume(destination, reference, host, name, volume_type=None, bootable
     print "Will try to manage volume name " + name
     print "with reference "
     print reference
+    if volume_type == 'None':
+        volume_type = "Ceph"
     cinder.volumes.manage(host, reference, name=name, volume_type=volume_type, bootable=bootable, metadata=metadata)
     print "Managed volume's name " + name
 
@@ -588,14 +662,14 @@ def manage_ssd(host, volume_name, solidfire_id):
     manage_volume('to', host=host, reference=source, name=volume_name, volume_type='SSD')
 
 
-def manage_volumes_by_vm_id(ssd_host, hdd_host, region, volume):
+def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
     # for volume in volumes:
     # vol = get_volume_by_id('from', volume)
     # vol = get_clone_volume_by_id('from', volume)
-    manage_volume_from_id('to', region, ssd_host, hdd_host, volume)
+    manage_volume_from_id('to', ssd_host, hdd_host, volume)
 
 
-def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
+def manage_volume_from_id(destination, ssd_host, hdd_host, volume):
     # cinder = get_cinder(destination)
     #todo: verify tenant/user info
     # try:
@@ -608,8 +682,15 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
     # manage_volume("to", )
     #reference, host, type, name, bootable=False, metadata=None
     meta = volume.metadata
+    print "meta:"
+    print meta
     meta.update({'clone_volume_id': volume.id})
-    meta.update({'clone_volume_name': volume.name})
+    original_cinder = get_cinder('from')
+    version = float(original_cinder.version)
+    if version >= 2.0:
+        meta.update({'clone_volume_name': volume.name})
+    else:
+        meta.update({'clone_volume_name': volume.display_name})
     meta.update({'clone_boot_status': volume.bootable})
     print meta
     if volume.attachments:
@@ -618,14 +699,24 @@ def manage_volume_from_id(destination, region, ssd_host, hdd_host, volume):
             meta.update({'original_vm_device': att['device']})
     volume_type = volume.volume_type
     bootable = False
-    if volume.bootable == 'true':
-        bootable = True  # for some reason api returns a string and the next call expects a boolean.
+    # if volume.bootable == 'true':
+    #     bootable = True  # for some reason api returns a string and the next call expects a boolean.
+
+    # there is an issue with cinder v1 where volume set bootable didn't work, so using metadata instead.
+    if meta['bootable'] == 'true':
+        bootable = True
 
     #name = volume.name
-    name = meta['original_volume_name']
+    if 'original_volume_name' in meta:
+        name = meta['original_volume_name']
+    elif 'image_name' in meta:
+        name = meta['image_name']
+    else:
+        name = 'no_original_name_found'
     print "original name: " + name
     source = {}
-    if volume_type is 'SSD' or volume_type is "SolidFire":
+    print "Volume type is:", volume_type
+    if volume_type == 'SolidFire':
         sfid = solidfire_common.get_volume_by_volume_name(volume.id)
         ref = "%(id)s" % {"id": sfid}
         # source = {'source-id': ref}
@@ -658,6 +749,18 @@ def print_solid_fire_id(cinder_uuid):
     print sfid
 
 
+def set_volume_status(destination, volume_id, state):
+    cinder = get_cinder(destination)
+    volume = get_volume_by_id(destination, volume_id)
+    cinder.volumes.reset_state(volume, state)
+    print "state updated"
+
+
+def update_volume_description(destination, volume, description):
+    cinder = get_cinder(destination)
+    cinder.volumes.update(volume, description=description)
+
+
 def main():
     # get_volume_list('from')
     # get_volume_list('to')
@@ -669,7 +772,7 @@ def main():
     # download_single_volumes('from', './downloads/')
     # create_volume_from_image_by_vm_ids('./id_file')
     # print_volumes('from')
-    # snaps = get_snapshot_by_volume_id("from", "15b70ee6-a4fe-4733-ba81-49bbd8abeced")
+    print get_snapshot_by_volume_id("from", "ec635c54-34d8-4f43-b1d9-4e862cfd2b7f")
     # get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
     # get_cinder("from")
     # print_cinder_pools("to")
@@ -678,7 +781,10 @@ def main():
     # print_manageable_volumes("to", host='egle-pike-dns-1@lvm#LVM_iSCSI')
     # manage_volume("to", 'volume-886398cf-c9c0-40cc-bfd4-f5cf7a56d1ab', 'egle-pike-dns-1@lvm#LVM_iSCSI', 'foo', bootable=True)
     # get_volume_by_id('from', '15b70ee6-a4fe-4733-ba81-49bbd8abeced')
-    retype_volumes_by_volume_ids('to', 'volume_ids', 'lvm1')
+    # retype_volumes_by_volume_ids('to', 'volume_ids', 'lvm1')
+    # convert_volumes_to_vm_images_by_vm_ids('to', './id_file')
+    # print utils.convert_B_to_GB(3072000000)
+    # update_volume_description('to', '3f7b0d1b-fb97-4840-9032-f7e68bab1e1f', 'delete after maintenance')
 
 
 if __name__ == "__main__":

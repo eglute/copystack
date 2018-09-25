@@ -41,7 +41,7 @@ def get_images(destination):
 
 def get_image_by_name(destination, name):
     images = get_images(destination)
-    print "looking for imamge name: " + name
+    print "looking for image name: " + name
     for img in images:
         if img.name == name:
             print "Found image name " + name
@@ -58,6 +58,19 @@ def get_image_by_original_id(destination, original_id):
                 if original_image_id == original_id:
                     return img
     return None
+
+
+def get_images_by_vm_id(destination, uuid_file):
+    ids = utils.read_ids_from_file(uuid_file)
+    images = get_images(destination)
+    vm_images = []
+    for vm in ids:
+        name = "migration_vm_image_" + vm
+        print "name", name
+        for img in images:
+            if img.name == name:
+                vm_images.append(img)
+    return vm_images
 
 
 # Create all images found, since name uniqueness in images is not guaranteed...
@@ -173,7 +186,6 @@ def upload_volume_images(path, volumes):
         print "Uploading image name:", image_name
         image_create('to', image, filename)
 
-
 def image_create(destination, image, url):
     glance = get_glance(destination)
     # props = image.properties
@@ -276,6 +288,7 @@ def main():
 
     # volumes = nova_common.get_volume_id_list_for_vm_ids('from', './id_file')
     # download_images_by_volume_uuid('from','./downloads/', volumes=volumes)
-    download_image_by_uuid('from', '/downloads', 'dd752ad4-6a97-41fe-b996-1231a6ded587')
+    # download_image_by_uuid('from', '/downloads', 'dd752ad4-6a97-41fe-b996-1231a6ded587')
+    print get_images_by_vm_id('from', './id_file')
 if __name__ == "__main__":
         main()

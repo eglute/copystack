@@ -1,4 +1,5 @@
 import yaml
+import math
 
 
 def read_ids_from_file(id_file):
@@ -26,3 +27,11 @@ def load(filename):
     """
     with open(filename, 'r') as f:
         return yaml.safe_load(f)
+
+
+#will round UP to the nearest GB:
+#base 1024
+def convert_B_to_GB(bytes):
+    gig = math.pow(1024, 3)
+    convert_gb = math.ceil(bytes / gig)
+    return int(convert_gb)
