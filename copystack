@@ -460,7 +460,7 @@ def add_copy_command_options(subparsers):
                       help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
                            'on a custom network. Floating IPs will not be created. Provide network name or ID,'
                            ' key-name and optional user data file, for example: '
-                           ' Sample: -5 ./id_file demo-net key-name user-data.txt')
+                           ' Sample: -6 ./id_file demo-net key-name user-data.txt')
     migrate_parser.add_argument("-7", "--adddvolumestovms",  dest='adddvolumestovms',
                       nargs=1, metavar='UUID_file',
                       help='Attach additional volumes to migrated VMs for each UUID provided in the original '
