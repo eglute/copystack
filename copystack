@@ -243,6 +243,15 @@ def add_neutron_command_options(subparsers):
     neutron_parser.add_argument("-N", "--Nets", action='store_true', dest='Nets', help='Print TO networks')
     neutron_parser.add_argument("-r", "--routers", action='store_true', dest='routers', help='Print FROM routers')
     neutron_parser.add_argument("-R", "--Routers", action='store_true', dest='Routers', help='Print TO routers')
+    neutron_parser.add_argument("-p", "--ports", action='store_true', dest='ports', help='Print FROM ports')
+    neutron_parser.add_argument("-P", "--Ports", action='store_true', dest='Ports', help='Print TO ports')
+    neutron_parser.add_argument("-c", "--common", action='store_true', dest='common', help='IPs in both environments')
+    neutron_parser.add_argument("-d", "--diff", action='store_true', dest='diff', help='IPs missing from "TO" environment')
+    neutron_parser.add_argument("-C", "--smacs", action='store_true', dest='smacs', help='Macs in both environments' )
+    neutron_parser.add_argument("-D", "--dmacs", action='store_true', dest='dmacs', help='Macs missing from "TO" environment' )
+    neutron_parser.add_argument("-i", "--interfaces", action='store_true', dest='interfaces', help='Add missing interfaces.'
+                                ' Run this command as Admin. Add missing interfaces between routers and networks and '
+                               'additional ports.')
 
 
 def neutron_actions(args):
@@ -258,6 +267,31 @@ def neutron_actions(args):
     if args.Routers:
         print "\n--------------- To Routers: ---------------------"
         neutron_common.print_routers('to')
+    if args.ports:
+        print "\n--------------- From Ports: ---------------------"
+        neutron_common.print_ports('from')
+    if args.Ports:
+        print "\n--------------- TO Ports: ---------------------"
+        neutron_common.print_ports('to')
+    if args.common:
+        print "\n--------------- IPs created in both environments: ---------------------"
+        print "IP                   Port Type"
+        neutron_common.print_common_ips()
+    if args.diff:
+        print "\n--------------- IPs missing from 'TO' environment: ---------------------"
+        print "IP                   Port Type"
+        neutron_common.print_diff_ips()
+    if args.dmacs:
+        print "\n--------------- Print differences in macs: ---------------------"
+        print "Mac Addresss         IP                   Port Type"
+        neutron_common.print_diff_macs()
+    if args.smacs:
+        print "\n--------------- Print same macs: ---------------------"
+        print "Mac Addresss         IP                   Port Type"
+        neutron_common.print_same_macs()
+    if args.interfaces:
+        print "\n--------------- Adding missing ports: ---------------------"
+        neutron_common.compare_and_create_ports()
 
 
 def add_migrate_command_options(subparsers):

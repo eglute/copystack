@@ -254,6 +254,60 @@ def get_router_by_name(destination, name):
         return None
 
 
+def print_ports(destination):
+    ports = get_ports(destination)
+    for port in ports:
+        print port['id'], port['mac_address'], port['fixed_ips']
+
+
+def print_common_ips():
+    from_ports = get_ports('from')
+    to_ports = get_ports('to')
+    from_names = map(lambda from_ports: from_ports['fixed_ips'][0]['ip_address'], from_ports)
+    to_names = map(lambda to_ports: to_ports['fixed_ips'][0]['ip_address'], to_ports)
+    for name in from_names:
+        if name in to_names:
+            from_po = filter(lambda from_ports: from_ports['fixed_ips'][0]['ip_address'] == name, from_ports)
+            for from_port in from_po:
+                print '{:20}'.format(name), from_port['device_owner']
+
+
+def print_diff_ips():
+    from_ports = get_ports('from')
+    to_ports = get_ports('to')
+    from_names = map(lambda from_ports: from_ports['fixed_ips'][0]['ip_address'], from_ports)
+    to_names = map(lambda to_ports: to_ports['fixed_ips'][0]['ip_address'], to_ports)
+    for name in from_names:
+        if name not in to_names:
+            from_po = filter(lambda from_ports: from_ports['fixed_ips'][0]['ip_address'] == name, from_ports)
+            for from_port in from_po:
+                print '{:20}'.format(name), from_port['device_owner']
+
+
+def print_diff_macs():
+    from_ports = get_ports('from')
+    to_ports = get_ports('to')
+    from_names = map(lambda from_ports: from_ports['mac_address'], from_ports)
+    to_names = map(lambda to_ports: to_ports['mac_address'], to_ports)
+    for name in from_names:
+        if name not in to_names:
+            from_po = filter(lambda from_ports: from_ports['mac_address'] == name, from_ports)
+            for from_port in from_po:
+                print '{:20}'.format(from_port['mac_address']), '{:20}'.format(from_port['fixed_ips'][0]['ip_address']), from_port['device_owner']
+
+
+def print_same_macs():
+    from_ports = get_ports('from')
+    to_ports = get_ports('to')
+    from_names = map(lambda from_ports: from_ports['mac_address'], from_ports)
+    to_names = map(lambda to_ports: to_ports['mac_address'], to_ports)
+    for name in from_names:
+        if name in to_names:
+            from_po = filter(lambda from_ports: from_ports['mac_address'] == name, from_ports)
+            for from_port in from_po:
+                print '{:20}'.format(from_port['mac_address']), '{:20}'.format(from_port['fixed_ips'][0]['ip_address']), from_port['device_owner']
+
+
 def compare_and_create_ports():
     from_ports = get_ports('from')
     to_ports = get_ports('to')
@@ -329,13 +383,17 @@ def create_ip_ports(destination, port):
 
     # print "old port tenant", port['tenant_id']
     # print "corresponding tenant in port creation", corspd_tenant
+    print port
     try:
         if port['device_owner'].startswith('network:floatingip'):
+            print "---------"
             body = {
                     "floatingip": {
                         "floating_network_id": corspd_network['id'],
                         "floating_ip_address": port['fixed_ips'][0]['ip_address'],
-                        "tenant_id": corspd_tenant['to_id']
+                        "tenant_id": corspd_tenant['to_id'],
+                        # "mac_address": port['mac_address']
+
                     }
             }
             new_port = neutron.create_floatingip(body=body)
@@ -344,6 +402,7 @@ def create_ip_ports(destination, port):
             body = {'port': {
                 'network_id': corspd_network['id'],
                 "tenant_id": corspd_tenant['to_id'],
+                "mac_address": port['mac_address'],
                 'fixed_ips':[{
                     'ip_address': port['fixed_ips'][0]['ip_address']
                     }],
@@ -369,8 +428,10 @@ def find_port_by_ip(destination, ip):
 def find_float_by_floatip(destination, ip):
     ports = get_floatingip_list(destination)
     port_ip = filter(lambda ports: ports['floating_ip_address'] == ip, ports)
-    print port_ip
-    return port_ip[0]
+    if port_ip:
+        return port_ip[0]
+    else:
+        return None
 
 
 # neutron security-group-list
@@ -399,7 +460,8 @@ def associate_all_ips():
             from_fip = filter(lambda from_floats: from_floats['fixed_ip_address'] == fip, from_floats)
             to_fixed_port = find_port_by_ip('to', from_fip[0]['fixed_ip_address'])
             to_float_port = find_float_by_floatip('to', from_fip[0]['floating_ip_address'])
-            associate_floating_ip_to_fixed_port('to', to_float_port['id'], to_fixed_port['id'])
+            if to_float_port:
+                associate_floating_ip_to_fixed_port('to', to_float_port['id'], to_fixed_port['id'])
     # for from_float in from_floats:
     #     if from_float['fixed_ip_address']:
     #         to_fixed_port = find_port_by_ip('to', from_float['fixed_ip_address'])
@@ -446,8 +508,8 @@ def main():
     # associate_floating_ip_to_fixed_port('to')
     # print find_float_by_floatip('from', '172.29.248.10')
     # associate_all_ips()
-    print_network_list('to')
-
+    # print_network_list('to')
+    print_diff_macs()
 
 if __name__ == "__main__":
         main()
