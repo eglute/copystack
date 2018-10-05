@@ -18,7 +18,7 @@ from auth_stack2 import AuthStack
 
 
 def add_cinder_command_options(subparsers):
-    cinder_parser = subparsers.add_parser('cinder', help='Run cinder reports.')
+    cinder_parser = subparsers.add_parser('cinder', help='Run cinder reports and custom volume actions.')
 
     cinder_parser.add_argument("-s", "--report", action='store_true', dest='report', help='Print FROM volumes with details')
     cinder_parser.add_argument("-S", "--Report", action='store_true', dest='Report', help='Print TO volumes with details')
@@ -92,7 +92,7 @@ def cinder_actions(args):
 
 
 def add_keystone_command_options(subparsers):
-    keystone_parser = subparsers.add_parser('keystone', help='Run keystone reports.')
+    keystone_parser = subparsers.add_parser('keystone', help='Run keystone reports and custom keystone actions.')
 
     keystone_parser.add_argument("-r", "--fromroles", action='store_true', dest='fromroles', help='Print FROM roles')
     keystone_parser.add_argument("-R", "--toroles", action='store_true', dest='toroles', help='Print TO roles')
@@ -176,7 +176,7 @@ def keystone_actions(args):
 
 
 def add_nova_command_options(subparsers):
-    nova_parser = subparsers.add_parser('nova', help='Run nova reports')
+    nova_parser = subparsers.add_parser('nova', help='Run nova reports and custom nova actions.')
     nova_parser.add_argument("-s", "--from_sec", action='store_true', dest='from_sec', help='Print FROM security groups')
     nova_parser.add_argument("-S", "--to_sec", action='store_true', dest='to_sec', help='Print TO security groups')
     nova_parser.add_argument("-x", "--copysec", action='store_true', dest='copysec', help='Copy security groups FROM->TO. '
@@ -237,8 +237,23 @@ def nova_actions(args):
         vms = nova_common.print_vm_list_ids_without_bootable_volumes('to')
 
 
+def add_glance_command_options(subparsers):
+    glance_parser = subparsers.add_parser('glance', help='Run glance reports.')
+    glance_parser.add_argument("-i", "--from_images", action='store_true', dest='from_images', help='Print FROM images')
+    glance_parser.add_argument("-I", "--to_images", action='store_true', dest='to_images', help='Print TO images')
+
+
+def glance_actions(args):
+    if args.from_images:
+        print "\n--------------- From Images: ------------------------"
+        glance_common.print_images('from')
+    if args.to_images:
+        print "\n--------------- To Images: ------------------------"
+        glance_common.print_images('to')
+
+
 def add_neutron_command_options(subparsers):
-    neutron_parser = subparsers.add_parser('neutron', help='Run neutron reports')
+    neutron_parser = subparsers.add_parser('neutron', help='Run neutron reports and custom neutron actions.')
     neutron_parser.add_argument("-n", "--nets", action='store_true', dest='nets', help='Print FROM networks')
     neutron_parser.add_argument("-N", "--Nets", action='store_true', dest='Nets', help='Print TO networks')
     neutron_parser.add_argument("-r", "--routers", action='store_true', dest='routers', help='Print FROM routers')
@@ -563,17 +578,20 @@ def main():
 
     parser = argparse.ArgumentParser(description="Welcome to Copystack, your OpenStack migration helper!")
     subparsers = parser.add_subparsers(help='Program mode', dest='mode')
-    subparsers.add_parser('cinder')
-    subparsers.add_parser('keystone')
-    subparsers.add_parser('nova')
-    subparsers.add_parser('migrate')
-    subparsers.add_parser('move')
-    subparsers.add_parser('copy')
+    # subparsers.add_parser('cinder')
+    # subparsers.add_parser('glance')
+    # subparsers.add_parser('keystone')
+    # subparsers.add_parser('neutron')
+    # subparsers.add_parser('nova')
+    # subparsers.add_parser('migrate')
+    # subparsers.add_parser('move')
+    # subparsers.add_parser('copy')
 
     add_cinder_command_options(subparsers)
+    add_glance_command_options(subparsers)
     add_keystone_command_options(subparsers)
-    add_nova_command_options(subparsers)
     add_neutron_command_options(subparsers)
+    add_nova_command_options(subparsers)
     add_migrate_command_options(subparsers)
     add_move_command_options(subparsers)
     add_copy_command_options(subparsers)
@@ -582,6 +600,8 @@ def main():
     # print args
     if args.mode == 'cinder':
         cinder_actions(args)
+    elif args.mode == 'glance':
+        glance_actions(args)
     elif args.mode == 'keystone':
         keystone_actions(args)
     elif args.mode == 'nova':
