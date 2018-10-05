@@ -18,7 +18,7 @@ from auth_stack2 import AuthStack
 
 
 def add_cinder_command_options(subparsers):
-    cinder_parser = subparsers.add_parser('cinder', help='Run cinder reports.')
+    cinder_parser = subparsers.add_parser('cinder', help='Run cinder reports and custom volume actions.')
 
     cinder_parser.add_argument("-s", "--report", action='store_true', dest='report', help='Print FROM volumes with details')
     cinder_parser.add_argument("-S", "--Report", action='store_true', dest='Report', help='Print TO volumes with details')
@@ -92,7 +92,7 @@ def cinder_actions(args):
 
 
 def add_keystone_command_options(subparsers):
-    keystone_parser = subparsers.add_parser('keystone', help='Run keystone reports.')
+    keystone_parser = subparsers.add_parser('keystone', help='Run keystone reports and custom keystone actions.')
 
     keystone_parser.add_argument("-r", "--fromroles", action='store_true', dest='fromroles', help='Print FROM roles')
     keystone_parser.add_argument("-R", "--toroles", action='store_true', dest='toroles', help='Print TO roles')
@@ -176,11 +176,14 @@ def keystone_actions(args):
 
 
 def add_nova_command_options(subparsers):
-    nova_parser = subparsers.add_parser('nova', help='Run nova reports')
+    nova_parser = subparsers.add_parser('nova', help='Run nova reports and custom nova actions.')
     nova_parser.add_argument("-s", "--from_sec", action='store_true', dest='from_sec', help='Print FROM security groups')
     nova_parser.add_argument("-S", "--to_sec", action='store_true', dest='to_sec', help='Print TO security groups')
     nova_parser.add_argument("-x", "--copysec", action='store_true', dest='copysec', help='Copy security groups FROM->TO. '
                                     'Will also update DEFAULT group rules. Other duplucate groups will be ignored.')
+    nova_parser.add_argument("-k", "--publickeys", action='store_true', dest='publickeys',
+                             help='Copy public keys FROM->TO. '
+                                  'Will also update DEFAULT group rules. Other duplucate groups will be ignored.')
     nova_parser.add_argument("-f", "--from_flavor", action='store_true', dest='from_flavor', help='Print FROM flavors')
     nova_parser.add_argument("-F", "--to_flavor", action='store_true', dest='to_flavor', help='Print TO flavors')
     nova_parser.add_argument("-v", "--from_vms", action='store_true', dest='from_vms', help='Print FROM vms')
@@ -205,8 +208,12 @@ def nova_actions(args):
     if args.copysec:
         print "**** Create new groups ****"
         nova_common.compare_and_create_security_groups()
-        print "**** Updating DEFAULT group rules: ****"
-        nova_common.update_default_group_rules()
+        print "**** Updating exsisting group rules: ****"
+        # nova_common.update_default_group_rules()
+        nova_common.update_all_group_rules()
+    if args.publickeys:
+        print "**** Copy public keys ****"
+        nova_common.compare_and_create_keypairs()
     if args.from_flavor:
         print "\n--------------- From Flavors: ------------------------"
         nova_common.print_flavor_list('from')
@@ -237,12 +244,36 @@ def nova_actions(args):
         vms = nova_common.print_vm_list_ids_without_bootable_volumes('to')
 
 
+def add_glance_command_options(subparsers):
+    glance_parser = subparsers.add_parser('glance', help='Run glance reports.')
+    glance_parser.add_argument("-i", "--from_images", action='store_true', dest='from_images', help='Print FROM images')
+    glance_parser.add_argument("-I", "--to_images", action='store_true', dest='to_images', help='Print TO images')
+
+
+def glance_actions(args):
+    if args.from_images:
+        print "\n--------------- From Images: ------------------------"
+        glance_common.print_images('from')
+    if args.to_images:
+        print "\n--------------- To Images: ------------------------"
+        glance_common.print_images('to')
+
+
 def add_neutron_command_options(subparsers):
-    neutron_parser = subparsers.add_parser('neutron', help='Run neutron reports')
+    neutron_parser = subparsers.add_parser('neutron', help='Run neutron reports and custom neutron actions.')
     neutron_parser.add_argument("-n", "--nets", action='store_true', dest='nets', help='Print FROM networks')
     neutron_parser.add_argument("-N", "--Nets", action='store_true', dest='Nets', help='Print TO networks')
     neutron_parser.add_argument("-r", "--routers", action='store_true', dest='routers', help='Print FROM routers')
     neutron_parser.add_argument("-R", "--Routers", action='store_true', dest='Routers', help='Print TO routers')
+    neutron_parser.add_argument("-p", "--ports", action='store_true', dest='ports', help='Print FROM ports')
+    neutron_parser.add_argument("-P", "--Ports", action='store_true', dest='Ports', help='Print TO ports')
+    neutron_parser.add_argument("-c", "--common", action='store_true', dest='common', help='IPs in both environments')
+    neutron_parser.add_argument("-d", "--diff", action='store_true', dest='diff', help='IPs missing from "TO" environment')
+    neutron_parser.add_argument("-C", "--smacs", action='store_true', dest='smacs', help='Macs in both environments' )
+    neutron_parser.add_argument("-D", "--dmacs", action='store_true', dest='dmacs', help='Macs missing from "TO" environment' )
+    neutron_parser.add_argument("-i", "--interfaces", action='store_true', dest='interfaces', help='Add missing interfaces.'
+                                ' Run this command as Admin. Add missing interfaces between routers and networks and '
+                               'additional ports.')
 
 
 def neutron_actions(args):
@@ -258,48 +289,72 @@ def neutron_actions(args):
     if args.Routers:
         print "\n--------------- To Routers: ---------------------"
         neutron_common.print_routers('to')
+    if args.ports:
+        print "\n--------------- From Ports: ---------------------"
+        neutron_common.print_ports('from')
+    if args.Ports:
+        print "\n--------------- TO Ports: ---------------------"
+        neutron_common.print_ports('to')
+    if args.common:
+        print "\n--------------- IPs created in both environments: ---------------------"
+        print "IP                   Port Type"
+        neutron_common.print_common_ips()
+    if args.diff:
+        print "\n--------------- IPs missing from 'TO' environment: ---------------------"
+        print "IP                   Port Type"
+        neutron_common.print_diff_ips()
+    if args.dmacs:
+        print "\n--------------- Print differences in macs: ---------------------"
+        print "Mac Addresss         IP                   Port Type"
+        neutron_common.print_diff_macs()
+    if args.smacs:
+        print "\n--------------- Print same macs: ---------------------"
+        print "Mac Addresss         IP                   Port Type"
+        neutron_common.print_same_macs()
+    if args.interfaces:
+        print "\n--------------- Adding missing ports: ---------------------"
+        neutron_common.compare_and_create_ports()
 
 
 def add_migrate_command_options(subparsers):
-    migrate_parser = subparsers.add_parser('migrate', help='Migration using glance images')
+    migrate_parser = subparsers.add_parser('migrate', help='Migration using glance images and cinder volumes.')
+
     migrate_parser.add_argument("-0", "--shutdown", dest='shutdown', nargs=1, metavar='UUID_file',
-                      help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
+                                help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
     migrate_parser.add_argument("-1", "--createsnapshotvm", dest='createsnapshotvm', nargs=1, metavar='UUID_file',
-                      help='Create snapshots from VMs Cinder volumes for each UUID provided in a file, '
-                           'for example, ./id_file. ')
-    migrate_parser.add_argument("-2", "--createsvolumefromsnapshot", dest='createsvolumefromsnapshot', nargs=1, metavar='UUID_file',
-                      help='Create volumes from snapshots based on associated VM for each VM UUID provided in a file, '
-                           'for example, ./id_file. ')
-    migrate_parser.add_argument("-3", "--createsimagesfromvolumesnapshots", nargs=1, metavar='UUID_file',
-                      dest='createsimagesfromvolumesnapshots',
-                      help='Create images from volumes based on snapshots based on associated VM for each VM UUID provided in a file, '
-                           'for example, ./id_file. ')
-    migrate_parser.add_argument("-4", "--downloadbyvmidsnapshot", dest='downloadbyvmidsnapshot',
-                      nargs=2, metavar=('path', 'UUID_file'),
-                      help='First argument directory path, second path to a file. '
-                           'Download all images by VM UUID to a specified path, for example, ./downloads/ '
-                           'for each UUID provided in a file, for example, ./id_file.')
-    migrate_parser.add_argument("-5", "--uploadimagebyvmidsnapshot",  dest='uploadimagebyvmidsnapshot',
-                      nargs=2, metavar=('path', 'UUID_file'),
-                      help='First argument directory path, second path to a file. '
-                           'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
-                           'for each UUID provided in a file, for example, ./id_file. ')
-    migrate_parser.add_argument("-6", "--volumefromimage", dest='volumefromimage',
-                      nargs=2, metavar=('path', 'UUID_file'),
-                      help='First argument path to a file with original VM IDs. '
-                           'Upload all images by VM UUID from a specified path, for example, ./downloads/ '
-                           'for each UUID provided in a file, for example, ./id_file. ')
-    migrate_parser.add_argument("-7", "--bootvmsfromvolumescustomnet",
-                      nargs=3, metavar=('UUID_file', 'network', 'public_key'),
-                      dest='bootvmsfromvolumescustomnet',
-                      help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
-                           'on a custom network. Floating IPs will not be created. Provide network name or ID,'
-                           'for example, "demo-net and optional public key name "key-name" '
-                           ' Sample: -7 ./id_file demo-net key-name')
-    migrate_parser.add_argument("-8", "--adddvolumestovms",  dest='adddvolumestovms',
-                      nargs=1, metavar='UUID_file',
-                      help='Attach additional volumes to migrated VMs for each UUID provided in the original '
-                           'migration file, for example, ./id_file.')
+                                help='Create VM glance images as well as snapshots from VMs Cinder volumes for each UUID provided in a file, '
+                                     'for example, ./id_file. ')
+    migrate_parser.add_argument("-2", "--createsvolumefromsnapshot", dest='createsvolumefromsnapshot', nargs=1,
+                                metavar='UUID_file',
+                                help='Create volumes from glance images and volume snapshots based on associated VM for each VM UUID provided in a file, '
+                                     'for example, ./id_file. ')
+    migrate_parser.add_argument("-3", "--managevolumes", dest='managevolumes',
+                                nargs=3, metavar=('UUID_file', 'SSD_host', 'HDD_host'),
+                                help='Manage all volumes by VM UUID '
+                                     'for each UUID provided in a file, for example, ./id_file.'
+                                     'Please provide 2 hosts (SSD and HDD based) to be used for cinder volumes. '
+                                     'These hosts will be used for all VMs in the id_file. For example, '
+                                     ' ./id_file <SDD host> <HDD host> '
+                                     ' ./id_file sample-aio-liberty-2@lvm#SolidFire_iSCSI sample-aio-liberty-2@Ceph#LVM_iSCSI')
+    migrate_parser.add_argument("-4", "--converttoimages", nargs=1, metavar=('UUID_file'),
+                                help='Convert volumes back to VM images for each UUID provided in '
+                                     'a file, for example, ./id_file')
+    # migrate_parser.add_argument("-5", "--retypevolumes", nargs=2, metavar=('UUID_file', 'type'),
+    #                             help='Retype all volumes to a give type by associated VM UUID for each UUID provided in '
+    #                                  'a file, for example, ./id_file lvm')
+    migrate_parser.add_argument("-5", "--boot",
+                                nargs=1, metavar='UUID_file',
+                                dest='boot',
+                                help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
+                                     'with prior IPs attached. Example command: '
+                                     ' ./copystack migrate -6 ./id_file')
+    migrate_parser.add_argument("-6", "--adddvolumestovms", dest='adddvolumestovms',
+                                nargs=1, metavar='UUID_file',
+                                help='Attach additional volumes to migrated VMs for each UUID provided in the original '
+                                     'migration file, for example, ./id_file.')
+    migrate_parser.add_argument("-7", "--securitygroups", dest='securitygroups', nargs=1, metavar='UUID_file',
+                                help='Attach security groups to migrated VMs for each UUID provided in the original '
+                                     'migration file, for example, ./id_file. ')
 
 
 def migrate_actions(args):
@@ -310,39 +365,39 @@ def migrate_actions(args):
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
     if args.createsnapshotvm:
         if args.createsnapshotvm:
+            #todo: move this and add logic on checking for boot from volume vs boot from image
             nova_common.prepare_migrate_vms_from_image_snapshot(id_file=args.createsnapshotvm[0])
+            nova_common.create_image_from_vm('from', id_file=args.createsnapshotvm[0])
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
     if args.createsvolumefromsnapshot:
         if len(args.createsvolumefromsnapshot) == 1:
             nova_common.make_volumes_from_snapshots("from", id_file=args.createsvolumefromsnapshot[0])
+            cinder_common.convert_image_to_volume_by_vm_ids('from', id_file=args.createsvolumefromsnapshot[0])
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
-    if args.createsimagesfromvolumesnapshots:
-        if len(args.createsimagesfromvolumesnapshots) == 1:
-            nova_common.make_images_of_volumes_based_on_vms("from", id_file=args.createsimagesfromvolumesnapshots[0])
-        else:
-            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
-    if args.downloadbyvmidsnapshot:
-        if len(args.downloadbyvmidsnapshot) == 2:
-            nova_common.download_images_of_volumes_based_on_vms("from", path=args.downloadbyvmidsnapshot[0], id_file=args.downloadbyvmidsnapshot[1])
-        else:
-            print "Please provide image directory and file with VM ids, for example, ./downloads/ ./id_file"
-    if args.uploadimagebyvmidsnapshot:
-        if len(args.uploadimagebyvmidsnapshot) == 2:
-            glance_common.upload_volume_images_by_vm_uuid(path=args.uploadimagebyvmidsnapshot[0], id_file=args.uploadimagebyvmidsnapshot[1])
-        else:
-            print "Please provide image directory and file with VM ids, for example, ./downloads/ ./id_file"
-    if args.volumefromimage:
-        if len(args.volumefromimage) == 1:
-            nova_common.create_volumes_from_images_based_on_vms(id_file=args.volumefromimage[0])
-        else:
-            print "Please provide file with VM ids, for example, ./id_file"
+    if args.managevolumes:
+        if len(args.managevolumes) == 3:
+            nova_common.manage_volumes_based_on_vms(args.managevolumes[0], args.managevolumes[1], args.managevolumes[2])
+    if args.converttoimages:
+        if len(args.converttoimages) == 1:
+            cinder_common.convert_volumes_to_vm_images_by_vm_ids('to', args.converttoimages[0])
+    # if args.retypevolumes:
+    #     if len(args.retypevolumes) == 2:
+    #         nova_common.retype_volumes_based_on_vms(args.retypevolumes[0], args.retypevolumes[1])
+    if args.boot:
+        if len(args.boot) == 1:
+            nova_common.migrate_vms_from_image(id_file=args.boot[0])
     if args.adddvolumestovms:
         if len(args.adddvolumestovms) == 1:
             nova_common.attach_volumes(id_file=args.adddvolumestovms[0])
         else:
             print "Please provide file with VM ids, for example, ./id_file"
+    if args.securitygroups:
+        if len(args.securitygroups) == 1:
+            nova_common.attach_security_groups(id_file=args.securitygroups[0])
+        else:
+            print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
 
 
 def add_move_command_options(subparsers):
@@ -530,18 +585,21 @@ def main():
 
     parser = argparse.ArgumentParser(description="Welcome to Copystack, your OpenStack migration helper!")
     subparsers = parser.add_subparsers(help='Program mode', dest='mode')
-    subparsers.add_parser('cinder')
-    subparsers.add_parser('keystone')
-    subparsers.add_parser('nova')
+    # subparsers.add_parser('cinder')
+    # subparsers.add_parser('glance')
+    # subparsers.add_parser('keystone')
+    # subparsers.add_parser('neutron')
+    # subparsers.add_parser('nova')
     # subparsers.add_parser('migrate')
-    subparsers.add_parser('move')
-    subparsers.add_parser('copy')
+    # subparsers.add_parser('move')
+    # subparsers.add_parser('copy')
 
     add_cinder_command_options(subparsers)
+    add_glance_command_options(subparsers)
     add_keystone_command_options(subparsers)
-    add_nova_command_options(subparsers)
     add_neutron_command_options(subparsers)
-    # add_migrate_command_options(subparsers)
+    add_nova_command_options(subparsers)
+    add_migrate_command_options(subparsers)
     add_move_command_options(subparsers)
     add_copy_command_options(subparsers)
 
@@ -549,6 +607,8 @@ def main():
     # print args
     if args.mode == 'cinder':
         cinder_actions(args)
+    elif args.mode == 'glance':
+        glance_actions(args)
     elif args.mode == 'keystone':
         keystone_actions(args)
     elif args.mode == 'nova':
