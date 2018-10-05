@@ -181,6 +181,9 @@ def add_nova_command_options(subparsers):
     nova_parser.add_argument("-S", "--to_sec", action='store_true', dest='to_sec', help='Print TO security groups')
     nova_parser.add_argument("-x", "--copysec", action='store_true', dest='copysec', help='Copy security groups FROM->TO. '
                                     'Will also update DEFAULT group rules. Other duplucate groups will be ignored.')
+    nova_parser.add_argument("-k", "--publickeys", action='store_true', dest='publickeys',
+                             help='Copy public keys FROM->TO. '
+                                  'Will also update DEFAULT group rules. Other duplucate groups will be ignored.')
     nova_parser.add_argument("-f", "--from_flavor", action='store_true', dest='from_flavor', help='Print FROM flavors')
     nova_parser.add_argument("-F", "--to_flavor", action='store_true', dest='to_flavor', help='Print TO flavors')
     nova_parser.add_argument("-v", "--from_vms", action='store_true', dest='from_vms', help='Print FROM vms')
@@ -205,8 +208,12 @@ def nova_actions(args):
     if args.copysec:
         print "**** Create new groups ****"
         nova_common.compare_and_create_security_groups()
-        print "**** Updating DEFAULT group rules: ****"
-        nova_common.update_default_group_rules()
+        print "**** Updating exsisting group rules: ****"
+        # nova_common.update_default_group_rules()
+        nova_common.update_all_group_rules()
+    if args.publickeys:
+        print "**** Copy public keys ****"
+        nova_common.compare_and_create_keypairs()
     if args.from_flavor:
         print "\n--------------- From Flavors: ------------------------"
         nova_common.print_flavor_list('from')
