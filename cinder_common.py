@@ -303,30 +303,52 @@ def create_volume_from_image(destination, volume, single=False):
 def convert_image_to_volume_by_vm_ids(destination, id_file):
     cinder = get_cinder('from')
     images = glance_common.get_images_by_vm_id(destination, id_file)
-    for image in images:
-        meta = {}
-        print image.size
-        meta.update({'image_size': str(image.size)})
-        meta.update({'bootable': 'true'})
-        meta.update({'image_name': image.name})
-        meta.update({'original_vm_name': image.original_vm_name})
-        meta.update({'original_vm_id': image.original_vm_id})
-        size = utils.convert_B_to_GB(image.size)
-        #todo: add display_name vs name for cinder v1
-        myvol = cinder.volumes.create(size=size,
-                                      # snapshot_id=volume.snapshot_id,
-                                      # display_name=volume.display_name,
-                                      display_name=image.name,
-                                      display_description="Migration volume of an image",
-                                      # volume_type=volume.volume_type,
-                                      # project_id=tenant,
-                                      metadata=meta,
-                                      imageRef=image.id,
-                                      )
-        print "Volume", myvol.id, "created"
-        #todo: fix for cinder v1, add exception catching for boot
-        #bootable since based on image:
-        # cinder.volumes.set_bootable(myvol, True)
+    version = float(cinder.version)
+    if version >= 2.0:
+        for image in images:
+            meta = {}
+            meta.update({'image_size': str(image.size)})
+            meta.update({'bootable': 'true'})
+            meta.update({'image_name': image.name})
+            meta.update({'original_vm_name': image.original_vm_name})
+            meta.update({'original_vm_id': image.original_vm_id})
+            size = utils.convert_B_to_GB(image.size)
+            myvol = cinder.volumes.create(size=size,
+                                          # snapshot_id=volume.snapshot_id,
+                                          # display_name=volume.display_name,
+                                          name=image.name,
+                                          description="Migration volume of an image",
+                                          # volume_type=volume.volume_type,
+                                          # project_id=tenant,
+                                          metadata=meta,
+                                          imageRef=image.id,
+                                          )
+            print "Volume", myvol.id, "created"
+            #bootable since based on image:
+            cinder.volumes.set_bootable(myvol, True)
+    else:
+        for image in images:
+            meta = {}
+            meta.update({'image_size': str(image.size)})
+            meta.update({'bootable': 'true'})
+            meta.update({'image_name': image.name})
+            meta.update({'original_vm_name': image.original_vm_name})
+            meta.update({'original_vm_id': image.original_vm_id})
+            size = utils.convert_B_to_GB(image.size)
+            myvol = cinder.volumes.create(size=size,
+                                          # snapshot_id=volume.snapshot_id,
+                                          # display_name=volume.display_name,
+                                          display_name=image.name,
+                                          display_description="Migration volume of an image",
+                                          # volume_type=volume.volume_type,
+                                          # project_id=tenant,
+                                          metadata=meta,
+                                          imageRef=image.id,
+                                          )
+            print "Volume", myvol.id, "created"
+            # can't set bootable in cinder v1.
+            #bootable since based on image:
+            # cinder.volumes.set_bootable(myvol, True)
 
 
 def convert_volumes_to_vm_images_by_vm_ids(destination, id_file):

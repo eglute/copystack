@@ -129,9 +129,26 @@ def update_default_group_rules():
     create_security_rules('to', from_default, to_default, new_groups)
 
 
+def update_all_group_rules():
+    from_groups = get_security_groups('from')
+    to_groups = get_security_groups('to')
+    for from_group in from_groups:
+        to_group = get_group_by_name(to_groups, from_group.name)
+        new_groups = []
+        group_pair = {'old': from_group, 'new': to_group}
+        new_groups.append(group_pair)
+        create_security_rules('to', from_group, to_group, new_groups)
+
+
 def get_default_group(groups):
     for group in groups:
         if group.name == 'default':
+            return group
+
+
+def get_group_by_name(groups, name):
+    for group in groups:
+        if group.name == name:
             return group
 
 
@@ -1022,11 +1039,12 @@ def main():
     # make_volumes_from_snapshots("from", './id_file')
     # manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
     # power_on_vms('from', './id_file')
-    # update_default_group_rules()
+    update_default_group_rules()
     # compare_and_create_security_groups()
     # print get_vms_without_volumes('from')
     # print get_vms_without_boot_volumes('from')
-    attach_volumes('./id_file')
+    # attach_volumes('./id_file')
+    # update_all_group_rules()
 
 
 if __name__ == "__main__":
