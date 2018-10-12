@@ -319,6 +319,7 @@ def convert_image_to_volume_by_vm_ids(destination, id_file):
                                           name=image.name,
                                           description="Migration volume of an image",
                                           # volume_type=volume.volume_type,
+                                          volume_type="SSD",
                                           # project_id=tenant,
                                           metadata=meta,
                                           imageRef=image.id,
@@ -341,6 +342,7 @@ def convert_image_to_volume_by_vm_ids(destination, id_file):
                                           display_name=image.name,
                                           display_description="Migration volume of an image",
                                           # volume_type=volume.volume_type,
+                                          volume_type="SolidFire",
                                           # project_id=tenant,
                                           metadata=meta,
                                           imageRef=image.id,
@@ -398,7 +400,7 @@ def upload_volume_to_image_by_vm(destination, volume):
         cinder.volumes.upload_to_image(volume, force=True, image_name=image_name,
                                        container_format=container_format, disk_format=disk_format)
         print "Image " + image_name + " created from volume ID " + volume.id
-        update_volume_description(destination, volume, "Delete after migration.")
+        # update_volume_description(destination, volume, "Migration Image.")
 
 
 def upload_single_volumes_to_image(destination, uuid_file):
