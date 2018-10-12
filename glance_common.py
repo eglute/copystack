@@ -62,15 +62,24 @@ def get_image_by_original_id(destination, original_id):
 
 def get_images_by_vm_id(destination, uuid_file):
     ids = utils.read_ids_from_file(uuid_file)
-    images = get_images(destination)
     vm_images = []
     for vm in ids:
         name = "migration_vm_image_" + vm
         print "name", name
-        for img in images:
-            if img.name == name:
-                vm_images.append(img)
+        img = find_image_in_list_by_name(destination, name)
+        if img:
+            vm_images.append(img)
+        else:
+            print "image not found: ", name
     return vm_images
+
+
+def find_image_in_list_by_name(destination, name):
+    images = get_images(destination)
+    for image in images:
+        if image.name == name:
+            print image.name
+            return image
 
 
 # Create all images found, since name uniqueness in images is not guaranteed...
