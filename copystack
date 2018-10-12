@@ -519,7 +519,7 @@ def add_copy_command_options(subparsers):
     migrate_parser.add_argument("-7", "--bootalt",
                                 nargs='+',
                                 dest='bootalt',
-                                help='Skip step 4 for boot from volume. Boot volume will be mounted as /dev/vda, '
+                                help='Skip steps 4 and 6 for boot from volume. Boot volume will be mounted as /dev/vda, '
                                      'which could cause issues with secondary volumes.'
                                      'Boot migrated VMs from VOLUME for each VM UUID provided in a file, for example, ./id_file. '
                                      'on a custom network. Floating IPs will not be created. Provide network name or ID,'
