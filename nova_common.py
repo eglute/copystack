@@ -356,6 +356,39 @@ def create_vm_from_volume_with_network_mapping(from_vm, volume, network_name='no
     return server
 
 
+def create_vm_from_volume_with_network_mapping_no_original_device(from_vm, volume, network_name='none', key='default', user_data='default'):
+    nova = get_nova('to')
+
+    flavor = get_flavor_by_name('to', from_vm.flavor['id'])
+    if flavor is None:
+        print "Error: Cannot continue for this VM without proper flavor"
+        return None
+
+    net = neutron_common.get_network_by_name('to', network_name)
+    nics = [{'net-id': net['id'] }]
+
+    #include original image info as metadata:
+    metadata = from_vm.metadata
+    metadata.update({'original_vm_id':from_vm.id})
+
+    #attaching security groups during server creation does not seem to work, so moved to a separate task
+
+    # block_device_mapping = {'vda':'uuid of the volume you want to use'}
+    block_device_mapping = {'/dev/vda': volume.id}
+
+    # print block_device_mapping
+    if key == 'default':
+        key = from_vm.key_name
+        server = nova.servers.create(name=from_vm.name, image="", flavor=flavor.id, nics=nics, block_device_mapping=block_device_mapping,
+                                     meta=metadata, key_name=key, userdata=user_data)
+    else:
+        server = nova.servers.create(name=from_vm.name, image="", flavor=flavor.id,
+                                     block_device_mapping=block_device_mapping, nics=nics,
+                                     meta=metadata, key_name=key, userdata=user_data)
+    print "Server created:", server.name
+    return server
+
+
 def create_vm_from_image_with_network_mapping(from_vm, image, network_name='none', key='default', user_data='default'):
     nova = get_nova('to')
 
@@ -533,6 +566,43 @@ def boot_from_volume_vms_from_image_with_network_mapping(id_file, custom_network
                         create_vm_from_volume_with_network_mapping(server, volume=boot_volume, network_name=custom_network, key=key, user_data=user_data)
             else:
                 print "Original VM doesn't have volumes attached, cannot proceed to launch new VM from volume"
+            # else:
+            #     print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
+        except nova_exc.NotFound:
+            print "2 Server with UUID", uuid, "not found"
+
+
+def boot_from_volume_vms_with_network_mapping(id_file, custom_network='none', key='default', user_data='default'):
+    ids = utils.read_ids_from_file(id_file)
+    nova_from = get_nova("from")
+    to_vms = get_vm_list('to')
+
+    for uuid in ids:
+        try:
+            server = nova_from.servers.get(uuid)
+            # if server.status == 'SHUTOFF':
+            if server:
+                volumes = cinder_common.get_volume_list_by_vm_id('to', uuid)
+                boot_volume = None
+                for vol in volumes:
+                    if vol.name.startswith('migration_vm_image_'):
+                        boot_volume = vol
+                if boot_volume:
+                    dup_vms = filter(lambda to_vms: to_vms.name == server.name, to_vms)
+                    duplicate = False
+                    for dup in dup_vms:
+                        if 'original_vm_id' in dup.metadata:
+                            if dup.metadata['original_vm_id'] == server.id:
+                                print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
+                                duplicate = True
+                    if duplicate is False:
+                        create_vm_from_volume_with_network_mapping_no_original_device(server, volume=boot_volume,
+                                                                   network_name=custom_network, key=key,
+                                                                   user_data=user_data)
+
+                else:
+                    print 'boot volume not found'
+
             # else:
             #     print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
         except nova_exc.NotFound:
@@ -1039,12 +1109,13 @@ def main():
     # make_volumes_from_snapshots("from", './id_file')
     # manage_volumes_based_on_vms('./id_file', 'egle-pike-dns-1@lvm#LVM_iSCSI')
     # power_on_vms('from', './id_file')
-    update_default_group_rules()
+    # update_default_group_rules()
     # compare_and_create_security_groups()
     # print get_vms_without_volumes('from')
     # print get_vms_without_boot_volumes('from')
     # attach_volumes('./id_file')
     # update_all_group_rules()
+    boot_from_volume_vms_with_network_mapping('./id_file', 'demo-net')
 
 
 if __name__ == "__main__":
