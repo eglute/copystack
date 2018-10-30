@@ -819,6 +819,30 @@ def get_vm_by_original_id(destination, original_id):
     return None
 
 
+def get_to_vm_list_by_original_ids(id_file):
+    all_vms = get_vm_list('to')
+    ids = utils.read_ids_from_file(id_file)
+    vms = []
+    for vm in all_vms:
+        for original_id in ids:
+            if 'original_vm_id' in vm.metadata:
+                original_vm_id = vm.metadata['original_vm_id']
+                if original_vm_id == original_id:
+                    vms.append(vm)
+    return vms
+
+
+def get_from_vm_list_by_ids(id_file):
+    all_vms = get_vm_list('from')
+    ids = utils.read_ids_from_file(id_file)
+    vms = []
+    for vm in all_vms:
+        for id in ids:
+            if vm.id == id:
+                vms.append(vm)
+    return vms
+
+
 def get_keypairs(destination):
     nova = get_nova(destination)
     keys = nova.keypairs.list()
@@ -1078,6 +1102,25 @@ def retype_volumes_based_on_vms(id_file, type):
             cinder_common.change_volume_type("to", volume, type)
 
 
+def print_interfaces_for_vms(destination, id_file):
+    if destination == 'from':
+        servers = get_from_vm_list_by_ids(id_file)
+    else:
+        servers = get_to_vm_list_by_original_ids(id_file)
+    nova = get_nova(destination)
+    # print 'VM Name VM ID Port ID Port State Mac Fixed IP'
+    print '{:16}'.format("VM Name"), '{:38}'.format("VM ID"), '{:38}'.format("Port ID"), '{:10}'.format("Port State"), \
+        '{:18}'.format("Mac"), '{:16}'.format("Fixed IP")
+
+    for server in servers:
+        interfaces = nova.servers.interface_list(server)
+        for interface in interfaces:
+            print '{:16}'.format(server.name), '{:38}'.format(server.id), '{:38}'.format(interface.port_id), \
+                '{:10}'.format(interface.port_state), '{:18}'.format(interface.mac_addr),
+            for ip in interface.fixed_ips:
+                print '{:16}'.format(ip['ip_address'])
+
+
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
@@ -1115,7 +1158,9 @@ def main():
     # print get_vms_without_boot_volumes('from')
     # attach_volumes('./id_file')
     # update_all_group_rules()
-    boot_from_volume_vms_with_network_mapping('./id_file', 'demo-net')
+    # boot_from_volume_vms_with_network_mapping('./id_file', 'demo-net')
+    # get_interfaces_for_vm_ids('from', './id_file')
+    print_interfaces_for_vms('from', './id_file')
 
 
 if __name__ == "__main__":
