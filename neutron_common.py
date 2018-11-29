@@ -257,7 +257,7 @@ def get_router_by_name(destination, name):
 def print_ports(destination):
     ports = get_ports(destination)
     for port in ports:
-        print port['id'], port['mac_address'], port['fixed_ips']
+        print port['id'], port['mac_address'], port['fixed_ips'], port['allowed_address_pairs']
 
 
 def print_common_ips():
@@ -479,11 +479,6 @@ def associate_floating_ip_to_fixed_port(destination, to_float_port_id, to_fixed_
     print "Updated floating to fixed IP association, port: ", to_float_port_id, " to ", to_fixed_port_id
 
 
-#todo: fix this
-def compare_network_info_to_file():
-    print "fix this"
-
-
 def main():
     # check(args)
     # get_network_list('from')
@@ -509,7 +504,8 @@ def main():
     # print find_float_by_floatip('from', '172.29.248.10')
     # associate_all_ips()
     # print_network_list('to')
-    print_diff_macs()
+    # print_diff_macs()
+    print_ports("from")
 
 if __name__ == "__main__":
         main()
