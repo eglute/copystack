@@ -94,23 +94,56 @@ def get_ports(destination):
 # takes a network object which and replicated to the indicated destination
 def network_create_net(destination, network):
     neutron = get_neutron(destination)
-
-    # need a "to" tenant id.
+    bonds = None
     tenant_info = keystone_common.find_opposite_project_id(network['tenant_id'])
-    new_network = {'network': {'name': network['name'],
-                            'tenant_id': tenant_info['to_id'],
-                            'admin_state_up': network['admin_state_up'],
-                            'provider:network_type': network['provider:network_type'],
-                            #'provider:segmentation_id': network['provider:segmentation_id'], #todo: check on this
-                            'router:external': network['router:external'],
-                            'shared': network['shared']}}
+    if network['provider:physical_network']:
+        if network['provider:physical_network'] == 'bond0':
+            bonds = 'datacentre'
+        else:
+            bonds = 'storage'
+        new_network = {'network': {'name': network['name'],
+                                'tenant_id': tenant_info['to_id'],
+                                'admin_state_up': network['admin_state_up'],
+                                'provider:network_type': network['provider:network_type'],
+                                'provider:segmentation_id': network['provider:segmentation_id'], #todo: check on this
+                                'provider:physical_network': bonds,
+                                'router:external': network['router:external'],
+                                'shared': network['shared']}}
+    else:
+        new_network = {'network': {'name': network['name'],
+                                   'tenant_id': tenant_info['to_id'],
+                                   'admin_state_up': network['admin_state_up'],
+                                   'provider:network_type': network['provider:network_type'],
+                                   'provider:segmentation_id': network['provider:segmentation_id'],
+                                   # todo: check on this
+                                   'router:external': network['router:external'],
+                                   'shared': network['shared']}}
 
-    physical = network['provider:physical_network']
-    if physical is not None:
-        new_network['network'].update({'provider:physical_network': physical})
+    # physical = network['provider:physical_network']
+    # if physical is not None:
+    #     new_network['network'].update({'provider:physical_network': physical})
 
     new_net = neutron.create_network(body=new_network)
     return new_net
+
+
+def find_from_net_by_network_name(network_name):
+    from_networks = get_network_list('from')
+    for network in from_networks:
+        if network['name'] == network_name:
+            print "found matching network name!"
+            print network
+            return network
+    return None
+
+
+def copy_by_net_name(network_name):
+    from_network = find_from_net_by_network_name(network_name)
+    print from_network
+    new_network = network_create_net('to', from_network)
+    print "New network created: "
+    print new_network
+    create_subnets(from_network['id'], new_network['network']['id'], new_network['network']['tenant_id'])
 
 
 def compare_and_create_networks():
@@ -121,7 +154,7 @@ def compare_and_create_networks():
     for name in from_names:
         if name not in to_names:
             from_network = filter(lambda from_networks: from_networks['name'] == name, from_networks)
-            # print from_network
+            print from_network
             new_network = network_create_net('to', from_network[0])
             print "New network created: "
             print new_network
@@ -506,7 +539,9 @@ def main():
     # associate_all_ips()
     # print_network_list('to')
     # print_diff_macs()
-    print_ports("from")
+    # print_ports("from")
+    copy_by_net_name('test-net')
+
 
 if __name__ == "__main__":
         main()
