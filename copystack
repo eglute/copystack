@@ -186,6 +186,7 @@ def add_nova_command_options(subparsers):
                                   'Will also update DEFAULT group rules. Other duplucate groups will be ignored.')
     nova_parser.add_argument("-f", "--from_flavor", action='store_true', dest='from_flavor', help='Print FROM flavors')
     nova_parser.add_argument("-F", "--to_flavor", action='store_true', dest='to_flavor', help='Print TO flavors')
+    nova_parser.add_argument("-X", "--copy_flavors", action='store_true', dest='copy_flavors', help='Copy flavors from->to. Run as admin.')
     nova_parser.add_argument("-v", "--from_vms", action='store_true', dest='from_vms', help='Print FROM vms')
     nova_parser.add_argument("-V", "--to_vms", action='store_true', dest='to_vms', help='Print TO vms')
     nova_parser.add_argument("-p", "--power_on", dest='power_on', nargs=1, metavar='UUID_file',
@@ -222,6 +223,8 @@ def nova_actions(args):
     if args.from_flavor:
         print "\n--------------- From Flavors: ------------------------"
         nova_common.print_flavor_list('from')
+    if args.copy_flavors:
+        nova_common.compare_and_create_flavors()
     if args.to_flavor:
         print "\n--------------- To Flavors: ------------------------"
         nova_common.print_flavor_list('to')
