@@ -696,6 +696,20 @@ def print_roles(destination):
         print role.id, "   ", role.name
 
 
+def set_password(destination, username, password):
+    keystone = get_keystone(destination)
+    user = get_user_by_name(destination, username)
+    keystone.users.update(user, password=password)
+
+
+def set_passwords(destination, file_with_usernames, password):
+    keystone = get_keystone(destination)
+    users = get_users_from_name_list(destination, file_with_usernames)
+    for user in users:
+        print "setting password for: ", user.name
+        keystone.users.update(user, password=password)
+
+
 def main():
     #compare_and_create_tenants()
     #get_from_to_name_tenant_ids()
@@ -734,7 +748,8 @@ def main():
     # compare_and_create_users_by_domain("password")
     # build_matrix()
     # get_user_roles('from', 'myuser')
-    print_roles('to')
+    # print_roles('to')
+    set_passwords('to', 'user_list', 'so_secret!')
 
 if __name__ == "__main__":
         main()
