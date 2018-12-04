@@ -93,7 +93,7 @@ class AuthStack(object):
 
     def get_from_auth_ref(self):
         if self.from_keystone_version == '2':
-            keystone = client_v2.Client(certificates=self.from_cert, username=self.from_username, password=self.from_password,
+            keystone = client_v2.Client(cacert=self.from_cert, username=self.from_username, password=self.from_password,
                                 tenant_name=self.from_tenant_name, auth_url=self.from_auth_url)
             # keystone.management_url = self.from_auth_url
             # keystone.auth_url = self.from_auth_url
