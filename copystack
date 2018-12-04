@@ -285,6 +285,10 @@ def add_neutron_command_options(subparsers):
     neutron_parser.add_argument("-d", "--diff", action='store_true', dest='diff', help='IPs missing from "TO" environment')
     neutron_parser.add_argument("-C", "--smacs", action='store_true', dest='smacs', help='Macs in both environments' )
     neutron_parser.add_argument("-D", "--dmacs", action='store_true', dest='dmacs', help='Macs missing from "TO" environment' )
+    neutron_parser.add_argument("-x", "--copynets", action='store_true', dest='copynets',
+                                help='Run this command as Admin. Copy networks and subnets from->to')
+    neutron_parser.add_argument("-X", "--copynetname", dest='copynetname', nargs=1, metavar='network_name',
+                                help='Run this command as Admin. Copy network by network name. Pass a network name as an argument.')
     neutron_parser.add_argument("-i", "--interfaces", action='store_true', dest='interfaces', help='Add missing interfaces.'
                                 ' Run this command as Admin. Add missing interfaces between routers and networks and '
                                'additional ports.')
@@ -325,6 +329,10 @@ def neutron_actions(args):
         print "\n--------------- Print same macs: ---------------------"
         print "Mac Addresss         IP                   Port Type"
         neutron_common.print_same_macs()
+    if args.copynets:
+        neutron_common.compare_and_create_networks()
+    if args.copynetname:
+        neutron_common.copy_by_net_name(args.copynetname[0])
     if args.interfaces:
         print "\n--------------- Adding missing ports: ---------------------"
         neutron_common.compare_and_create_ports()
