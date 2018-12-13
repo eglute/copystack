@@ -426,7 +426,8 @@ def get_user_roles(destination, matrix, user, project_list, role_list):
 
 
 def print_users_per_domain(destination):
-    users = get_users_based_on_domain(destination)
+    us = get_users_based_on_domain(destination)
+    users = sorted(us, key=lambda x: x.name)
     for user in users:
         print user.name
 

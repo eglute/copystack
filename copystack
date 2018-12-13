@@ -114,10 +114,8 @@ def add_keystone_command_options(subparsers):
                                  help='Print roles users project matrix. Pass either file or "all" as an argument')
     keystone_parser.add_argument("-j", "--createprojects", action='store_true', dest='createprojects',
                                  help='Copy projects FROM to TO for current domains.')
-    keystone_parser.add_argument("-c", "--createusers", dest='createusers', nargs='+', metavar=('users'),
-                                 help='Copy users FROM to TO for current domains. Pass either file or "all" as an argument. '
-                                      'Password is optional second parameter. '
-                               'If password is not included, users created without a password.')
+    keystone_parser.add_argument("-c", "--createusers", dest='createusers',nargs=2, metavar=('users', 'password'),
+                                 help='Copy users FROM to TO for current domains. Pass either file or "all" as an argument. Password is a second parameter. ')
 
 
 def keystone_actions(args):
@@ -161,16 +159,12 @@ def keystone_actions(args):
     if args.createprojects:
         keystone_common.compare_and_create_projects()
     if args.createusers:
+        print args.createusers
         if len(args.createusers) == 2:
             if args.createusers[0] == 'all':
-                keystone_common.compare_and_create_users_by_domain(password=args.createusers[0])
+                keystone_common.compare_and_create_users_by_domain(password=args.createusers[1])
             else:
                 keystone_common.compare_and_create_users_by_domain(password=args.createusers[1], user_name_file=args.createusers[0])
-        elif len(args.createusers) == 1:
-            if args.createusers[0] == 'all':
-                keystone_common.compare_and_create_users_by_domain()
-            else:
-                keystone_common.compare_and_create_users_by_domain(password=args.createusers[0])
         else:
             print "bad argument list for user create."
 
