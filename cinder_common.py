@@ -686,7 +686,7 @@ def manage_ssd(host, volume_name, solidfire_id):
     manage_volume('to', host=host, reference=source, name=volume_name, volume_type='SSD')
 
 
-def manage_netapp(volume_type, host, volume_name, netapp_id):
+def manage_netapp(volume_name, volume_type, host, netapp_id):
     source = {'source-name': netapp_id}
     manage_volume('to', host=host, reference=source, name=volume_name, volume_type=volume_type)
 
