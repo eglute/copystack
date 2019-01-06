@@ -20,8 +20,8 @@ from auth_stack2 import AuthStack
 def add_cinder_command_options(subparsers):
     cinder_parser = subparsers.add_parser('cinder', help='Run cinder reports and custom volume actions.')
 
-    cinder_parser.add_argument("-s", "--report", action='store_true', dest='report', help='Print FROM volumes with details')
-    cinder_parser.add_argument("-S", "--Report", action='store_true', dest='Report', help='Print TO volumes with details')
+    cinder_parser.add_argument("-v", "--report", action='store_true', dest='report', help='Print FROM volumes with details')
+    cinder_parser.add_argument("-V", "--Report", action='store_true', dest='Report', help='Print TO volumes with details')
     cinder_parser.add_argument("-t", "--types", action='store_true', dest='types', help='Print available volume types')
     cinder_parser.add_argument("-b", "--backups", action='store_true', dest='backups', help='Print volume backups')
     cinder_parser.add_argument("-p", "--pools", action='store_true', dest='pools', help='Print volume pools')
@@ -36,6 +36,12 @@ def add_cinder_command_options(subparsers):
                                help='Manage unbootable SolidFire volume on the "TO" destination. '
                                     'Input: host, volume_name, solidfire_id, for example:'
                                     './copystack cinder -d sample-aio-liberty-2@lvm#LVM_iSCSI custom_volume_name 9999999'
+                               )
+    cinder_parser.add_argument("-n", "--manage-netapp", dest='managenetapp', nargs=4,
+                               metavar=('volumte_type', 'host', 'volume_name', 'netappid'),
+                               help='Manage unbootable Netapp volume on the "TO" destination. '
+                                    'Input: volume_type, host, volume_name, netappid, for example:'
+                                    './copystack cinder -n my_netapp_type hostgroup@my_netapp#172.1.1.254:/cinder1 172.1.1.254:/cinder1/volume-5e12a953-683e-469d-9eac-40e1c4cc8fc5'
                                )
     cinder_parser.add_argument("-r", "--retype", dest='retypevolumes', nargs=2, metavar=('UUID_file', 'volume_type'),
                                help='Retype volumes on the "TO" destination. '
@@ -86,6 +92,9 @@ def cinder_actions(args):
     if args.managessd:
         if len(args.managessd) == 3:
             cinder_common.manage_ssd(args.managessd[0], args.managessd[1], args.managessd[2])
+    if args.managenetapp:
+        if len(args.managenetapp) == 4:
+            cinder_common.manage_netapp(args.managenetapp[0], args.managenetapp[1], args.managenetapp[2], args.managenetapp[3])
     if args.retypevolumes:
         if len(args.retypevolumes) == 2:
             cinder_common.retype_volumes_by_volume_ids('to', args.retypevolumes[0], args.retypevolumes[1])
