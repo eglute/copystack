@@ -686,6 +686,11 @@ def manage_ssd(host, volume_name, solidfire_id):
     manage_volume('to', host=host, reference=source, name=volume_name, volume_type='SSD')
 
 
+def manage_netapp(volume_type, host, volume_name, netapp_id):
+    source = {'source-name': netapp_id}
+    manage_volume('to', host=host, reference=source, name=volume_name, volume_type=volume_type)
+
+
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
     # for volume in volumes:
     # vol = get_volume_by_id('from', volume)
@@ -796,7 +801,7 @@ def main():
     # download_single_volumes('from', './downloads/')
     # create_volume_from_image_by_vm_ids('./id_file')
     # print_volumes('from')
-    print get_snapshot_by_volume_id("from", "ec635c54-34d8-4f43-b1d9-4e862cfd2b7f")
+    # print get_snapshot_by_volume_id("from", "ec635c54-34d8-4f43-b1d9-4e862cfd2b7f")
     # get_volume_list_by_vm_id("from", "91914190-dc7e-4fee-b5cf-a094abdc14c1")
     # get_cinder("from")
     # print_cinder_pools("to")
@@ -804,7 +809,7 @@ def main():
     # change_volume_type("to", 'f10073c4-3292-4585-b165-23174b0656f6', 'lvm1')
     # print_manageable_volumes("to", host='egle-pike-dns-1@lvm#LVM_iSCSI')
     # manage_volume("to", 'volume-886398cf-c9c0-40cc-bfd4-f5cf7a56d1ab', 'egle-pike-dns-1@lvm#LVM_iSCSI', 'foo', bootable=True)
-    # get_volume_by_id('from', '15b70ee6-a4fe-4733-ba81-49bbd8abeced')
+    get_volume_by_id('from', '15b70ee6-a4fe-4733-ba81-49bbd8abeced')
     # retype_volumes_by_volume_ids('to', 'volume_ids', 'lvm1')
     # convert_volumes_to_vm_images_by_vm_ids('to', './id_file')
     # print utils.convert_B_to_GB(3072000000)
