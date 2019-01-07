@@ -312,7 +312,7 @@ def convert_image_to_volume_by_vm_ids(destination, id_file):
             meta.update({'image_name': image.name})
             meta.update({'original_vm_name': image.original_vm_name})
             meta.update({'original_vm_id': image.original_vm_id})
-            size = utils.convert_B_to_GB(image.size)
+            size = utils.convert_B_to_GB(image.virtual_size)
             myvol = cinder.volumes.create(size=size,
                                           # snapshot_id=volume.snapshot_id,
                                           # display_name=volume.display_name,
@@ -335,7 +335,7 @@ def convert_image_to_volume_by_vm_ids(destination, id_file):
             meta.update({'image_name': image.name})
             meta.update({'original_vm_name': image.original_vm_name})
             meta.update({'original_vm_id': image.original_vm_id})
-            size = utils.convert_B_to_GB(image.size)
+            size = utils.convert_B_to_GB(image.virtual_size)
             myvol = cinder.volumes.create(size=size,
                                           # snapshot_id=volume.snapshot_id,
                                           # display_name=volume.display_name,
@@ -676,7 +676,7 @@ def manage_volume(destination, reference, host, name, volume_type=None, bootable
     print "with reference "
     print reference
     if volume_type == 'None':
-        volume_type = "Ceph"
+        volume_type = "legacy_netapp"
     cinder.volumes.manage(host, reference, name=name, volume_type=volume_type, bootable=bootable, metadata=metadata)
     print "Managed volume's name " + name
 
@@ -693,18 +693,25 @@ def manage_netapp(volume_name, volume_type, host, netapp_id):
 
 #TODO: figure out another way to this. RIght now it checks every pool and tries to manage it.
 def easy_manage_netapp(volume_name, volume_type, volume_id):
-    pools = get_cinder_pools()
+    pools = get_cinder_pools("to")
     for pool in pools:
+        print volume_id
         try:
             print "searching in pool: " + pool.name
-            sub_id = pool.split("#")
+            sub_id = pool.name.split("#")
+            print sub_id[1]
             netapp_id = sub_id[1] + "/" + "volume-" + volume_id
-            source = {'source-name': netapp_id}
-            manage_volume('to', host=pool, reference=source, name=volume_name, volume_type=volume_type)
-            #if it doesn't throw exception, must have suceeded...
+            print "netapp_id"
+            print netapp_id
+            resource = {'source-name': netapp_id}
+            print resource
+            print "source ^^^ "
+            manage_volume('to', host=pool.name, reference=resource, name=volume_name, volume_type=volume_type)
+            # if it doesn't throw exception, must have suceeded...
             return
         except Exception, e:
-            print "Volume with ID " + volume_id + " was not found in this pool " + pool;
+            print "Volume with ID " + volume_id + " was not found in this pool " + pool.name
+            print e
 
 
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):

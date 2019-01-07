@@ -277,6 +277,14 @@ def create_vm(from_vm, image='default'):
                 if not port['device_owner'].startswith('network:floatingip'):
                     nic = {'port-id': port['id']}
                     nics.append(nic)
+            else:
+                #todo: VIPS?
+                net = neutron_common.get_network_by_name('to', network)
+                nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+                nics.append(nic)
+
+    print "nics"
+    print nics
 
     #include original image info as metadata:
     img = glance_common.get_image('from', from_vm.image['id'])
