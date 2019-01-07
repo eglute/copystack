@@ -691,6 +691,22 @@ def manage_netapp(volume_name, volume_type, host, netapp_id):
     manage_volume('to', host=host, reference=source, name=volume_name, volume_type=volume_type)
 
 
+#TODO: figure out another way to this. RIght now it checks every pool and tries to manage it.
+def easy_manage_netapp(volume_name, volume_type, volume_id):
+    pools = get_cinder_pools()
+    for pool in pools:
+        try:
+            print "searching in pool: " + pool.name
+            sub_id = pool.split("#")
+            netapp_id = sub_id[1] + "/" + "volume-" + volume_id
+            source = {'source-name': netapp_id}
+            manage_volume('to', host=pool, reference=source, name=volume_name, volume_type=volume_type)
+            #if it doesn't throw exception, must have suceeded...
+            return
+        except Exception, e:
+            print "Volume with ID " + volume_id + " was not found in this pool " + pool;
+
+
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
     # for volume in volumes:
     # vol = get_volume_by_id('from', volume)
