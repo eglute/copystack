@@ -103,7 +103,7 @@ def cinder_actions(args):
             cinder_common.manage_netapp(args.managenetapp[0], args.managenetapp[1], args.managenetapp[2], args.managenetapp[3])
     if args.easymanagenetapp:
         if len(args.easymanagenetapp) == 3:
-            cinder_common.manage_netapp(args.easymanagenetapp[0], args.easymanagenetapp[1], args.easymanagenetapp[2])
+            cinder_common.easy_manage_netapp(args.easymanagenetapp[0], args.easymanagenetapp[1], args.easymanagenetapp[2])
     if args.retypevolumes:
         if len(args.retypevolumes) == 2:
             cinder_common.retype_volumes_by_volume_ids('to', args.retypevolumes[0], args.retypevolumes[1])
@@ -381,7 +381,7 @@ def add_migrate_command_options(subparsers):
                                 dest='boot',
                                 help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
                                      'with prior IPs attached. Example command: '
-                                     ' ./copystack migrate -6 ./id_file')
+                                     ' ./copystack migrate -5 ./id_file')
     migrate_parser.add_argument("-6", "--adddvolumestovms", dest='adddvolumestovms',
                                 nargs=1, metavar='UUID_file',
                                 help='Attach additional volumes to migrated VMs for each UUID provided in the original '
@@ -462,6 +462,12 @@ def add_move_command_options(subparsers):
                            'on a custom network. Floating IPs will not be created. Provide network name or ID,'
                            ' key-name and optional user data file, for example: '
                            ' Sample: -5 ./id_file demo-net key-name user-data.txt')
+    # migrate_parser.add_argument("-5", "--boot",
+    #                             nargs=1, metavar='UUID_file',
+    #                             dest='boot',
+    #                             help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
+    #                                  'with prior IPs attached. Example command: '
+    #                                  ' ./copystack migrate -5 ./id_file')
     migrate_parser.add_argument("-6", "--adddvolumestovms",  dest='adddvolumestovms',
                       nargs=1, metavar='UUID_file',
                       help='Attach additional volumes to migrated VMs for each UUID provided in the original '
@@ -507,6 +513,9 @@ def move_actions(args):
                                                   {'user_data': args.user_data,
                                                    'exc': e})
             nova_common.boot_from_volume_vms_from_image_with_network_mapping(id_file=args.boot[0], custom_network=args.boot[1], key=args.boot[2], user_data=user_data)
+    # if args.boot:
+    #     if len(args.boot) == 1:
+    #         nova_common.migrate_vms_from_image(id_file=args.boot[0])
     if args.adddvolumestovms:
         if len(args.adddvolumestovms) == 1:
             nova_common.attach_volumes(id_file=args.adddvolumestovms[0])
@@ -543,27 +552,33 @@ def add_copy_command_options(subparsers):
     migrate_parser.add_argument("-5", "--retypevolumes", nargs=2, metavar=('UUID_file', 'type'),
                                 help='Retype all volumes to a give type by associated VM UUID for each UUID provided in '
                                      'a file, for example, ./id_file lvm')
+    # migrate_parser.add_argument("-6", "--boot",
+    #                   nargs='+',
+    #                   dest='boot',
+    #                   help='Boot migrated VMs from IMAGES for each VM UUID provided in a file, for example, ./id_file. '
+    #                        'on a custom network. Floating IPs will not be created. Provide network name or ID,'
+    #                        ' key-name and optional user data file, for example: '
+    #                        ' Sample: -6 ./id_file demo-net key-name user-data.txt')
     migrate_parser.add_argument("-6", "--boot",
-                      nargs='+',
-                      dest='boot',
-                      help='Boot migrated VMs from IMAGES for each VM UUID provided in a file, for example, ./id_file. '
-                           'on a custom network. Floating IPs will not be created. Provide network name or ID,'
-                           ' key-name and optional user data file, for example: '
-                           ' Sample: -6 ./id_file demo-net key-name user-data.txt')
-    migrate_parser.add_argument("-7", "--bootalt",
-                                nargs='+',
-                                dest='bootalt',
-                                help='Skip steps 4 and 6 for boot from volume. Boot volume will be mounted as /dev/vda, '
-                                     'which could cause issues with secondary volumes.'
-                                     'Boot migrated VMs from VOLUME for each VM UUID provided in a file, for example, ./id_file. '
-                                     'on a custom network. Floating IPs will not be created. Provide network name or ID,'
-                                     ' key-name and optional user data file, for example: '
-                                     ' Sample: -7 ./id_file demo-net key-name user-data.txt')
-    migrate_parser.add_argument("-8", "--adddvolumestovms",  dest='adddvolumestovms',
+                                nargs=1, metavar='UUID_file',
+                                dest='boot',
+                                help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
+                                     'with prior IPs attached. Example command: '
+                                     ' ./copystack migrate -6 ./id_file')
+    # migrate_parser.add_argument("-7", "--bootalt",
+    #                             nargs='+',
+    #                             dest='bootalt',
+    #                             help='Skip steps 4 and 6 for boot from volume. Boot volume will be mounted as /dev/vda, '
+    #                                  'which could cause issues with secondary volumes.'
+    #                                  'Boot migrated VMs from VOLUME for each VM UUID provided in a file, for example, ./id_file. '
+    #                                  'on a custom network. Floating IPs will not be created. Provide network name or ID,'
+    #                                  ' key-name and optional user data file, for example: '
+    #                                  ' Sample: -7 ./id_file demo-net key-name user-data.txt')
+    migrate_parser.add_argument("-7", "--adddvolumestovms",  dest='adddvolumestovms',
                       nargs=1, metavar='UUID_file',
                       help='Attach additional volumes to migrated VMs for each UUID provided in the original '
                            'migration file, for example, ./id_file.')
-    migrate_parser.add_argument("-9", "--securitygroups", dest='securitygroups', nargs=1, metavar='UUID_file',
+    migrate_parser.add_argument("-8", "--securitygroups", dest='securitygroups', nargs=1, metavar='UUID_file',
                       help='Attach security groups to migrated VMs for each UUID provided in the original '
                            'migration file, for example, ./id_file. ')
 
@@ -596,32 +611,35 @@ def copy_actions(args):
     if args.retypevolumes:
         if len(args.retypevolumes) == 2:
             nova_common.retype_volumes_based_on_vms(args.retypevolumes[0], args.retypevolumes[1])
+    # if args.boot:
+    #     if len(args.boot) >=2:
+    #         user_data = "default"
+    #         if len(args.boot) == 4:
+    #             user_data = args.boot[3]
+    #             try:
+    #                 user_data = open(args.boot[3])
+    #             except IOError as e:
+    #                 raise exceptions.CommandError(_("Can't open '%(user_data)s': "
+    #                                                 "%(exc)s") %
+    #                                               {'user_data': args.user_data,
+    #                                                'exc': e})
+    #         nova_common.boot_from_vms_from_image_with_network_mapping(id_file=args.boot[0], custom_network=args.boot[1], key=args.boot[2], user_data=user_data)
     if args.boot:
-        if len(args.boot) >=2:
-            user_data = "default"
-            if len(args.boot) == 4:
-                user_data = args.boot[3]
-                try:
-                    user_data = open(args.boot[3])
-                except IOError as e:
-                    raise exceptions.CommandError(_("Can't open '%(user_data)s': "
-                                                    "%(exc)s") %
-                                                  {'user_data': args.user_data,
-                                                   'exc': e})
-            nova_common.boot_from_vms_from_image_with_network_mapping(id_file=args.boot[0], custom_network=args.boot[1], key=args.boot[2], user_data=user_data)
-    if args.bootalt:
-        if len(args.bootalt) >=2:
-            user_data = "default"
-            if len(args.bootalt) == 4:
-                user_data = args.bootalt[3]
-                try:
-                    user_data = open(args.bootalt[3])
-                except IOError as e:
-                    raise exceptions.CommandError(_("Can't open '%(user_data)s': "
-                                                    "%(exc)s") %
-                                                  {'user_data': args.user_data,
-                                                   'exc': e})
-            nova_common.boot_from_volume_vms_with_network_mapping(id_file=args.bootalt[0], custom_network=args.bootalt[1], key=args.bootalt[2], user_data=user_data)
+        if len(args.boot) == 1:
+            nova_common.migrate_vms_from_image(id_file=args.boot[0])
+    # if args.bootalt:
+    #     if len(args.bootalt) >=2:
+    #         user_data = "default"
+    #         if len(args.bootalt) == 4:
+    #             user_data = args.bootalt[3]
+    #             try:
+    #                 user_data = open(args.bootalt[3])
+    #             except IOError as e:
+    #                 raise exceptions.CommandError(_("Can't open '%(user_data)s': "
+    #                                                 "%(exc)s") %
+    #                                               {'user_data': args.user_data,
+    #                                                'exc': e})
+    #         nova_common.boot_from_volume_vms_with_network_mapping(id_file=args.bootalt[0], custom_network=args.bootalt[1], key=args.bootalt[2], user_data=user_data)
 
     if args.adddvolumestovms:
         if len(args.adddvolumestovms) == 1:
