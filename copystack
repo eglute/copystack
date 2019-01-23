@@ -564,7 +564,7 @@ def add_copy_command_options(subparsers):
                                 dest='boot',
                                 help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
                                      'with prior IPs attached. Example command: '
-                                     ' ./copystack migrate -6 ./id_file')
+                                     ' ./copystack copy -6 ./id_file')
     # migrate_parser.add_argument("-7", "--bootalt",
     #                             nargs='+',
     #                             dest='bootalt',

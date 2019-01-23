@@ -693,25 +693,39 @@ def manage_netapp(volume_name, volume_type, host, netapp_id):
 
 #TODO: figure out another way to this. RIght now it checks every pool and tries to manage it.
 def easy_manage_netapp(volume_name, volume_type, volume_id):
-    pools = get_cinder_pools("to")
-    for pool in pools:
-        print volume_id
-        try:
-            print "searching in pool: " + pool.name
-            sub_id = pool.name.split("#")
-            print sub_id[1]
-            netapp_id = sub_id[1] + "/" + "volume-" + volume_id
-            print "netapp_id"
-            print netapp_id
-            resource = {'source-name': netapp_id}
-            print resource
-            print "source ^^^ "
-            manage_volume('to', host=pool.name, reference=resource, name=volume_name, volume_type=volume_type)
-            # if it doesn't throw exception, must have suceeded...
-            return
-        except Exception, e:
-            print "Volume with ID " + volume_id + " was not found in this pool " + pool.name
-            print e
+    auth = AuthStack()
+
+    location = utils.get_nfs_location(auth.nfs_dir, volume_id)
+    shares = location.split("/")
+    share = shares[len(shares)-1]
+    print "share: " + share
+    nfs_host = auth.nfs_host
+    print "host: " + nfs_host
+    netapp_id = auth.nfs_ip + ":/" + share + "/" + "volume-" + volume_id
+    print netapp_id
+    resource = {'source-name': netapp_id}
+    print resource
+    manage_volume('to', host=nfs_host, reference=resource, name=volume_name, volume_type=volume_type)
+
+    # pools = get_cinder_pools("to")
+    # for pool in pools:
+    #     print volume_id
+    #     try:
+    #         print "searching in pool: " + pool.name
+    #         sub_id = pool.name.split("#")
+    #         print sub_id[1]
+    #         netapp_id = sub_id[1] + "/" + "volume-" + volume_id
+    #         print "netapp_id"
+    #         print netapp_id
+    #         resource = {'source-name': netapp_id}
+    #         print resource
+    #         print "source ^^^ "
+    #         manage_volume('to', host=pool.name, reference=resource, name=volume_name, volume_type=volume_type)
+    #         # if it doesn't throw exception, must have suceeded...
+    #         return
+    #     except Exception, e:
+    #         print "Volume with ID " + volume_id + " was not found in this pool " + pool.name
+    #         print e
 
 
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
@@ -832,11 +846,13 @@ def main():
     # change_volume_type("to", 'f10073c4-3292-4585-b165-23174b0656f6', 'lvm1')
     # print_manageable_volumes("to", host='egle-pike-dns-1@lvm#LVM_iSCSI')
     # manage_volume("to", 'volume-886398cf-c9c0-40cc-bfd4-f5cf7a56d1ab', 'egle-pike-dns-1@lvm#LVM_iSCSI', 'foo', bootable=True)
-    get_volume_by_id('from', '15b70ee6-a4fe-4733-ba81-49bbd8abeced')
+    # get_volume_by_id('from', '15b70ee6-a4fe-4733-ba81-49bbd8abeced')
     # retype_volumes_by_volume_ids('to', 'volume_ids', 'lvm1')
     # convert_volumes_to_vm_images_by_vm_ids('to', './id_file')
     # print utils.convert_B_to_GB(3072000000)
     # update_volume_description('to', '3f7b0d1b-fb97-4840-9032-f7e68bab1e1f', 'delete after maintenance')
+    # utils.get_nfs_location('/Users/egle.sigler/src', 'profiles_settings.xml')
+    easy_manage_netapp("egle", "nfs", "profiles_settings.xml")
 
 
 if __name__ == "__main__":
