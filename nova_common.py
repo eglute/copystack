@@ -1094,7 +1094,7 @@ def create_volumes_from_images_based_on_vms(id_file):
     cinder_common.create_volumes_from_images_by_vm_id(volumes)
 
 
-def manage_volumes_based_on_vms(id_file, ssd_host, hdd_host):
+def manage_volumes_based_on_vms(id_file, ssd_host=None, hdd_host=None):
     vms = utils.read_ids_from_file(id_file)
     for vm in vms:
         volumes = cinder_common.get_volume_list_by_vm_id('from', vm)

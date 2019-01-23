@@ -700,33 +700,13 @@ def easy_manage_netapp(volume_name, volume_type, volume_id):
     shares = location.split("/")
     share = shares[len(shares)-1]
     print "share: " + share
-    nfs_host = auth.nfs_host
+    nfs_host = auth.nfs_host + share
     print "host: " + nfs_host
     netapp_id = auth.nfs_ip + ":/" + share + "/" + volume
     print netapp_id
     resource = {'source-name': netapp_id}
     print resource
     manage_volume('to', host=nfs_host, reference=resource, name=volume_name, volume_type=volume_type)
-
-    # pools = get_cinder_pools("to")
-    # for pool in pools:
-    #     print volume_id
-    #     try:
-    #         print "searching in pool: " + pool.name
-    #         sub_id = pool.name.split("#")
-    #         print sub_id[1]
-    #         netapp_id = sub_id[1] + "/" + "volume-" + volume_id
-    #         print "netapp_id"
-    #         print netapp_id
-    #         resource = {'source-name': netapp_id}
-    #         print resource
-    #         print "source ^^^ "
-    #         manage_volume('to', host=pool.name, reference=resource, name=volume_name, volume_type=volume_type)
-    #         # if it doesn't throw exception, must have suceeded...
-    #         return
-    #     except Exception, e:
-    #         print "Volume with ID " + volume_id + " was not found in this pool " + pool.name
-    #         print e
 
 
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
@@ -748,6 +728,7 @@ def manage_volume_from_id(destination, ssd_host, hdd_host, volume):
 
     # manage_volume("to", )
     #reference, host, type, name, bootable=False, metadata=None
+    auth = AuthStack()
     meta = volume.metadata
     print "meta:"
     print meta
@@ -790,9 +771,23 @@ def manage_volume_from_id(destination, ssd_host, hdd_host, volume):
         source = {'source-id': ref}
         host = ssd_host
     else:
-        ref = 'volume-' + volume.id
-        source = {'source-name': ref}
-        host = hdd_host
+        if hdd_host:
+            ref = 'volume-' + volume.id
+            source = {'source-name': ref}
+            host = hdd_host
+        else:
+            ref = "volume-" + volume.id
+            location = utils.get_nfs_location(auth.nfs_dir, ref)
+            shares = location.split("/")
+            share = shares[len(shares) - 1]
+            print "share: " + share
+            host = auth.nfs_host + share
+            print "host: " + host
+            netapp_id = auth.nfs_ip + ":/" + share + "/" + ref
+            print netapp_id
+            source = {'source-name': netapp_id}
+            print source
+
     print "reference: "
     print source
     manage_volume(destination, source, host, name, volume_type=volume_type, bootable=bootable, metadata=meta)
