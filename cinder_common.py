@@ -695,13 +695,14 @@ def manage_netapp(volume_name, volume_type, host, netapp_id):
 def easy_manage_netapp(volume_name, volume_type, volume_id):
     auth = AuthStack()
 
-    location = utils.get_nfs_location(auth.nfs_dir, volume_id)
+    volume = "volume-" + volume_id
+    location = utils.get_nfs_location(auth.nfs_dir, volume)
     shares = location.split("/")
     share = shares[len(shares)-1]
     print "share: " + share
     nfs_host = auth.nfs_host
     print "host: " + nfs_host
-    netapp_id = auth.nfs_ip + ":/" + share + "/" + "volume-" + volume_id
+    netapp_id = auth.nfs_ip + ":/" + share + "/" + volume
     print netapp_id
     resource = {'source-name': netapp_id}
     print resource
