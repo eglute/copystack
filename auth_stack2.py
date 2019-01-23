@@ -60,6 +60,7 @@ class AuthStack(object):
         self.solid_fire_ip = from_auth['SOLID_FIRE_IP']
         self.solid_fire_user = from_auth['SOLID_FIRE_USER']
         self.solid_fire_password = from_auth['SOLID_FIRE_PASSWORD']
+        self.solid_fire_host = from_auth['SOLID_FIRE_HOST']
         self.nfs_host = from_auth['NFS_HOST']
         self.nfs_dir = from_auth['NFS_DIR']
         self.nfs_ip = from_auth['NFS_IP']
@@ -284,6 +285,7 @@ class AuthStack(object):
                     'SOLID_FIRE_IP': None,
                     'SOLID_FIRE_USER': None,
                     'SOLID_FIRE_PASSWORD': None,
+                    'SOLID_FIRE_HOST': None,
                     'NFS_HOST': None,
                     'NFS_DIR' : None,
                     'NFS_IP' : None

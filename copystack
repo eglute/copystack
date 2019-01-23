@@ -363,13 +363,9 @@ def add_migrate_command_options(subparsers):
                                 help='Create volumes from glance images and volume snapshots based on associated VM for each VM UUID provided in a file, '
                                      'for example, ./id_file. ')
     migrate_parser.add_argument("-3", "--managevolumes", dest='managevolumes',
-                                nargs=3, metavar=('UUID_file', 'SSD_host', 'HDD_host'),
+                                nargs=1, metavar=('UUID_file'),
                                 help='Manage all volumes by VM UUID '
-                                     'for each UUID provided in a file, for example, ./id_file.'
-                                     'Please provide 2 hosts (SSD and HDD based) to be used for cinder volumes. '
-                                     'These hosts will be used for all VMs in the id_file. For example, '
-                                     ' ./id_file <SDD host> <HDD host> '
-                                     ' ./id_file sample-aio-liberty-2@lvm#SolidFire_iSCSI sample-aio-liberty-2@Ceph#LVM_iSCSI')
+                                     'for each UUID provided in a file, for example, ./id_file.')
     migrate_parser.add_argument("-4", "--converttoimages", nargs=1, metavar=('UUID_file'),
                                 help='Convert volumes back to VM images for each UUID provided in '
                                      'a file, for example, ./id_file')
@@ -411,8 +407,8 @@ def migrate_actions(args):
         else:
             print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
     if args.managevolumes:
-        if len(args.managevolumes) == 3:
-            nova_common.manage_volumes_based_on_vms(args.managevolumes[0], args.managevolumes[1], args.managevolumes[2])
+        if len(args.managevolumes) == 1:
+            nova_common.manage_volumes_based_on_vms(args.managevolumes[0])
     if args.converttoimages:
         if len(args.converttoimages) == 1:
             cinder_common.convert_volumes_to_vm_images_by_vm_ids('to', args.converttoimages[0])
