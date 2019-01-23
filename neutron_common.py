@@ -37,7 +37,7 @@ def print_network_list(destination):
     newlist = sorted(networks, key=lambda x: x['name'])
     for net in newlist:
         print net['name']
-        print net
+        # print net
         subnets = get_subnets(destination, net['id'])
         if subnets:
             for sub in subnets:
