@@ -280,13 +280,13 @@ def create_vm(from_vm, image='default'):
                     nics.append(nic)
             else:
                 #todo: VIPS?
-                from_port = neutron_common.find_port_by_ip('from', ip)
-                new_port = neutron_common.create_ip_ports('to', from_port)
-                nic = {'port-id': new_port['port']['id']}
-                nics.append(nic)
-                # net = neutron_common.get_network_by_name('to', network)
-                # nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+                # from_port = neutron_common.find_port_by_ip('from', ip)
+                # new_port = neutron_common.create_ip_ports('to', from_port)
+                # nic = {'port-id': new_port['port']['id']}
                 # nics.append(nic)
+                net = neutron_common.get_network_by_name('to', network)
+                nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+                nics.append(nic)
 
     print "nics"
     print nics

@@ -291,7 +291,9 @@ def get_router_by_name(destination, name):
 def print_ports(destination):
     ports = get_ports(destination)
     for port in ports:
-        print port['id'], port['mac_address'], port['fixed_ips'], port['allowed_address_pairs']
+        # print port
+        # print port['id'], port['device_owner'], port['mac_address'], port['fixed_ips'], port['allowed_address_pairs']
+        print port['id'], port['device_owner'], port['fixed_ips'], port['allowed_address_pairs']
 
 
 def print_common_ips():
