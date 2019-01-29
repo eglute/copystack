@@ -18,6 +18,8 @@ import math
 # from os.path import isfile, join
 import os
 from glob import glob
+from lxml import etree
+
 
 def read_ids_from_file(id_file):
     with open(id_file, 'r') as fimage:
@@ -64,9 +66,22 @@ def get_nfs_location(dir, volume_id):
 
 
 
-#will round UP to the nearest GB:
+#will round up to the nearest gb:
 #base 1024
 def convert_B_to_GB(bytes):
     gig = math.pow(1024, 3)
     convert_gb = math.ceil(bytes / gig)
     return int(convert_gb)
+
+
+# Get macs from libvirt file. Needed for proper nic ordering on boot.
+def get_macs_from_libvirt(full_path):
+    print "libvirt in: " + full_path
+    tree = etree.parse(full_path + '/libvirt.xml')
+    root = tree.getroot()
+    interfaces = root.findall('./devices/interface/mac')
+    macs = []
+    for interface in interfaces:
+        macs.append(interface.get('address'))
+    # print macs
+    return macs

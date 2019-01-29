@@ -390,7 +390,8 @@ def add_migrate_command_options(subparsers):
                                 nargs=1, metavar='UUID_file',
                                 dest='boot',
                                 help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
-                                     'with prior IPs attached. Example command: '
+                                     'with prior IPs attached. Have to configure accessess to libvirt.xml files '
+                                     'for attaching NICs in proper order. Example command: '
                                      ' ./copystack migrate -5 ./id_file')
     migrate_parser.add_argument("-6", "--adddvolumestovms", dest='adddvolumestovms',
                                 nargs=1, metavar='UUID_file',
@@ -539,7 +540,8 @@ def move_actions(args):
 
 
 def add_copy_command_options(subparsers):
-    migrate_parser = subparsers.add_parser('copy', help='Migrate by converting VM snapshots to volumes and then using volume move')
+    migrate_parser = subparsers.add_parser('copy', help='Migrate by converting VM snapshots to volumes and then using volume move. '
+                                                        'Needs access to libvirt.xml files for proper NIC ordering during boot.')
     migrate_parser.add_argument("-0", "--shutdown", dest='shutdown', nargs=1, metavar='UUID_file',
                       help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
     migrate_parser.add_argument("-1", "--createsnapshotvm", dest='createsnapshotvm', nargs=1, metavar='UUID_file',
