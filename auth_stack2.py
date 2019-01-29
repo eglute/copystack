@@ -78,6 +78,7 @@ class AuthStack(object):
         self.nfs_host = from_auth['NFS_HOST']
         self.nfs_dir = from_auth['NFS_DIR']
         self.nfs_ip = from_auth['NFS_IP']
+        self.nfs_libvirt_location = from_auth['NFS_LIBVIRT_LOCATION']
 
 
         self.from_nova_port = from_auth['NOVA_PORT']
@@ -302,7 +303,8 @@ class AuthStack(object):
                     'SOLID_FIRE_HOST': None,
                     'NFS_HOST': None,
                     'NFS_DIR' : None,
-                    'NFS_IP' : None
+                    'NFS_IP' : None,
+                    'NFS_LIBVIRT_LOCATION': None
                         }
 
         auth_details = AUTH_DETAILS

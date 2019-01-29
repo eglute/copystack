@@ -461,6 +461,20 @@ def find_port_by_ip(destination, ip):
         return None
 
 
+#order interfaces in the proper boot order.
+# FROM_MACS are from libvirt and indicate the proper ordering.
+def order_ports_by_macs(from_macs, from_interfaces):
+    interfaces = []
+    for mac in from_macs:
+        n = next(interface for interface in from_interfaces if mac == interface.mac_addr)
+        interfaces.append(n)
+    print interfaces
+    for interface in interfaces:
+        print interface.mac_addr
+        print interface.fixed_ips
+    return interfaces
+
+
 def find_float_by_floatip(destination, ip):
     ports = get_floatingip_list(destination)
     port_ip = filter(lambda ports: ports['floating_ip_address'] == ip, ports)

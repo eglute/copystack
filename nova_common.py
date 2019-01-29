@@ -260,33 +260,62 @@ def print_flavor_list(destination):
 # client lets add groups by name only...
 def create_vm(from_vm, image='default'):
     nova = get_nova('to')
-
+    auth = AuthStack()
     flavor = get_flavor_by_id('to', from_vm.flavor['id'])
     if flavor is None:
         print "Error: Cannot continue for this VM without proper flavor"
         return None
     if image == 'default':
         image = glance_common.get_image_by_original_id('to', from_vm.image['id'])
+    interfaces = from_vm.interface_list()
+    macs = utils.get_macs_from_libvirt(auth.nfs_libvirt_location + from_vm.id)
     networks = from_vm.networks
+    ordered_interfaces = neutron_common.order_ports_by_macs(macs, interfaces)
+
+    # for interface in interfaces:
+    #     print '{:16}'.format(server.name), '{:38}'.format(server.id), '{:38}'.format(interface.port_id), \
+    #         '{:10}'.format(interface.port_state), '{:18}'.format(interface.mac_addr),
+    #     for ip in interface.fixed_ips:
+    #         print '{:16}'.format(ip['ip_address'])
 
     nics = []
-    for network, nets in networks.iteritems():
-        for ip in nets:
-            port = neutron_common.find_port_by_ip('to', ip)
+
+    for interface in ordered_interfaces:
+        for ip in interface.fixed_ips:
+            port = neutron_common.find_port_by_ip('to', ip['ip_address'])
             # nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
             if port:
                 if not port['device_owner'].startswith('network:floatingip'):
                     nic = {'port-id': port['id']}
                     nics.append(nic)
             else:
-                #todo: VIPS?
+                # todo: VIPS?
                 # from_port = neutron_common.find_port_by_ip('from', ip)
                 # new_port = neutron_common.create_ip_ports('to', from_port)
                 # nic = {'port-id': new_port['port']['id']}
                 # nics.append(nic)
-                net = neutron_common.get_network_by_name('to', network)
-                nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+                net = neutron_common.find_corresponding_network_name_by_id(interface.net_id)
+                nic = {'net-id': net['id'], 'v4-fixed-ip': ip['ip_address']}
                 nics.append(nic)
+
+    # for network, nets in networks.iteritems():
+    #     for ip in nets:
+    #         # print nets
+    #         port = neutron_common.find_port_by_ip('to', ip)
+    #         # nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+    #         if port:
+    #             if not port['device_owner'].startswith('network:floatingip'):
+    #                 nic = {'port-id': port['id']}
+    #                 nics.append(nic)
+    #         else:
+    #             #todo: VIPS?
+    #             # from_port = neutron_common.find_port_by_ip('from', ip)
+    #             # new_port = neutron_common.create_ip_ports('to', from_port)
+    #             # nic = {'port-id': new_port['port']['id']}
+    #             # nics.append(nic)
+    #             net = neutron_common.get_network_by_name('to', network)
+    #             nic = {'net-id': net['id'], 'v4-fixed-ip': ip}
+    #             nics.append(nic)
 
     print "nics"
     print nics
@@ -512,6 +541,8 @@ def migrate_vms_from_image(id_file):
                 print "1 Server with UUID:", uuid, " is not shutoff. It must be in SHUTOFF status for this action."
         except nova_exc.NotFound:
             print "2 Server with UUID", uuid, "not found"
+            print str(nova_exc)
+            traceback.print_exc()
 
 
 def migrate_vms_from_image_with_network_mapping(id_file, custom_network='none'):
@@ -1174,6 +1205,7 @@ def main():
     # boot_from_volume_vms_with_network_mapping('./id_file', 'demo-net')
     # get_interfaces_for_vm_ids('from', './id_file')
     print_interfaces_for_vms('from', './id_file')
+    # utils.get_macs_from_libvirt("path")
 
 
 if __name__ == "__main__":
