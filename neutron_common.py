@@ -296,6 +296,17 @@ def print_ports(destination):
         print port['id'], port['device_owner'], port['fixed_ips'], port['allowed_address_pairs']
 
 
+def print_allowed_address_pairs(destination):
+    ports = get_ports(destination)
+    for port in ports:
+        if port['allowed_address_pairs']:
+        # print port
+        # print port['id'], port['device_owner'], port['mac_address'], port['fixed_ips'], port['allowed_address_pairs']
+            print port['id'], port['device_owner'], port['fixed_ips']
+            for pair in port['allowed_address_pairs']:
+                print "     " + pair['ip_address']
+
+
 def print_common_ips():
     from_ports = get_ports('from')
     to_ports = get_ports('to')
@@ -556,7 +567,8 @@ def main():
     # print_network_list('to')
     # print_diff_macs()
     # print_ports("from")
-    copy_by_net_name('test-net')
+    # copy_by_net_name('test-net')
+    print_allowed_address_pairs('from')
 
 
 if __name__ == "__main__":

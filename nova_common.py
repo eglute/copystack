@@ -69,6 +69,25 @@ def compare_and_create_security_groups():
         create_security_rules('to', new_group['old'], new_group['new'], new_groups)
 
 
+def create_migration_security_group(destination):
+    nova = get_nova(destination)
+    new_group = nova.security_groups.create(name='migration', description='Allow all ingress traffic during migration')
+    print "Added migration security group"
+    tcp_rule = nova.security_group_rules.create(parent_group_id=new_group.id, ip_protocol='tcp',
+                                            from_port=1, to_port=65535)
+    print "Added allow all TCP ingress traffic rule to migration security group"
+    udp_rule = nova.security_group_rules.create(parent_group_id=new_group.id, ip_protocol='udp',
+                                                from_port=1, to_port=65535)
+    print "Added allow all UDP ingress traffic rule to migration security group"
+
+    icmp_rule = nova.security_group_rules.create(parent_group_id=new_group.id, ip_protocol='icmp',
+                                                from_port=-1, to_port=-1)
+    print "Added allow all ICMP ingress traffic rule to migration security group"
+
+
+    return new_group
+
+
 def create_security_group(destination, from_group):
     #print from_group.rules
     nova = get_nova(destination)
@@ -147,10 +166,10 @@ def get_default_group(groups):
             return group
 
 
-def get_group_by_name(groups, name):
-    for group in groups:
-        if group.name == name:
-            return group
+# def get_group_by_name(groups, name):
+#     for group in groups:
+#         if group.name == name:
+#             return group
 
 
 def find_oppposite_group_name_by_id(from_group_id):
@@ -483,6 +502,24 @@ def attach_security_groups(id_file):
             print str(e)
     # else:
     #     print "All VMs must be powered on for this action to proceed"
+
+
+# Attaches special migration security group that allows VMs
+# on FROM and TO environments communicate during the migration.
+# This group should be removed after the migration.
+def attach_security_migration_group(id_file):
+    ids = utils.read_ids_from_file(id_file)
+    nova = get_nova('from')
+    for uuid in ids:
+        try:
+            group = find_group_by_name('to', 'migration')
+            if group == None:
+                group = create_migration_security_group('to')
+            new_server = get_vm_by_original_id('to', uuid)
+            print "Attaching migration security group to:", new_server.name
+            new_server.add_security_group('migration')
+        except Exception, e:
+            print str(e)
 
 
 def attach_volumes(id_file):
@@ -1204,8 +1241,9 @@ def main():
     # update_all_group_rules()
     # boot_from_volume_vms_with_network_mapping('./id_file', 'demo-net')
     # get_interfaces_for_vm_ids('from', './id_file')
-    print_interfaces_for_vms('from', './id_file')
+    # print_interfaces_for_vms('from', './id_file')
     # utils.get_macs_from_libvirt("path")
+    create_migration_security_group('from')
 
 
 if __name__ == "__main__":
