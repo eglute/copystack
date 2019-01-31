@@ -307,6 +307,8 @@ def add_neutron_command_options(subparsers):
     neutron_parser.add_argument("-R", "--Routers", action='store_true', dest='Routers', help='Print TO routers')
     neutron_parser.add_argument("-p", "--ports", action='store_true', dest='ports', help='Print FROM ports')
     neutron_parser.add_argument("-P", "--Ports", action='store_true', dest='Ports', help='Print TO ports')
+    neutron_parser.add_argument("-a", "--allowed", action='store_true', dest='allowed', help='Print FROM allowed address pairs.')
+    neutron_parser.add_argument("-A", "--Allowed", action='store_true', dest='Allowed', help='Print TO allowed address pairs.')
     neutron_parser.add_argument("-c", "--common", action='store_true', dest='common', help='IPs in both environments')
     neutron_parser.add_argument("-d", "--diff", action='store_true', dest='diff', help='IPs missing from "TO" environment')
     neutron_parser.add_argument("-C", "--smacs", action='store_true', dest='smacs', help='Macs in both environments' )
@@ -339,6 +341,12 @@ def neutron_actions(args):
     if args.Ports:
         print "\n--------------- TO Ports: ---------------------"
         neutron_common.print_ports('to')
+    if args.allowed:
+        print "\n--------------- FROM Ports with allowed address pairs: ---------------------"
+        neutron_common.print_allowed_address_pairs('from')
+    if args.Allowed:
+        print "\n--------------- TO Ports wiht allowed address pairs: ---------------------"
+        neutron_common.print_allowed_address_pairs('to')
     if args.common:
         print "\n--------------- IPs created in both environments: ---------------------"
         print "IP                   Port Type"
@@ -399,7 +407,7 @@ def add_migrate_command_options(subparsers):
                                      'migration file, for example, ./id_file.')
     migrate_parser.add_argument("-7", "--securitygroups", dest='securitygroups', nargs=1, metavar='UUID_file',
                                 help='Attach security groups to migrated VMs for each UUID provided in the original '
-                                     'migration file, for example, ./id_file. ')
+                                     'migration file, for example, ./id_file. Includes adding additional migration group.')
 
 
 def migrate_actions(args):
@@ -441,6 +449,7 @@ def migrate_actions(args):
     if args.securitygroups:
         if len(args.securitygroups) == 1:
             nova_common.attach_security_groups(id_file=args.securitygroups[0])
+            nova_common.attach_security_migration_group(id_file=args.securitygroups[0])
         else:
             print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
 
