@@ -307,12 +307,16 @@ def add_neutron_command_options(subparsers):
     neutron_parser.add_argument("-R", "--Routers", action='store_true', dest='Routers', help='Print TO routers')
     neutron_parser.add_argument("-p", "--ports", action='store_true', dest='ports', help='Print FROM ports')
     neutron_parser.add_argument("-P", "--Ports", action='store_true', dest='Ports', help='Print TO ports')
-    neutron_parser.add_argument("-a", "--allowed", action='store_true', dest='allowed', help='Print FROM allowed address pairs.')
-    neutron_parser.add_argument("-A", "--Allowed", action='store_true', dest='Allowed', help='Print TO allowed address pairs.')
+    neutron_parser.add_argument("-a", "--allowed", dest='allowed', nargs=1, metavar='UUID_file',
+                                help='Print FROM allowed address pairs. Pass id_file to filter by VMs or "all" for all pairs')
+    neutron_parser.add_argument("-A", "--Allowed", dest='Allowed', nargs=1, metavar='UUID_file', help='Print TO allowed address '
+                                'pairs. Pass id_file to filter by VMs or "all" for all pairs')
     neutron_parser.add_argument("-c", "--common", action='store_true', dest='common', help='IPs in both environments')
     neutron_parser.add_argument("-d", "--diff", action='store_true', dest='diff', help='IPs missing from "TO" environment')
     neutron_parser.add_argument("-C", "--smacs", action='store_true', dest='smacs', help='Macs in both environments' )
     neutron_parser.add_argument("-D", "--dmacs", action='store_true', dest='dmacs', help='Macs missing from "TO" environment' )
+    neutron_parser.add_argument("-t", "--taken", dest='taken', nargs=1, metavar='UUID_file', help='Print IPs for VMs in FROM env listed '
+                                                 'in id_file that are taken in the TO environment.' )
     neutron_parser.add_argument("-x", "--copynets", action='store_true', dest='copynets',
                                 help='Run this command as Admin. Copy networks and subnets from->to')
     neutron_parser.add_argument("-X", "--copynetname", dest='copynetname', nargs=1, metavar='network_name',
@@ -342,11 +346,22 @@ def neutron_actions(args):
         print "\n--------------- TO Ports: ---------------------"
         neutron_common.print_ports('to')
     if args.allowed:
-        print "\n--------------- FROM Ports with allowed address pairs: ---------------------"
-        neutron_common.print_allowed_address_pairs('from')
+        if len(args.allowed) == 1:
+            if args.allowed[0] == 'all':
+                print "\n--------------- ALL FROM Ports with allowed address pairs: ---------------------"
+                neutron_common.print_allowed_address_pairs('from')
+            else:
+                print "\n--------------- FROM Ports for VMs with allowed address pairs: ---------------------"
+                neutron_common.print_allowed_pairs_for_vms('from', args.allowed[0])
     if args.Allowed:
-        print "\n--------------- TO Ports wiht allowed address pairs: ---------------------"
-        neutron_common.print_allowed_address_pairs('to')
+        if len(args.Allowed) == 1:
+            if args.Allowed[0] == 'all':
+                print "\n--------------- ALL TO Ports with allowed address pairs: ---------------------"
+                neutron_common.print_allowed_address_pairs('to')
+            else:
+                print "\n--------------- TO Ports for VMs with allowed address pairs: ---------------------"
+                neutron_common.print_allowed_pairs_for_vms('to', args.Allowed[0])
+
     if args.common:
         print "\n--------------- IPs created in both environments: ---------------------"
         print "IP                   Port Type"
@@ -363,6 +378,9 @@ def neutron_actions(args):
         print "\n--------------- Print same macs: ---------------------"
         print "Mac Addresss         IP                   Port Type"
         neutron_common.print_same_macs()
+    if args.taken:
+        if len(args.taken) == 1:
+            neutron_common.get_ip_collision(args.taken[0])
     if args.copynets:
         neutron_common.compare_and_create_networks()
     if args.copynetname:
@@ -408,6 +426,9 @@ def add_migrate_command_options(subparsers):
     migrate_parser.add_argument("-7", "--securitygroups", dest='securitygroups', nargs=1, metavar='UUID_file',
                                 help='Attach security groups to migrated VMs for each UUID provided in the original '
                                      'migration file, for example, ./id_file. Includes adding additional migration group.')
+    migrate_parser.add_argument("-8", "--vips", dest='vips', nargs=1, metavar='UUID_file',
+                                help='Attach VIP allowed pairs to migrated VMs for each UUID provided in the original '
+                                     'migration file, for example, ./id_file.')
 
 
 def migrate_actions(args):
@@ -451,7 +472,10 @@ def migrate_actions(args):
             nova_common.attach_security_groups(id_file=args.securitygroups[0])
             nova_common.attach_security_migration_group(id_file=args.securitygroups[0])
         else:
-            print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+            print "Please provide file with VM UUIDs for attaching VIP allowed pairs, for example, ./id_file"
+    if args.vips:
+        if len(args.vips) == 1:
+            neutron_common.set_allowed_pairs_for_vms(id_file=args.vips[0])
 
 
 def add_move_command_options(subparsers):

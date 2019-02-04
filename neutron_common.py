@@ -15,7 +15,9 @@
 # limitations under the License.
 
 import keystone_common
+import nova_common
 from auth_stack2 import AuthStack
+import utils
 
 
 def get_neutron(destination):
@@ -296,17 +298,6 @@ def print_ports(destination):
         print port['id'], port['device_owner'], port['fixed_ips'], port['allowed_address_pairs']
 
 
-def print_allowed_address_pairs(destination):
-    ports = get_ports(destination)
-    for port in ports:
-        if port['allowed_address_pairs']:
-        # print port
-        # print port['id'], port['device_owner'], port['mac_address'], port['fixed_ips'], port['allowed_address_pairs']
-            print port['id'], port['device_owner'], port['fixed_ips']
-            for pair in port['allowed_address_pairs']:
-                print "     " + pair['ip_address']
-
-
 def print_common_ips():
     from_ports = get_ports('from')
     to_ports = get_ports('to')
@@ -540,6 +531,91 @@ def associate_floating_ip_to_fixed_port(destination, to_float_port_id, to_fixed_
     print "Updated floating to fixed IP association, port: ", to_float_port_id, " to ", to_fixed_port_id
 
 
+def get_ips_for_vms(destination, id_file):
+    nova = nova_common.get_nova(destination)
+    vms = utils.read_ids_from_file(id_file)
+    ips = []
+    for vm in vms:
+        interfaces = nova.servers.interface_list(vm)
+        for interface in interfaces:
+            for ip in interface.fixed_ips:
+                # print ip['ip_address']
+                ips.append(ip['ip_address'])
+    return ips
+
+
+def get_all_ips(destination):
+    ips = []
+    ports = get_ports(destination)
+    for port in ports:
+        # print port['fixed_ips'][0]['ip_address']
+        ips.append(port['fixed_ips'][0]['ip_address'])
+    return ips
+
+
+def get_ip_collision(id_file):
+    vm_ips = get_ips_for_vms('from', id_file)
+    taken_ips = get_all_ips('to')
+    print "IPs used in both environments:"
+    for ip in vm_ips:
+        if ip in taken_ips:
+            print ip
+
+
+# print ALL allowed address pairs for destination.
+def print_allowed_address_pairs(destination):
+    ports = get_ports(destination)
+    for port in ports:
+        if port['allowed_address_pairs']:
+        # print port
+        # print port['id'], port['device_owner'], port['mac_address'], port['fixed_ips'], port['allowed_address_pairs']
+            print port['id'], port['device_owner'], port['fixed_ips']
+            for pair in port['allowed_address_pairs']:
+                print "     " + pair['ip_address']
+
+
+def print_allowed_pairs_for_vms(destination, id_file):
+    vms = utils.read_ids_from_file(id_file)
+    ports = get_ports(destination)
+    for port in ports:
+        if port['allowed_address_pairs']:
+            if port['device_id'] in vms:
+                print "Port for allowed pair for VM UUID: " + port['device_id']
+                # print port['allowed_address_pairs']
+                print port['id'], port['device_owner'], port['fixed_ips']
+                for pair in port['allowed_address_pairs']:
+                    print "     " + pair['ip_address']
+
+
+def set_allowed_pairs_for_vms(id_file):
+    vms = utils.read_ids_from_file(id_file)
+    ports = get_ports('from')
+    for port in ports:
+        if port['allowed_address_pairs']:
+            if port['device_id'] in vms:
+                print "Found allowed pair for VM UUID: " + port['device_id']
+                print port['allowed_address_pairs']
+                add_allowed_pairs_to_port(port['fixed_ips'], port['allowed_address_pairs'])
+
+
+# {"port": {"allowed_address_pairs": [{"ip_address": "=192.168.75.15"}]}}
+def add_allowed_pairs_to_port(ip, allowed_pairs):
+    neutron = get_neutron('to')
+    port = find_port_by_ip('to', ip[0]['ip_address'])
+    if port:
+        pairs = []
+        for allowed_pair in allowed_pairs:
+            pairs.append({"ip_address": allowed_pair['ip_address']})
+
+        body = {"port":
+                    {"allowed_address_pairs": pairs }
+                }
+        neutron.update_port(port['id'], body)
+        print "Allowed pairs added: ", pairs
+    else:
+        print "Port with IP ", ip, "not found in TO side."
+
+
 def main():
     # check(args)
     # get_network_list('from')
@@ -568,8 +644,9 @@ def main():
     # print_diff_macs()
     # print_ports("from")
     # copy_by_net_name('test-net')
-    print_allowed_address_pairs('from')
-
+    # print_allowed_address_pairs('from')
+    # get_ip_collision('./id_file')
+    print_allowed_pairs_for_vms('from', './id_file')
 
 if __name__ == "__main__":
         main()
