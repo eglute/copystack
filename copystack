@@ -301,8 +301,10 @@ def glance_actions(args):
 
 def add_neutron_command_options(subparsers):
     neutron_parser = subparsers.add_parser('neutron', help='Run neutron reports and custom neutron actions.')
-    neutron_parser.add_argument("-n", "--nets", action='store_true', dest='nets', help='Print FROM networks')
-    neutron_parser.add_argument("-N", "--Nets", action='store_true', dest='Nets', help='Print TO networks')
+    neutron_parser.add_argument("-n", "--nets", action='store_true', dest='nets', help='Print FROM networks and subnets')
+    neutron_parser.add_argument("-N", "--Nets", action='store_true', dest='Nets', help='Print TO networks and subnets')
+    neutron_parser.add_argument("-u", "--unets", action='store_true', dest='unets', help='Print FROM networks with UUIDs')
+    neutron_parser.add_argument("-U", "--UNets", action='store_true', dest='UNets', help='Print TO networks with UUIDs')
     neutron_parser.add_argument("-r", "--routers", action='store_true', dest='routers', help='Print FROM routers')
     neutron_parser.add_argument("-R", "--Routers", action='store_true', dest='Routers', help='Print TO routers')
     neutron_parser.add_argument("-p", "--ports", action='store_true', dest='ports', help='Print FROM ports')
@@ -319,8 +321,8 @@ def add_neutron_command_options(subparsers):
                                                  'in id_file that are taken in the TO environment.' )
     neutron_parser.add_argument("-x", "--copynets", action='store_true', dest='copynets',
                                 help='Run this command as Admin. Copy networks and subnets from->to')
-    neutron_parser.add_argument("-X", "--copynetname", dest='copynetname', nargs=1, metavar='network_name',
-                                help='Run this command as Admin. Copy network by network name. Pass a network name as an argument.')
+    neutron_parser.add_argument("-X", "--copynetname", dest='copynetname', nargs=1, metavar='NET_UUID_FILE',
+                                help='Run this command as Admin. Copy networks by given UUIDs. Pass a file with network UUIDs as an argument.')
     neutron_parser.add_argument("-i", "--interfaces", action='store_true', dest='interfaces', help='Add missing interfaces.'
                                 ' Run this command as Admin. Add missing interfaces between routers and networks and '
                                'additional ports.')
@@ -333,6 +335,12 @@ def neutron_actions(args):
     if args.Nets:
         print "\n--------------- To Networks (with subnets): ------------------------"
         neutron_common.print_network_list('to')
+    if args.unets:
+        print "\n--------------- From Networks: ---------------------"
+        neutron_common.print_networks_with_uuid('from')
+    if args.UNets:
+        print "\n--------------- To Networks: ------------------------"
+        neutron_common.print_networks_with_uuid('to')
     if args.routers:
         print "\n--------------- From Routers: ---------------------"
         neutron_common.print_routers('from')

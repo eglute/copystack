@@ -33,6 +33,13 @@ def get_network_list(destination):
     return networks
 
 
+def get_network_by_uuid(destination, uuid):
+    neutron = get_neutron(destination)
+    network = neutron.show_network(uuid)
+    # print network
+    return network['network']
+
+
 def print_network_list(destination):
     networks = get_network_list(destination)
     networks.sort(key=lambda x: x['name'])
@@ -44,6 +51,20 @@ def print_network_list(destination):
         if subnets:
             for sub in subnets:
                 print "    ", '{:20}'.format(sub['name']), " ", sub['cidr']
+
+
+def print_networks_with_uuid(destination):
+    networks = get_network_list(destination)
+    networks.sort(key=lambda x: x['name'])
+    newlist = sorted(networks, key=lambda x: x['name'])
+    for net in newlist:
+        subnets = get_subnets(destination, net['id'])
+        subnet = ""
+        if subnets:
+            subnet = subnets[0]['cidr']
+
+        print net['id'], "    ", '{:20}'.format(net['name']), subnet
+
 
 
 def get_network_by_name(destination, name):
@@ -95,6 +116,7 @@ def get_ports(destination):
 
 # takes a network object which and replicated to the indicated destination
 def network_create_net(destination, network):
+    # print network
     neutron = get_neutron(destination)
     bonds = None
     tenant_info = keystone_common.find_opposite_project_id(network['tenant_id'])
@@ -139,13 +161,17 @@ def find_from_net_by_network_name(network_name):
     return None
 
 
-def copy_by_net_name(network_name):
-    from_network = find_from_net_by_network_name(network_name)
-    print from_network
-    new_network = network_create_net('to', from_network)
-    print "New network created: "
-    print new_network
-    create_subnets(from_network['id'], new_network['network']['id'], new_network['network']['tenant_id'])
+def copy_by_net_name(net_id_file):
+    # from_network = find_from_net_by_network_name(network_name)
+    ids = utils.read_ids_from_file(net_id_file)
+    for uuid in ids:
+        from_network = get_network_by_uuid('from', uuid)
+        print "Copying network:"
+        print from_network
+        new_network = network_create_net('to', from_network)
+        print "New network created: "
+        print new_network
+        create_subnets(from_network['id'], new_network['network']['id'], new_network['network']['tenant_id'])
 
 
 def compare_and_create_networks():
@@ -170,7 +196,8 @@ def create_subnets(from_network_id, to_network_id, to_tenant_id):
         for from_subnet in from_subnets:
             to_subnet = {'subnets': [{'cidr': from_subnet['cidr'],
                                        'name': from_subnet['name'],
-                                        'enable_dhcp': from_subnet['enable_dhcp'],
+                                        # 'enable_dhcp': from_subnet['enable_dhcp'],
+                                        'enable_dhcp': False,
                                         'tenant_id': to_tenant_id,
                                         'allocation_pools': from_subnet['allocation_pools'], #todo: check test this, should work
                                         'host_routes': from_subnet['host_routes'],
@@ -646,7 +673,10 @@ def main():
     # copy_by_net_name('test-net')
     # print_allowed_address_pairs('from')
     # get_ip_collision('./id_file')
-    print_allowed_pairs_for_vms('from', './id_file')
+    # print_allowed_pairs_for_vms('from', './id_file')
+    # get_network_by_uuid('from', '0619876e-6f2e-4e24-ae07-a3bbd6fa9a58')
+    # print_networks_with_uuid('from')
+    copy_by_net_name('net_uuid')
 
 if __name__ == "__main__":
         main()
