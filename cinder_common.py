@@ -797,17 +797,14 @@ def manage_nfs_copy_volume_from_id(destination, volume):
     #     bootable = True  # for some reason api returns a string and the next call expects a boolean.
 
     # there is an issue with cinder v1 where volume set bootable didn't work, so using metadata instead.
-    if meta['bootable'] == 'true':
+    if volume.bootable == 'true':
         bootable = True
 
-    #name = volume.name
-    if 'original_volume_name' in meta:
-        name = meta['original_volume_name']
-    elif 'image_name' in meta:
-        name = meta['image_name']
+    if hasattr(volume, 'display_name'):
+        name = volume.display_name
     else:
-        name = 'no_original_name_found'
-    print "original name: " + name
+        name = volume.name
+
     source = {}
     host = None
     print "Volume type is:", volume_type
