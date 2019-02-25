@@ -755,11 +755,12 @@ def copy_nfs_volume(volume_id):
     print "share: " + share
     nfs_host = auth.nfs_host + share
     print "host: " + nfs_host
-    netapp_id = auth.nfs_ip + ":/" + share + "/" + volume
-    netapp_path = auth.nfs_ip + ":/" + share + "/"
-    print netapp_id
+    # netapp_id = auth.nfs_ip + ":/" + share + "/" + volume
+    # netapp_path = auth.nfs_ip + ":/" + share + "/"
+    cinder_path = auth.nfs_cinder_location + share + "/"
+    print cinder_path
     new_name = "migration-" + volume
-    utils.copy_file(netapp_path, volume, new_name)
+    utils.copy_file(cinder_path, volume, new_name)
 
 
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):

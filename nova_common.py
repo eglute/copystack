@@ -1192,13 +1192,15 @@ def manage_volumes_based_on_vms(id_file, ssd_host=None, hdd_host=None):
 def manage_nfs_volumes_based_on_vms(id_file):
     vms = utils.read_ids_from_file(id_file)
     for vm in vms:
-        volumes = cinder_common.get_volume_list_by_vm_id('from', vm)
-        if vm.__dict__['os-extended-volumes:volumes_attached']:
-            print "Verifying Volumes for VM ID: " + vm.id
-            from_vols = vm.__dict__['os-extended-volumes:volumes_attached']
-            from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
-            for volume in from_volumes:
-                cinder_common.manage_nfs_copy_volume_from_id('to', volume)
+        if hasattr(vm, "__dict__['os-extended-volumes:volumes_attached']"):
+            if len(vm.__dict__['os-extended-volumes:volumes_attached']) > 0:
+                print "Verifying Volumes for VM ID: " + vm.id
+                from_vols = vm.__dict__['os-extended-volumes:volumes_attached']
+                from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
+                for volume in from_volumes:
+                    cinder_common.manage_nfs_copy_volume_from_id('to', volume)
+        else:
+            print "No attached volumes for VM " + vm.id
 
 
 def retype_volumes_based_on_vms(id_file, type):
