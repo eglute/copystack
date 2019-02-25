@@ -1194,13 +1194,12 @@ def manage_nfs_volumes_based_on_vms(id_file):
     nova = get_nova('from')
     for vm_uuid in vms:
         vm = nova.servers.get(vm_uuid)
-        if hasattr(vm, "__dict__['os-extended-volumes:volumes_attached']"):
-            if len(vm.__dict__['os-extended-volumes:volumes_attached']) > 0:
-                print "Verifying Volumes for VM ID: " + vm.id
-                from_vols = vm.__dict__['os-extended-volumes:volumes_attached']
-                from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
-                for volume in from_volumes:
-                    cinder_common.manage_nfs_copy_volume_from_id('to', volume)
+        if len(vm.__dict__['os-extended-volumes:volumes_attached']) > 0:
+            print "Verifying Volumes for VM ID: " + vm.id
+            from_vols = vm.__dict__['os-extended-volumes:volumes_attached']
+            from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
+            for volume in from_volumes:
+                cinder_common.manage_nfs_copy_volume_from_id('to', volume)
         else:
             print "No attached volumes for VM " + vm_uuid
 
