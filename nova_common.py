@@ -1138,6 +1138,20 @@ def prepare_migrate_vms_from_image_snapshot(id_file):
         print "Please make sure that all migration VMs are powered off."
 
 
+# Find VMs with cinder volumes attached.
+# Copy NFS Volumes on the backend
+def prepare_migrate_vms_make_volume_copies(id_file):
+    ids = utils.read_ids_from_file(id_file)
+    ready = check_vm_are_off("from", id_file)
+    if ready:
+        for vm_uuid in ids:
+            volumes = get_volumes_for_vm("from", vm_uuid)
+            for v in volumes:
+                cinder_common.copy_nfs_volume(v.id)
+    else:
+        print "Please make sure that all migration VMs are powered off."
+
+
 def make_volumes_from_snapshots(destination, id_file):
     vms = utils.read_ids_from_file(id_file)
     for vm in vms:
@@ -1173,6 +1187,18 @@ def manage_volumes_based_on_vms(id_file, ssd_host=None, hdd_host=None):
         volumes = cinder_common.get_volume_list_by_vm_id('from', vm)
         for volume in volumes:
             cinder_common.manage_volume_from_id('to', ssd_host, hdd_host, volume)
+
+
+def manage_nfs_volumes_based_on_vms(id_file):
+    vms = utils.read_ids_from_file(id_file)
+    for vm in vms:
+        volumes = cinder_common.get_volume_list_by_vm_id('from', vm)
+        if vm.__dict__['os-extended-volumes:volumes_attached']:
+            print "Verifying Volumes for VM ID: " + vm.id
+            from_vols = vm.__dict__['os-extended-volumes:volumes_attached']
+            from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
+            for volume in from_volumes:
+                cinder_common.manage_nfs_copy_volume_from_id('to', volume)
 
 
 def retype_volumes_based_on_vms(id_file, type):

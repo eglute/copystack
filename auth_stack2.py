@@ -79,6 +79,7 @@ class AuthStack(object):
         self.nfs_dir = from_auth['NFS_DIR']
         self.nfs_ip = from_auth['NFS_IP']
         self.nfs_libvirt_location = from_auth['NFS_LIBVIRT_LOCATION']
+        self.from_nfs_glance_location = from_auth['NFS_GLANCE_LOCATION']
 
 
         self.from_nova_port = from_auth['NOVA_PORT']
@@ -106,6 +107,7 @@ class AuthStack(object):
         self.to_neutron_port = to_auth['NEUTRON_PORT']
         self.to_glance_port = to_auth['GLANCE_PORT']
         self.to_domain_id = to_auth['DOMAIN_ID']
+        self.to_nfs_glance_location = to_auth['NFS_GLANCE_LOCATION']
 
         #to disable warnings on certs missing subjectAltName
         #https://github.com/shazow/urllib3/issues/497#issuecomment-66942891
@@ -304,7 +306,8 @@ class AuthStack(object):
                     'NFS_HOST': None,
                     'NFS_DIR' : None,
                     'NFS_IP' : None,
-                    'NFS_LIBVIRT_LOCATION': None
+                    'NFS_LIBVIRT_LOCATION': None,
+                    'NFS_GLANCE_LOCATION': None
                         }
 
         auth_details = AUTH_DETAILS

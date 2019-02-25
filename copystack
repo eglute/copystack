@@ -485,6 +485,96 @@ def migrate_actions(args):
         if len(args.vips) == 1:
             neutron_common.set_allowed_pairs_for_vms(id_file=args.vips[0])
 
+def add_mig1_command_options(subparsers):
+    migrate_parser = subparsers.add_parser('mig', help='Migration using glance images and cinder volumes.')
+
+    migrate_parser.add_argument("-0", "--shutdown", dest='shutdown', nargs=1, metavar='UUID_file',
+                                help='Shutdown VMs for each UUID provided in a file, for example, ./id_file')
+    migrate_parser.add_argument("-1", "--createsnapshotvm", dest='createsnapshotvm', nargs=1, metavar='UUID_file',
+                                help='Create VM glance images as well as snapshots from VMs Cinder volumes for each UUID provided in a file, '
+                                     'for example, ./id_file. ')
+    migrate_parser.add_argument("-2", "--uploadimages", dest='uploadimages', nargs=1,
+                                metavar='UUID_file',
+                                help='Create glance images in TO environment for each VM UUID provided in a file, '
+                                     'for example, ./id_file. ')
+    migrate_parser.add_argument("-3", "--managenewvolumes", dest='managenewvolumes',
+                                nargs=1, metavar=('UUID_file'),
+                                help='Manage all formerly attached volumes by VM UUID '
+                                     'for each UUID provided in a file, for example, ./id_file.')
+    # migrate_parser.add_argument("-4", "--converttoimages", nargs=1, metavar=('UUID_file'),
+    #                             help='Convert volumes back to VM images for each UUID provided in '
+    #                                  'a file, for example, ./id_file')
+    # migrate_parser.add_argument("-5", "--retypevolumes", nargs=2, metavar=('UUID_file', 'type'),
+    #                             help='Retype all volumes to a give type by associated VM UUID for each UUID provided in '
+    #                                  'a file, for example, ./id_file lvm')
+    migrate_parser.add_argument("-5", "--boot",
+                                nargs=1, metavar='UUID_file',
+                                dest='boot',
+                                help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
+                                     'with prior IPs attached. Have to configure accessess to libvirt.xml files '
+                                     'for attaching NICs in proper order. Example command: '
+                                     ' ./copystack migrate -5 ./id_file')
+    migrate_parser.add_argument("-6", "--adddvolumestovms", dest='adddvolumestovms',
+                                nargs=1, metavar='UUID_file',
+                                help='Attach additional volumes to migrated VMs for each UUID provided in the original '
+                                     'migration file, for example, ./id_file.')
+    migrate_parser.add_argument("-7", "--securitygroups", dest='securitygroups', nargs=1, metavar='UUID_file',
+                                help='Attach security groups to migrated VMs for each UUID provided in the original '
+                                     'migration file, for example, ./id_file. Includes adding additional migration group.')
+    migrate_parser.add_argument("-8", "--vips", dest='vips', nargs=1, metavar='UUID_file',
+                                help='Attach VIP allowed pairs to migrated VMs for each UUID provided in the original '
+                                     'migration file, for example, ./id_file.')
+
+
+def mig_actions(args):
+    if args.shutdown:
+        if len(args.shutdown) == 1:
+            nova_common.power_off_vms('from', id_file=args.shutdown[0])
+        else:
+            print "Please provide file with VM UUIDs to be shutdown, for example, ./id_file"
+    if args.createsnapshotvm:
+        if args.createsnapshotvm:
+            #todo: move this and add logic on checking for boot from volume vs boot from image
+            nova_common.prepare_migrate_vms_make_volume_copies(id_file=args.createsnapshotvm[0])
+            nova_common.create_image_from_vm('from', id_file=args.createsnapshotvm[0])
+        else:
+            print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    # if args.createsvolumefromsnapshot:
+    #     if len(args.createsvolumefromsnapshot) == 1:
+    #         nova_common.make_volumes_from_snapshots("from", id_file=args.createsvolumefromsnapshot[0])
+    #         cinder_common.convert_image_to_volume_by_vm_ids('from', id_file=args.createsvolumefromsnapshot[0])
+    #     else:
+    #         print "Please provide file with VM UUIDs to be migrated, for example, ./id_file"
+    if args.uploadimages:
+        if len(args.uploadimages) == 1:
+            glance_common.upload_images_by_url(args.uploadimages[0])
+    if args.managenewvolumes:
+        if len(args.managenewvolumes) == 1:
+            nova_common.manage_nfs_volumes_based_on_vms(args.managenewvolumes[0])
+    # if args.converttoimages:
+    #     if len(args.converttoimages) == 1:
+    #         cinder_common.convert_volumes_to_vm_images_by_vm_ids('to', args.converttoimages[0])
+    # if args.retypevolumes:
+    #     if len(args.retypevolumes) == 2:
+    #         nova_common.retype_volumes_based_on_vms(args.retypevolumes[0], args.retypevolumes[1])
+    if args.boot:
+        if len(args.boot) == 1:
+            nova_common.migrate_vms_from_image(id_file=args.boot[0])
+    if args.adddvolumestovms:
+        if len(args.adddvolumestovms) == 1:
+            nova_common.attach_volumes(id_file=args.adddvolumestovms[0])
+        else:
+            print "Please provide file with VM ids, for example, ./id_file"
+    if args.securitygroups:
+        if len(args.securitygroups) == 1:
+            nova_common.attach_security_groups(id_file=args.securitygroups[0])
+            nova_common.attach_security_migration_group(id_file=args.securitygroups[0])
+        else:
+            print "Please provide file with VM UUIDs for attaching VIP allowed pairs, for example, ./id_file"
+    if args.vips:
+        if len(args.vips) == 1:
+            neutron_common.set_allowed_pairs_for_vms(id_file=args.vips[0])
+
 
 def add_move_command_options(subparsers):
     migrate_parser = subparsers.add_parser('move', help='Migrate using volume move')
@@ -728,6 +818,7 @@ def main():
     add_neutron_command_options(subparsers)
     add_nova_command_options(subparsers)
     add_migrate_command_options(subparsers)
+    add_mig1_command_options(subparsers)
     add_move_command_options(subparsers)
     add_copy_command_options(subparsers)
 
@@ -745,6 +836,8 @@ def main():
         neutron_actions(args)
     elif args.mode == 'migrate':
         migrate_actions(args)
+    elif args.mode == 'mig':
+        mig_actions(args)
     elif args.mode == 'move':
         move_actions(args)
     elif args.mode == 'copy':

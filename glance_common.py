@@ -195,6 +195,21 @@ def upload_volume_images(path, volumes):
         print "Uploading image name:", image_name
         image_create('to', image, filename)
 
+
+# create images by using NFS URL for direct uplaod to the TO environment.
+# Must have access to FROM glance NFS
+def upload_images_by_url(uuid_file):
+    ids = utils.read_ids_from_file(uuid_file)
+    auth = AuthStack()
+    from_path = auth.from_nfs_glance_location
+    for uuid in ids:
+        image_name = "migration_vm_image_" + uuid
+        filename = from_path + image_name
+        image = get_image_by_name('from', image_name)
+        print "Uploading image name:", image_name
+        image_create('to', image, filename)
+
+
 def image_create(destination, image, url):
     glance = get_glance(destination)
     # props = image.properties

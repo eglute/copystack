@@ -19,6 +19,8 @@ import math
 import os
 from glob import glob
 from lxml import etree
+from shutil import copy2
+
 
 
 def read_ids_from_file(id_file):
@@ -85,3 +87,8 @@ def get_macs_from_libvirt(full_path):
         macs.append(interface.get('address'))
     # print macs
     return macs
+
+
+def copy_file(full_path, file_name, new_name):
+    print "Copying " + full_path + file_name + " to " + full_path + new_name
+    copy2(full_path + file_name, full_path + new_name)

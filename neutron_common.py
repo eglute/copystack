@@ -674,9 +674,9 @@ def main():
     # print_allowed_address_pairs('from')
     # get_ip_collision('./id_file')
     # print_allowed_pairs_for_vms('from', './id_file')
-    # get_network_by_uuid('from', '0619876e-6f2e-4e24-ae07-a3bbd6fa9a58')
+    get_network_by_uuid('from', '0619876e-6f2e-4e24-ae07-a3bbd6fa9a58')
     # print_networks_with_uuid('from')
-    copy_by_net_name('net_uuid')
+    # copy_by_net_name('net_uuid')
 
 if __name__ == "__main__":
         main()

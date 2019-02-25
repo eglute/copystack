@@ -167,6 +167,43 @@ def create_volume_snapshot(destination, volume, original_vm_id="none"):
     return snap
 
 
+def create_volume_copy(destination, volume):
+    cinder = get_cinder(destination)
+    tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
+    # tenant = keystone_common.find_opposite_tenant_id(from_tenant)
+
+    if volume.volume_type == 'None':
+        myvol = cinder.volumes.create(size=volume.size,
+                                      # snapshot_id=volume.id,
+                                      name=volume.name,
+                                      description=volume.description,
+                                      #volume_type=volume.volume_type,
+                                      #user_id=volume.user_id, todo:fixthis
+                                      project_id=tenant,
+                                      availability_zone=volume.availability_zone,
+                                      metadata=volume.metadata,
+                                      #imageRef=volume.imageRef,
+                                      source_volid=volume.source_volid
+                                      )
+    else:
+        myvol = cinder.volumes.create(size=volume.size,
+                                      # snapshot_id=volume.id,
+                                      name=volume.name,
+                                      description=volume.description,
+                                      volume_type=volume.volume_type,
+                                      #user_id=volume.user_id, todo:fixthis
+                                      project_id=tenant,
+                                      availability_zone=volume.availability_zone,
+                                      metadata=volume.metadata,
+                                      #imageRef=volume.imageRef,
+                                      source_volid=volume.source_volid
+                                      )
+    print "Volume", myvol.name, "created"
+
+    return myvol
+
+
+
 def create_volume(destination, volume):
     cinder = get_cinder(destination)
     from_tenant = volume.__dict__['os-vol-tenant-attr:tenant_id']
@@ -691,7 +728,6 @@ def manage_netapp(volume_name, volume_type, host, netapp_id):
     manage_volume('to', host=host, reference=source, name=volume_name, volume_type=volume_type)
 
 
-#TODO: figure out another way to this. RIght now it checks every pool and tries to manage it.
 def easy_manage_netapp(volume_name, volume_type, volume_id):
     auth = AuthStack()
 
@@ -709,11 +745,94 @@ def easy_manage_netapp(volume_name, volume_type, volume_id):
     manage_volume('to', host=nfs_host, reference=resource, name=volume_name, volume_type=volume_type)
 
 
+def copy_nfs_volume(volume_id):
+    auth = AuthStack()
+
+    volume = "volume-" + volume_id
+    location = utils.get_nfs_location(auth.nfs_dir, volume)
+    shares = location.split("/")
+    share = shares[len(shares) - 1]
+    print "share: " + share
+    nfs_host = auth.nfs_host + share
+    print "host: " + nfs_host
+    netapp_id = auth.nfs_ip + ":/" + share + "/" + volume
+    netapp_path = auth.nfs_ip + ":/" + share + "/"
+    print netapp_id
+    new_name = "migration-" + volume
+    utils.copy_file(netapp_path, volume, new_name)
+
+
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
     # for volume in volumes:
     # vol = get_volume_by_id('from', volume)
     # vol = get_clone_volume_by_id('from', volume)
     manage_volume_from_id('to', ssd_host, hdd_host, volume)
+
+
+# Here passed in volume is the original volume and not a copy. Need to find its NFS copy
+# and then manage the copy.
+def manage_nfs_copy_volume_from_id(destination, volume):
+
+    auth = AuthStack()
+    meta = volume.metadata
+    print "meta:"
+    print meta
+    meta.update({'clone_volume_id': volume.id})
+    original_cinder = get_cinder('from')
+    version = float(original_cinder.version)
+    if version >= 2.0:
+        meta.update({'clone_volume_name': volume.name})
+    else:
+        meta.update({'clone_volume_name': volume.display_name})
+    meta.update({'clone_boot_status': volume.bootable})
+    print meta
+    if volume.attachments:
+        for att in volume.attachments:
+            meta.update({'original_vm_id': att['server_id']})
+            meta.update({'original_vm_device': att['device']})
+    volume_type = volume.volume_type
+    bootable = False
+    # if volume.bootable == 'true':
+    #     bootable = True  # for some reason api returns a string and the next call expects a boolean.
+
+    # there is an issue with cinder v1 where volume set bootable didn't work, so using metadata instead.
+    if meta['bootable'] == 'true':
+        bootable = True
+
+    #name = volume.name
+    if 'original_volume_name' in meta:
+        name = meta['original_volume_name']
+    elif 'image_name' in meta:
+        name = meta['image_name']
+    else:
+        name = 'no_original_name_found'
+    print "original name: " + name
+    source = {}
+    host = None
+    print "Volume type is:", volume_type
+    if volume_type == 'SolidFire':
+        print "Volume is SolidFire, can't do things here."
+        # sfid = solidfire_common.get_volume_by_volume_name(volume.id)
+        # ref = "%(id)s" % {"id": sfid}
+        # source = {'source-id': ref}
+        # host = ssd_host
+    else:
+        ref = "migration-volume-" + volume.id
+        location = utils.get_nfs_location(auth.nfs_dir, ref)
+        shares = location.split("/")
+        share = shares[len(shares) - 1]
+        print "share: " + share
+        host = auth.nfs_host + share
+        print "host: " + host
+        netapp_id = auth.nfs_ip + ":/" + share + "/" + ref
+        print netapp_id
+        source = {'source-name': netapp_id}
+        print source
+
+    print "reference: "
+    print source
+    manage_volume(destination, source, host, name, volume_type=volume_type, bootable=bootable, metadata=meta)
+    print "Volume id: " + volume.id + " managed!"
 
 
 def manage_volume_from_id(destination, ssd_host, hdd_host, volume):
@@ -848,8 +967,11 @@ def main():
     # print utils.convert_B_to_GB(3072000000)
     # update_volume_description('to', '3f7b0d1b-fb97-4840-9032-f7e68bab1e1f', 'delete after maintenance')
     # utils.get_nfs_location('/Users/egle.sigler/src', 'profiles_settings.xml')
-    easy_manage_netapp("egle", "nfs", "profiles_settings.xml")
-
+    # easy_manage_netapp("egle", "nfs", "profiles_settings.xml")
+    # vol = get_volume_by_id('from', 'ec635c54-34d8-4f43-b1d9-4e862cfd2b7f')
+    # print vol
+    # create_volume_copy('from', vol)
+    utils.copy_file("/Users/egle.sigler/src/copystack/copy_folder/", 'stuff', 'my_stuff')
 
 if __name__ == "__main__":
         main()
