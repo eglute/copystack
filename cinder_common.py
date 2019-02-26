@@ -276,7 +276,7 @@ def create_volume_from_image(destination, volume, single=False):
         if volume.attachments:
             for att in volume.attachments:
                 meta.update({'original_vm_id': att['server_id']})
-                meta.update({'original_vm_device': att['device']})
+                meta.update({'original_device': att['device']})
 
         version = float(cinder.version)
         if version >= 2.0:
@@ -760,7 +760,7 @@ def copy_nfs_volume(volume_id):
     cinder_path = auth.nfs_cinder_location + share + "/"
     print cinder_path
     new_name = "migration-" + volume
-    utils.copy_file(cinder_path, volume, new_name)
+    utils.start_copy_process(cinder_path, volume, new_name)
 
 
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
@@ -790,7 +790,7 @@ def manage_nfs_copy_volume_from_id(destination, volume):
     if volume.attachments:
         for att in volume.attachments:
             meta.update({'original_vm_id': att['server_id']})
-            meta.update({'original_vm_device': att['device']})
+            meta.update({'original_device': att['device']})
     volume_type = volume.volume_type
     bootable = False
     # if volume.bootable == 'true':
@@ -861,7 +861,7 @@ def manage_volume_from_id(destination, ssd_host, hdd_host, volume):
     if volume.attachments:
         for att in volume.attachments:
             meta.update({'original_vm_id': att['server_id']})
-            meta.update({'original_vm_device': att['device']})
+            meta.update({'original_device': att['device']})
     volume_type = volume.volume_type
     bootable = False
     # if volume.bootable == 'true':
@@ -969,7 +969,8 @@ def main():
     # vol = get_volume_by_id('from', 'ec635c54-34d8-4f43-b1d9-4e862cfd2b7f')
     # print vol
     # create_volume_copy('from', vol)
-    utils.copy_file("/Users/egle.sigler/src/copystack/copy_folder/", 'stuff', 'my_stuff')
+    # utils.copy_file("/Users/egle.sigler/src/copystack/copy_folder/", 'stuff', 'my_stuff')
+    utils.start_copy_process("/Users/egle.sigler/src/copystack/copy_folder/", 'stuff', 'my_stuff')
 
 if __name__ == "__main__":
         main()
