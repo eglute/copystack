@@ -19,6 +19,7 @@ import keystone_common
 import nova_common
 import utils
 from auth_stack2 import AuthStack
+from multiprocessing import Process
 
 
 def get_glance(destination):
@@ -199,7 +200,12 @@ def upload_images_by_url(uuid_file):
         image = get_image_by_name('from', image_name)
         filename = from_path + image.id
         print "Uploading image name:", image_name
-        image_create('to', image, filename)
+        start_image_create_process('to', image, filename)
+
+
+def start_image_create_process(destination, image, url):
+    p = Process(target=image_create, args=(destination, image, url))
+    p.start()
 
 
 def image_create(destination, image, url):
@@ -216,7 +222,7 @@ def image_create(destination, image, url):
     min_ram = 0
     if image.min_ram is not None:
         min_ram = image.min_ram
-    print "this might take a while..."
+    print "Image upload to glance takes a while, check image status before proceeding."
     img = glance.images.create(name=image.name,
                                    container_format=image.container_format,
                                    disk_format=image.disk_format,
