@@ -19,8 +19,9 @@ import math
 import os
 from glob import glob
 from lxml import etree
-from shutil import copy2
 from multiprocessing import Process
+import subprocess
+
 
 
 
@@ -92,7 +93,8 @@ def get_macs_from_libvirt(full_path):
 
 def copy_file(full_path, file_name, new_name):
     print "Copying " + full_path + file_name + " to " + full_path + new_name
-    copy2(full_path + file_name, full_path + new_name)
+    # copy2(full_path + file_name, full_path + new_name)
+    subprocess.call(["cp", "--sparse=always", full_path + file_name, full_path + new_name])
 
 
 def start_copy_process(full_path, file_name, new_name):
