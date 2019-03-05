@@ -223,6 +223,10 @@ def add_nova_command_options(subparsers):
                              help='Print FROM vms that have no BOOTABLE volumes attached.')
     nova_parser.add_argument("-B", "--to_vms_no_boot_vol", action='store_true', dest='to_vms_no_boot_vol',
                              help='Print TO vms that have no BOOTABLE volumes attached.')
+    nova_parser.add_argument("-t", "--from_vms_boot_vol", action='store_true', dest='from_vms_boot_vol',
+                             help='Print FROM vms that have no BOOTABLE volumes attached.')
+    nova_parser.add_argument("-T", "--to_vms_boot_vol", action='store_true', dest='to_vms_boot_vol',
+                             help='Print TO vms that have no BOOTABLE volumes attached.')
     nova_parser.add_argument("-n", "--from_vms_with_interfaces", dest='from_vms_with_interfaces', nargs=1, metavar='UUID_file',
                              help='Print FROM VMs and matching interfaces for each UUID provided in a file, for example, ./id_file')
     nova_parser.add_argument("-N", "--to_vms_with_interfaces", dest='to_vms_with_interfaces', nargs=1,
@@ -276,6 +280,12 @@ def nova_actions(args):
     if args.to_vms_no_boot_vol:
         print "\n--------------- To VMs: ------------------------"
         vms = nova_common.print_vm_list_ids_without_bootable_volumes('to')
+    if args.from_vms_boot_vol:
+        print "\n--------------- From VMs: ------------------------"
+        vms = nova_common.print_vm_list_ids_with_bootable_volumes('from')
+    if args.to_vms_boot_vol:
+        print "\n--------------- To VMs: ------------------------"
+        vms = nova_common.print_vm_list_ids_with_bootable_volumes('to')
     if args.from_vms_with_interfaces:
         if len(args.from_vms_with_interfaces) == 1:
             nova_common.print_interfaces_for_vms('from', id_file=args.from_vms_with_interfaces[0])
