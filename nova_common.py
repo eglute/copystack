@@ -251,6 +251,16 @@ def print_vm_list_ids_without_bootable_volumes(destination):
         print vm.id, " ", vm.status, " ", vm.flavor['id'], vm.name
 
 
+def print_vm_list_ids_with_bootable_volumes(destination):
+    vms = get_vms_with_boot_volumes(destination)
+    vms.sort(key=lambda x: x.status)
+    newlist = sorted(vms, key=lambda x: x.status)
+
+    print "VMs with bootable volumes sorted by status (id status flavor_id name):"
+    for vm in newlist:
+        print vm.id, " ", vm.status, " ", vm.flavor['id'], vm.name
+
+
 def print_flavor_list(destination):
     to_flavors = get_flavor_list(destination)
     for f in to_flavors:
@@ -1121,6 +1131,19 @@ def get_vms_without_boot_volumes(destination):
             if vm_has_boot is False:
                 servers.append(vm)
 
+    return servers
+
+
+def get_vms_with_boot_volumes(destination):
+    servers = []
+    vms = get_vm_list(destination)
+    for vm in vms:
+        if len(vm.__dict__['os-extended-volumes:volumes_attached']) > 0:
+            volumes = vm.__dict__['os-extended-volumes:volumes_attached']
+            for vol in volumes:
+                boot = cinder_common.is_bootable_volume(destination, vol['id'])
+                if boot is True:
+                    servers.append(vm)
     return servers
 
 
