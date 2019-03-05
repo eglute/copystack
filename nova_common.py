@@ -280,7 +280,8 @@ def print_flavor_list(destination):
 def create_vm(from_vm, image='default'):
     nova = get_nova('to')
     auth = AuthStack()
-    flavor = get_flavor_by_id('to', from_vm.flavor['id'])
+    # flavor = get_flavor_by_id('to', from_vm.flavor['id'])
+    flavor = get_flavor_by_name('to', from_vm.flavor['id'])
     if flavor is None:
         print "Error: Cannot continue for this VM without proper flavor"
         return None
@@ -355,7 +356,7 @@ def create_vm(from_vm, image='default'):
 def create_vm_with_network_mapping(from_vm, image='default', network_name='none'):
     nova = get_nova('to')
 
-    flavor = get_flavor_by_id('to', from_vm.flavor['id'])
+    flavor = get_flavor_by_name('to', from_vm.flavor['id'])
     if flavor is None:
         print "Error: Cannot continue for this VM without proper flavor"
         return None
