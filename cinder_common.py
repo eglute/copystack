@@ -720,7 +720,7 @@ def manage_volume(destination, reference, host, name, volume_type=None, bootable
 
 def manage_ssd(host, volume_name, solidfire_id):
     source = {'source-id': solidfire_id}
-    manage_volume('to', host=host, reference=source, name=volume_name, volume_type='SSD')
+    manage_volume('to', host=host, reference=source, name=volume_name, volume_type='solidfire')
 
 
 def manage_netapp(volume_name, volume_type, host, netapp_id):
@@ -970,7 +970,9 @@ def main():
     # print vol
     # create_volume_copy('from', vol)
     # utils.copy_file("/Users/egle.sigler/src/copystack/copy_folder/", 'stuff', 'my_stuff')
-    utils.start_copy_process("/Users/egle.sigler/src/copystack/copy_folder/", 'stuff', 'my_stuff')
+    # utils.copy_file("/mnt/cinder/cinder4/", 'volume-d9966992-004b-465d-9cc9-bdc7f1e88508', 'egle-migration-volume-d9966992-004b-465d-9cc9-bdc7f1e88508')
+    # utils.start_copy_process("/Users/egle.sigler/src/copystack/copy_folder/", 'stuff', 'my_stuff')
+    solidfire_common.copy_volume(3858, "egle-migration-1")
 
 if __name__ == "__main__":
         main()
