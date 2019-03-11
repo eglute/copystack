@@ -546,7 +546,7 @@ def mig_actions(args):
             glance_common.upload_images_by_url(args.uploadimages[0])
     if args.managenewvolumes:
         if len(args.managenewvolumes) == 1:
-            nova_common.manage_nfs_volumes_based_on_vms(args.managenewvolumes[0])
+            nova_common.manage_volume_copies_based_on_vms(args.managenewvolumes[0])
     if args.boot:
         if len(args.boot) == 1:
             nova_common.migrate_vms_from_image(id_file=args.boot[0])

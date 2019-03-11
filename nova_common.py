@@ -349,13 +349,19 @@ def create_vm(from_vm, image='default'):
 
     print "nics"
     print nics
-
-    #include original image info as metadata:
-    img = glance_common.get_image('from', from_vm.image['id'])
     metadata = from_vm.metadata
     metadata.update({'original_vm_id':from_vm.id})
-    metadata.update({'original_image_id': img.id})
-    metadata.update({'original_image_name': img.name})
+
+    #include original image info as metadata:
+    try:
+        img = glance_common.get_image('from', from_vm.image['id'])
+        metadata.update({'original_image_id': img.id})
+        metadata.update({'original_image_name': img.name})
+    except Exception, e:
+        print "No original image info for this VM"
+        metadata.update({'original_image_id': "not found"})
+        metadata.update({'original_image_name': "not found"})
+
     #attaching security groups during server creation does not seem to work, so moved to a separate task
     server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
                                  meta=metadata, key_name=from_vm.key_name)
@@ -1171,7 +1177,10 @@ def prepare_migrate_vms_make_volume_copies(id_file):
         for vm_uuid in ids:
             volumes = get_volumes_for_vm("from", vm_uuid)
             for v in volumes:
-                cinder_common.copy_nfs_volume(v.id)
+                if v.volume_type == 'SolidFire':
+                    cinder_common.copy_solidfire_volume(v.id)
+                else:
+                    cinder_common.copy_nfs_volume(v.id)
     else:
         print "Please make sure that all migration VMs are powered off."
 
@@ -1213,7 +1222,7 @@ def manage_volumes_based_on_vms(id_file, ssd_host=None, hdd_host=None):
             cinder_common.manage_volume_from_id('to', ssd_host, hdd_host, volume)
 
 
-def manage_nfs_volumes_based_on_vms(id_file):
+def manage_volume_copies_based_on_vms(id_file):
     vms = utils.read_ids_from_file(id_file)
     nova = get_nova('from')
     for vm_uuid in vms:
@@ -1223,7 +1232,7 @@ def manage_nfs_volumes_based_on_vms(id_file):
             from_vols = vm.__dict__['os-extended-volumes:volumes_attached']
             from_volumes = cinder_common.get_volumes_from_vm_attachment_list("from", from_vols)
             for volume in from_volumes:
-                cinder_common.manage_nfs_copy_volume_from_id('to', volume)
+                cinder_common.manage_copy_volume_from_id('to', volume)
         else:
             print "No attached volumes for VM " + vm_uuid
 
