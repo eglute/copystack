@@ -46,9 +46,8 @@ def get_volume_by_volume_name(name):
 def copy_volume(solid_fire_id, new_volume_name):
     sf = get_solid_fire()
     new_vol = sf.clone_volume(volume_id=solid_fire_id, name=new_volume_name)
-    print "SolidFire Volume " + solid_fire_id + " copied"
-    print "-----------"
-    print new_vol
+    print "SolidFire Volume copied"
+    return new_vol
 
 
 def main():

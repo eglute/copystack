@@ -720,7 +720,7 @@ def manage_volume(destination, reference, host, name, volume_type=None, bootable
 
 def manage_ssd(host, volume_name, solidfire_id):
     source = {'source-id': solidfire_id}
-    manage_volume('to', host=host, reference=source, name=volume_name, volume_type='solidfire')
+    manage_volume('to', host=host, reference=source, name=volume_name, volume_type='legacy_solidfire')
 
 
 def manage_netapp(volume_name, volume_type, host, netapp_id):
@@ -763,6 +763,13 @@ def copy_nfs_volume(volume_id):
     utils.start_copy_process(cinder_path, volume, new_name)
 
 
+def copy_solidfire_volume(volume_id):
+    sf_volume = solidfire_common.get_volume_by_volume_name(volume_id)
+    name = volume_id + "-migration"
+    new_sf_volume = solidfire_common.copy_volume(sf_volume.volume_id, name)
+    return sf_volume
+
+
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
     # for volume in volumes:
     # vol = get_volume_by_id('from', volume)
@@ -772,7 +779,7 @@ def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
 
 # Here passed in volume is the original volume and not a copy. Need to find its NFS copy
 # and then manage the copy.
-def manage_nfs_copy_volume_from_id(destination, volume):
+def manage_copy_volume_from_id(destination, volume):
 
     auth = AuthStack()
     meta = volume.metadata
@@ -810,10 +817,12 @@ def manage_nfs_copy_volume_from_id(destination, volume):
     print "Volume type is:", volume_type
     if volume_type == 'SolidFire':
         print "Volume is SolidFire, can't do things here."
-        # sfid = solidfire_common.get_volume_by_volume_name(volume.id)
-        # ref = "%(id)s" % {"id": sfid}
-        # source = {'source-id': ref}
-        # host = ssd_host
+        copy_id = volume.id + "-migration"
+        sfid = solidfire_common.get_volume_by_volume_name(copy_id)
+        ref = "%(id)s" % {"id": sfid}
+        source = {'source-id': ref}
+        host = auth.solid_fire_host
+        volume_type = 'legacy_solidfire'
     else:
         ref = "migration-volume-" + volume.id
         location = utils.get_nfs_location(auth.nfs_dir, ref)
