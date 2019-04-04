@@ -515,7 +515,7 @@ def add_mig1_command_options(subparsers):
                                 help='Boot migrated VMs from volumes for each VM UUID provided in a file, for example, ./id_file. '
                                      'with prior IPs attached. Have to configure accessess to libvirt.xml files '
                                      'for attaching NICs in proper order. Example command: '
-                                     ' ./copystack migrate -5 ./id_file')
+                                     ' ./copystack migrate -4 ./id_file')
     migrate_parser.add_argument("-5", "--adddvolumestovms", dest='adddvolumestovms',
                                 nargs=1, metavar='UUID_file',
                                 help='Attach additional volumes to migrated VMs for each UUID provided in the original '

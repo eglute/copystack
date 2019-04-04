@@ -363,8 +363,19 @@ def create_vm(from_vm, image='default'):
         metadata.update({'original_image_name': "not found"})
 
     #attaching security groups during server creation does not seem to work, so moved to a separate task
-    server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-                                 meta=metadata, key_name=from_vm.key_name)
+    keypairs = get_keypairs('to')
+    key_name = from_vm.key_name
+    found = False
+    for key in keypairs:
+        if key.name == key_name:
+            found = True
+            break
+    if found:
+        server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
+                                 meta=metadata, key_name=key_name)
+    else:
+        server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
+                                     meta=metadata)
 
     print "Server created:", from_vm.name
 
