@@ -766,8 +766,8 @@ def copy_nfs_volume(volume_id):
 def copy_solidfire_volume(volume_id):
     sf_volume = solidfire_common.get_volume_by_volume_name(volume_id)
     name = volume_id + "-migration"
-    new_sf_volume = solidfire_common.copy_volume(sf_volume.volume_id, name)
-    return sf_volume
+    new_sf_volume = solidfire_common.copy_volume(sf_volume, name)
+    return new_sf_volume
 
 
 def manage_volumes_by_vm_id(ssd_host, hdd_host, volume):
@@ -816,7 +816,7 @@ def manage_copy_volume_from_id(destination, volume):
     host = None
     print "Volume type is:", volume_type
     if volume_type == 'SolidFire':
-        print "Volume is SolidFire, can't do things here."
+        print "Volume is SolidFire."
         copy_id = volume.id + "-migration"
         sfid = solidfire_common.get_volume_by_volume_name(copy_id)
         ref = "%(id)s" % {"id": sfid}
