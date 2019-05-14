@@ -690,17 +690,11 @@ def print_cinder_pools(destination):
 
 def change_volume_type(destination, volume, vtype):
     cinder = get_cinder(destination)
-    # volume = get_volume_by_id(destination, volume_id)
-    if hasattr(volume, 'volume_type'):
-        if volume.volume_type == vtype:
-            print "Volume " + volume.id + " already type " + vtype
-            return
     cinder.volumes.retype(volume, vtype, "on-demand")
-    print "Volume " + volume.id + " retyped to " + vtype
+    print "Volume " + volume + " retyped to " + vtype
 
 
 def retype_volumes_by_volume_ids(destination, volume_id_file, type):
-    cinder = get_cinder(destination)
     volume_ids = utils.read_ids_from_file(volume_id_file)
     for volume in volume_ids:
         change_volume_type(destination, volume, type)
@@ -714,8 +708,14 @@ def manage_volume(destination, reference, host, name, volume_type=None, bootable
     print reference
     if volume_type == 'None':
         volume_type = "legacy_netapp"
-    cinder.volumes.manage(host, reference, name=name, volume_type=volume_type, bootable=bootable, metadata=metadata)
+    new_vl = cinder.volumes.manage(host, reference, name=name, volume_type=volume_type, bootable=bootable, metadata=metadata)
     print "Managed volume's name " + name
+    #todo: if volume_type == 'legacy_solidfire':
+    if volume_type == 'legacy_solidfire':
+        #update SSD name to match to cinder volume
+        change_volume_type('to', new_vl.id, 'solidfire')
+        print "Retyped volume to solidfire type from legacy_solidfire so that SolidFire volume name gets updated on SolidFire volume."
+        print new_vl.name
 
 
 def manage_ssd(host, volume_name, solidfire_id):
