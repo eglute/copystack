@@ -246,7 +246,7 @@ class AuthStack(object):
         endpoint_url = ('{ip}:{port}/v1/{tenant}'.format
                         (ip=self.from_auth_ip, port=self.from_cinder_port, tenant=tenant_id))
 
-        print endpoint_url
+        # print endpoint_url
         cinder = cinder_client('1', self.from_username, token,
                                project_id=self.from_tenant_name,
                                auth_url=self.from_auth_url, cacert=self.from_cert)
