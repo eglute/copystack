@@ -1141,7 +1141,12 @@ def print_vm_list_with_multiple_volumes(destination):
         volumes = vm.__dict__['os-extended-volumes:volumes_attached']
         for vol in volumes:
             volume = cinder_common.get_volume_by_id(destination, vol['id'])
-            print '{:8}'.format(" "), '{:16}'.format(volume.id), '{:12}'.format(volume.attachments[0]['device']), volume.name
+            vol_name = None
+            if hasattr(volume, 'display_name'):
+                vol_name = volume.display_name
+            if hasattr(volume, 'name'):
+                vol_name = volume.name
+            print '{:8}'.format(" "), '{:16}'.format(volume.id), '{:12}'.format(volume.attachments[0]['device']), vol_name
 
 
 def get_vms_without_volumes(destination):
