@@ -206,10 +206,10 @@ def add_nova_command_options(subparsers):
     nova_parser.add_argument("-s", "--from_sec", action='store_true', dest='from_sec', help='Print FROM security groups')
     nova_parser.add_argument("-S", "--to_sec", action='store_true', dest='to_sec', help='Print TO security groups')
     nova_parser.add_argument("-x", "--copysec", action='store_true', dest='copysec', help='Copy security groups FROM->TO. '
-                                    'Will also update DEFAULT group rules. Other duplucate groups will be ignored.')
+                                    'Will also update DEFAULT group rules. Other duplicate groups will be ignored.')
     nova_parser.add_argument("-k", "--publickeys", action='store_true', dest='publickeys',
                              help='Copy public keys FROM->TO. '
-                                  'Will also update DEFAULT group rules. Other duplucate groups will be ignored.')
+                                  'Will also update DEFAULT group rules. Other duplicate groups will be ignored.')
     nova_parser.add_argument("-f", "--from_flavor", action='store_true', dest='from_flavor', help='Print FROM flavors')
     nova_parser.add_argument("-F", "--to_flavor", action='store_true', dest='to_flavor', help='Print TO flavors')
     nova_parser.add_argument("-X", "--copy_flavors", action='store_true', dest='copy_flavors', help='Copy flavors from->to. Run as admin.')
@@ -227,6 +227,10 @@ def add_nova_command_options(subparsers):
                              help='Print FROM vms that have no BOOTABLE volumes attached.')
     nova_parser.add_argument("-T", "--to_vms_boot_vol", action='store_true', dest='to_vms_boot_vol',
                              help='Print TO vms that have no BOOTABLE volumes attached.')
+    nova_parser.add_argument("-m", "--from_vms_many_vol", action='store_true', dest='from_vms_many_vol',
+                             help='Print FROM vms that have multiple volumes attached.')
+    nova_parser.add_argument("-M", "--to_vms_many_vol", action='store_true', dest='to_vms_many_vol',
+                             help='Print TO vms that have multiple volumes attached.')
     nova_parser.add_argument("-n", "--from_vms_with_interfaces", dest='from_vms_with_interfaces', nargs=1, metavar='UUID_file',
                              help='Print FROM VMs and matching interfaces for each UUID provided in a file, for example, ./id_file')
     nova_parser.add_argument("-N", "--to_vms_with_interfaces", dest='to_vms_with_interfaces', nargs=1,
@@ -286,6 +290,12 @@ def nova_actions(args):
     if args.to_vms_boot_vol:
         print "\n--------------- To VMs: ------------------------"
         vms = nova_common.print_vm_list_ids_with_bootable_volumes('to')
+    if args.from_vms_many_vol:
+        print "\n--------------- From VMs: ------------------------"
+        vms = nova_common.print_vm_list_with_multiple_volumes('from')
+    if args.to_vms_many_vol:
+        print "\n--------------- To VMs: ------------------------"
+        vms = nova_common.print_vm_list_with_multiple_volumes('to')
     if args.from_vms_with_interfaces:
         if len(args.from_vms_with_interfaces) == 1:
             nova_common.print_interfaces_for_vms('from', id_file=args.from_vms_with_interfaces[0])
