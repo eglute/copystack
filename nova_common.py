@@ -565,6 +565,7 @@ def attach_volumes(id_file):
                     print "this volume was a vm image, do not attach", to_v.metadata['image_name']
                 else:
                     if not to_v.attachments:
+                        # print to_v.metadata['original_device']
                         nova.volumes.create_server_volume(vm.id, to_v.id, to_v.metadata['original_device'])
                         print "Volume id: " + to_v.id + " attached to VM id: " + vm.id
 
@@ -1122,6 +1123,27 @@ def get_volumes_for_vm(destination, vm_uuid):
     return volume_objects
 
 
+def get_vms_with_multiple_volumes(destination):
+    servers = []
+    vms = get_vm_list(destination)
+    for vm in vms:
+        if len(vm.__dict__['os-extended-volumes:volumes_attached']) > 1:
+            servers.append(vm)
+    return servers
+
+
+def print_vm_list_with_multiple_volumes(destination):
+    vms = get_vms_with_multiple_volumes(destination)
+
+    print "VMs with multiple volumes:"
+    for vm in vms:
+        print vm.id, " ", vm.name, " attached volumes:"
+        volumes = vm.__dict__['os-extended-volumes:volumes_attached']
+        for vol in volumes:
+            volume = cinder_common.get_volume_by_id(destination, vol['id'])
+            print '{:8}'.format(" "), '{:16}'.format(volume.id), '{:12}'.format(volume.attachments[0]['device']), volume.name
+
+
 def get_vms_without_volumes(destination):
     servers = []
     vms = get_vm_list(destination)
@@ -1316,7 +1338,8 @@ def main():
     # get_interfaces_for_vm_ids('from', './id_file')
     # print_interfaces_for_vms('from', './id_file')
     # utils.get_macs_from_libvirt("path")
-    create_migration_security_group('from')
+    # create_migration_security_group('from')
+    print_vm_list_with_multiple_volumes('to')
 
 
 if __name__ == "__main__":
