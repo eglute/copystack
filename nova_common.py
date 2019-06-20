@@ -519,13 +519,17 @@ def attach_security_groups(id_file):
             old_server = nova.servers.get(uuid)
             new_server = get_vm_by_original_id('to', uuid)
             groups = old_server.security_groups
+            set_groups = set(map(lambda d: d['name'], groups))
             print "Attaching security groups to:", new_server.name
-            for g in groups:
-                print "Group:", g['name']
+            for group in set_groups:
                 try:
-                    new_server.add_security_group(g['name'])
+                    new_server.add_security_group(group)
                 except Exception, e:
-                    print "Something happened while trying to attach security group. Moving to the next group. " + str(e)
+                    if str(e).find("Duplicate items in the list"):
+                        print "Server has security group", group
+                    else:
+                        print "Group:", group
+                        print "Something happened while trying to attach security group. Moving to the next group. " + str(e)
         except Exception, e:
             print str(e)
     # else:
@@ -541,13 +545,16 @@ def attach_security_migration_group(id_file):
     for uuid in ids:
         try:
             group = find_group_by_name('to', 'migration')
-            if group == None:
+            if not group:
                 group = create_migration_security_group('to')
             new_server = get_vm_by_original_id('to', uuid)
             print "Attaching migration security group to:", new_server.name
             new_server.add_security_group('migration')
         except Exception, e:
-            print str(e)
+            if str(e).find("Duplicate items in the list"):
+                print "Server has migration group."
+            else:
+                print str(e)
 
 
 def attach_volumes(id_file):
