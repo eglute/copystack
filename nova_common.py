@@ -1309,6 +1309,13 @@ def print_interfaces_for_vms(destination, id_file):
                 print '{:16}'.format(ip['ip_address'])
 
 
+def print_hypervisors(destination):
+    nova = get_nova(destination)
+    hyps = nova.hypervisors.list()
+    for hyp in hyps:
+        print hyp.hypervisor_hostname
+
+
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
@@ -1351,8 +1358,8 @@ def main():
     # print_interfaces_for_vms('from', './id_file')
     # utils.get_macs_from_libvirt("path")
     # create_migration_security_group('from')
-    print_vm_list_with_multiple_volumes('to')
-
+    # print_vm_list_with_multiple_volumes('to')
+    print_hypervisors("to")
 
 if __name__ == "__main__":
         main()
