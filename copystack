@@ -236,6 +236,10 @@ def add_nova_command_options(subparsers):
     nova_parser.add_argument("-N", "--to_vms_with_interfaces", dest='to_vms_with_interfaces', nargs=1,
                              metavar='UUID_file',
                              help='Print TO VMs and matching interfaces for each UUID provided in a file, for example, ./id_file')
+    nova_parser.add_argument("-z", "--from_hypervisors", action='store_true', dest='from_hypervisors',
+                             help='Print FROM hypervisors.')
+    nova_parser.add_argument("-Z", "--to_hypervisors", action='store_true', dest='to_hypervisors',
+                             help='Print TO hypervisors.')
 
 
 def nova_actions(args):
@@ -302,6 +306,12 @@ def nova_actions(args):
     if args.to_vms_with_interfaces:
         if len(args.to_vms_with_interfaces) == 1:
             nova_common.print_interfaces_for_vms('to', id_file=args.to_vms_with_interfaces[0])
+    if args.from_hypervisors:
+        print "\n--------------- From Hypervisors: ------------------------"
+        vms = nova_common.print_hypervisors('from')
+    if args.to_hypervisors:
+        print "\n--------------- To Hypervisors: ------------------------"
+        vms = nova_common.print_hypervisors('to')
 
 
 def add_glance_command_options(subparsers):
