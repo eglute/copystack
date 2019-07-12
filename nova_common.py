@@ -287,7 +287,7 @@ def print_flavor_list(destination):
 
 # todo: add try catch for when multiple security groups are present.
 # client lets add groups by name only...
-def create_vm(from_vm, image='default'):
+def create_vm(from_vm, image='default', hypervisor_order=None):
     nova = get_nova('to')
     auth = AuthStack()
     # flavor = get_flavor_by_id('to', from_vm.flavor['id'])
@@ -309,6 +309,12 @@ def create_vm(from_vm, image='default'):
     #         print '{:16}'.format(ip['ip_address'])
 
     nics = []
+    hypervisor = None
+    if hypervisor_order:
+        for hyp in hypervisor_order:
+            if hyp['uuid'] == from_vm.id:
+                hypervisor = 'nova::'+ hyp['hyp']
+                break
 
     for interface in ordered_interfaces:
         for ip in interface.fixed_ips:
@@ -372,10 +378,10 @@ def create_vm(from_vm, image='default'):
             break
     if found:
         server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-                                 meta=metadata, key_name=key_name)
+                                 meta=metadata, key_name=key_name, availability_zone=hypervisor)
     else:
         server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-                                     meta=metadata)
+                                     meta=metadata, availability_zone=hypervisor)
 
     print "Server created:", from_vm.name
 
@@ -583,8 +589,11 @@ def attach_volumes(id_file):
     #     print "All VMs must be powered on for this action to proceed"
 
 
-def migrate_vms_from_image(id_file):
+def migrate_vms_from_image(id_file, hypervisor_order_file=None):
     ids = utils.read_ids_from_file(id_file)
+    hypervisor_order = None
+    if hypervisor_order_file:
+        hypervisor_order = utils.read_ids_with_hyps_file(hypervisor_order_file)
     nova_from = get_nova("from")
     to_vms = get_vm_list('to')
 
@@ -607,7 +616,7 @@ def migrate_vms_from_image(id_file):
                                 print "Duplicate VM on TO side already found, skipping VM:", server.name, server.id
                                 duplicate = True
                     if duplicate is False:
-                        create_vm(server, image=image)
+                        create_vm(server, image=image, hypervisor_order=hypervisor_order)
                 else:
                     print "Did not find image in 'to' environment with name:", new_name
             else:
@@ -1316,6 +1325,20 @@ def print_hypervisors(destination):
         print hyp.hypervisor_hostname
 
 
+def check_hypervisor_list(hyp_file):
+    hyps_pairs = utils.read_ids_with_hyps_file(hyp_file)
+    nova = get_nova('to')
+    hyps = nova.hypervisors.list()
+    new_hyp_set = set(map(lambda d: d['hyp'], hyps_pairs))
+    system_hyp_set = set(map(lambda d: d.hypervisor_hostname, hyps))
+    allgood = True
+    for new_hyp in new_hyp_set:
+        if new_hyp not in system_hyp_set:
+            print "Hypervisor: " + new_hyp + " is NOT in available hypervisor list"
+            allgood = False
+    return allgood
+
+
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
@@ -1359,7 +1382,9 @@ def main():
     # utils.get_macs_from_libvirt("path")
     # create_migration_security_group('from')
     # print_vm_list_with_multiple_volumes('to')
-    print_hypervisors("to")
+    # print_hypervisors("to")
+    check_hypervisor_list('pairs')
+
 
 if __name__ == "__main__":
         main()

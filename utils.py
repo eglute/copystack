@@ -39,6 +39,20 @@ def read_ids_from_file(id_file):
     return ids
 
 
+def read_ids_with_hyps_file(id_file):
+    with open(id_file, 'r') as fimage:
+        list_ids = fimage.readlines()
+    fimage.closed
+    ids = []
+    for i in list_ids:
+        if i and i.strip():
+            uuid = i.split()[0]
+            hyp = i.split()[1]
+            pair = {'uuid': uuid, 'hyp': hyp}
+            ids.append(pair)
+    return ids
+
+
 def load(filename):
     """Load a dictionary from a yaml file.
     Expects the file at filename to be a yaml file.

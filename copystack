@@ -546,6 +546,10 @@ def add_mig1_command_options(subparsers):
     migrate_parser.add_argument("-7", "--vips", dest='vips', nargs=1, metavar='UUID_file',
                                 help='Attach VIP allowed pairs to migrated VMs for each UUID provided in the original '
                                      'migration file, for example, ./id_file.')
+    migrate_parser.add_argument("-Z", "--hyps", dest='hyps', nargs=1, metavar='UUID_file',
+                                help='Combine this option with -4 to specify which hypervisor VMs should be booted on. '
+                                     'Please provide file with VM UUIDs and which hypervisor they should be migrated to.'
+                                     'This works only with "-4 ./id_file -Z ./ids_and_hypervisors_file" option.')
 
 
 def mig_actions(args):
@@ -567,9 +571,6 @@ def mig_actions(args):
     if args.managenewvolumes:
         if len(args.managenewvolumes) == 1:
             nova_common.manage_volume_copies_based_on_vms(args.managenewvolumes[0])
-    if args.boot:
-        if len(args.boot) == 1:
-            nova_common.migrate_vms_from_image(id_file=args.boot[0])
     if args.adddvolumestovms:
         if len(args.adddvolumestovms) == 1:
             nova_common.attach_volumes(id_file=args.adddvolumestovms[0])
@@ -584,6 +585,18 @@ def mig_actions(args):
     if args.vips:
         if len(args.vips) == 1:
             neutron_common.set_allowed_pairs_for_vms(id_file=args.vips[0])
+    if args.boot and args.hyps:
+        # print args
+        if len(args.boot) == 1 and len(args.hyps) == 1:
+            allgood = nova_common.check_hypervisor_list(args.hyps[0])
+            if allgood:
+                nova_common.migrate_vms_from_image(id_file=args.boot[0], hypervisor_order_file=args.hyps[0])
+            else:
+                print "Correct hypervisor pairs in the input file before running this command again."
+    elif args.boot:
+        # print args
+        if len(args.boot) == 1:
+            nova_common.migrate_vms_from_image(id_file=args.boot[0])
 
 
 def add_move_command_options(subparsers):
