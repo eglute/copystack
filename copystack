@@ -240,6 +240,12 @@ def add_nova_command_options(subparsers):
                              help='Print FROM hypervisors.')
     nova_parser.add_argument("-Z", "--to_hypervisors", action='store_true', dest='to_hypervisors',
                              help='Print TO hypervisors.')
+    nova_parser.add_argument("-g", "--from_server_groups", action='store_true', dest='from_server_groups',
+                             help='Print FROM server groups.')
+    nova_parser.add_argument("-G", "--to_server_groups", action='store_true', dest='to_server_groups',
+                             help='Print TO server groups.')
+    nova_parser.add_argument("-W", "--create_server_groups", action='store_true', dest='create_server_groups',
+                             help='Copy over server groups to TO side. No members are added at this point.')
 
 
 def nova_actions(args):
@@ -312,6 +318,15 @@ def nova_actions(args):
     if args.to_hypervisors:
         print "\n--------------- To Hypervisors: ------------------------"
         vms = nova_common.print_hypervisors('to')
+    if args.from_server_groups:
+        print "\n--------------- From Server Groups: ------------------------"
+        vms = nova_common.print_server_groups('from')
+    if args.to_server_groups:
+        print "\n--------------- To Server Groups: ------------------------"
+        vms = nova_common.print_server_groups('to')
+    if args.create_server_groups:
+        print "\n--------------- Copying over server groups (without members): ------------------------"
+        vms = nova_common.copy_server_groups()
 
 
 def add_glance_command_options(subparsers):
