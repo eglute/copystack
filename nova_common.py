@@ -368,6 +368,8 @@ def create_vm(from_vm, image='default', hypervisor_order=None):
         metadata.update({'original_image_id': "not found"})
         metadata.update({'original_image_name': "not found"})
 
+    scheduler_hints = find_server_group_by_old_uuid(from_vm.id)
+    print "Scheduler hint:", scheduler_hints
     #attaching security groups during server creation does not seem to work, so moved to a separate task
     keypairs = get_keypairs('to')
     key_name = from_vm.key_name
@@ -378,10 +380,10 @@ def create_vm(from_vm, image='default', hypervisor_order=None):
             break
     if found:
         server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-                                 meta=metadata, key_name=key_name, availability_zone=hypervisor)
+                                 meta=metadata, key_name=key_name, availability_zone=hypervisor, scheduler_hints=scheduler_hints)
     else:
         server = nova.servers.create(name=from_vm.name, image=image, flavor=flavor.id, nics=nics,
-                                     meta=metadata, availability_zone=hypervisor)
+                                     meta=metadata, availability_zone=hypervisor, scheduler_hints=scheduler_hints)
 
     print "Server created:", from_vm.name
 
@@ -1339,6 +1341,49 @@ def check_hypervisor_list(hyp_file):
     return allgood
 
 
+# search to see if server was part of a server group on the "from" side.
+# if server was part of a server group, return server group's name.
+def find_server_group_by_old_uuid(old_uuid):
+    # hint format:
+    # {"group": "14f9838a-5b32-400f-92bf-7a494af708c8"}
+    # must send id, doesn't take names.
+    from_nova = get_nova("from")
+    from_groups = from_nova.server_groups.list()
+    for from_group in from_groups:
+        for member in from_group.members:
+            if member == old_uuid:
+                print "Server ", old_uuid, "was part of", from_group.name, "server group."
+                to_nova = get_nova("to")
+                to_groups = to_nova.server_groups.list()
+                for to_group in to_groups:
+                    if to_group.name == from_group.name:
+                        # return group
+                        return {"group": to_group.id}
+    return None
+
+
+def print_server_groups(destination):
+    nova = get_nova(destination)
+    groups = nova.server_groups.list()
+    for group in groups:
+        print group.name, group.policies[0], group.members
+
+
+# This will be need to be done per project, server_group_list doesn't return tenant info as part of ServerGroup object
+# Will not create server groups with duplicate names
+def copy_server_groups():
+    from_nova = get_nova('from')
+    to_nova = get_nova('to')
+    from_groups = from_nova.server_groups.list()
+    to_groups = to_nova.server_groups.list()
+    new_to_group_name_set = set(map(lambda d: d.name, to_groups))
+
+    for from_group in from_groups:
+        if from_group.name not in new_to_group_name_set:
+            new_group = to_nova.server_groups.create(name=from_group.name, policies=from_group.policies)
+            print "Created new server group", new_group.name, new_group.policies[0]
+
+
 def main():
     # get_security_groups('to')
     #create_security_group('to', 'foo')
@@ -1383,8 +1428,9 @@ def main():
     # create_migration_security_group('from')
     # print_vm_list_with_multiple_volumes('to')
     # print_hypervisors("to")
-    check_hypervisor_list('pairs')
-
+    # check_hypervisor_list('pairs')
+    # print_server_groups('from')
+    copy_server_groups()
 
 if __name__ == "__main__":
         main()
